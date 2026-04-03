@@ -1,0 +1,622 @@
+{
+  "produto": {
+    "nome": "[A DEFINIR]",
+    "descricao": "Sistema SaaS de gestão de pós-produção (Kanban) especializado para fotógrafos e videomakers",
+    "versao_documento": "1.0",
+    "data": "Abril 2025"
+  },
+
+  "publico_alvo": [
+    "Fotógrafos solo ou em estúdio (newborn, casamento, família, eventos)",
+    "Videomakers e editores freelancer",
+    "Pequenos estúdios com 1 a 5 editores",
+    "Profissionais que hoje usam Trello, planilhas ou papel para controlar edições"
+  ],
+
+  "stack_tecnica": {
+    "frontend": "Next.js 14 + TypeScript + Tailwind CSS",
+    "banco_de_dados": "Supabase (PostgreSQL)",
+    "autenticacao": "Supabase Auth + Google OAuth 2.0",
+    "kanban_drag_drop": "dnd-kit",
+    "envio_email": "Resend",
+    "pagamento_pix": "AbacatePay",
+    "pagamento_cartao": "Asaas",
+    "deploy": "Vercel",
+    "icones": "Lucide React",
+    "onboarding_tour": "driver.js"
+  },
+
+  "banco_de_dados": {
+    "observacao": "Todos os dados (jobs, contatos, kanban) vinculados a account_id, não a user_id",
+    "tabelas": [
+      {
+        "nome": "accounts",
+        "descricao": "Conta principal do estúdio — unidade de cobrança",
+        "campos": ["id", "name", "created_at"]
+      },
+      {
+        "nome": "users",
+        "descricao": "Perfil do usuário autenticado via Google",
+        "campos": [
+          "id",
+          "account_id",
+          "name",
+          "email",
+          "avatar_url",
+          "role",
+          "tour_completed",
+          "created_at"
+        ],
+        "roles": ["admin", "member"]
+      },
+      {
+        "nome": "invitations",
+        "descricao": "Convites pendentes para novos membros",
+        "campos": [
+          "id",
+          "account_id",
+          "email",
+          "token",
+          "role",
+          "expires_at",
+          "accepted_at",
+          "created_at"
+        ]
+      },
+      {
+        "nome": "contacts",
+        "descricao": "Clientes da conta",
+        "campos": ["id", "account_id", "name", "email", "phone", "notes", "created_at"]
+      },
+      {
+        "nome": "kanban_stages",
+        "descricao": "Etapas do kanban personalizáveis por conta",
+        "campos": [
+          "id",
+          "account_id",
+          "name",
+          "position",
+          "color",
+          "is_final",
+          "created_at"
+        ]
+      },
+      {
+        "nome": "jobs",
+        "descricao": "Trabalhos de edição",
+        "campos": [
+          "id",
+          "account_id",
+          "contact_id",
+          "stage_id",
+          "name",
+          "type",
+          "deadline",
+          "notes",
+          "delivery_link",
+          "created_by",
+          "created_at",
+          "updated_at"
+        ],
+        "tipos_job": ["foto", "video", "foto_video"]
+      },
+      {
+        "nome": "subscriptions",
+        "descricao": "Assinaturas e planos",
+        "campos": [
+          "id",
+          "account_id",
+          "plan",
+          "status",
+          "trial_ends_at",
+          "current_period_ends_at",
+          "extra_users",
+          "asaas_subscription_id",
+          "abacatepay_subscription_id",
+          "created_at",
+          "updated_at"
+        ],
+        "planos": ["free", "pro"],
+        "status_possiveis": ["active", "trialing", "past_due", "canceled"]
+      }
+    ]
+  },
+
+  "navegacao": {
+    "sidebar": [
+      {
+        "item": "Dashboard",
+        "rota": "/dashboard",
+        "descricao": "Tela inicial com métricas"
+      },
+      {
+        "item": "Contatos",
+        "rota": "/contacts",
+        "descricao": "Cadastro e gestão de clientes"
+      },
+      { "item": "Edições", "rota": "/board", "descricao": "Kanban de pós-produção" }
+    ],
+    "rodape_sidebar": [
+      { "item": "Configurações", "rota": "/settings", "icone": "settings" }
+    ]
+  },
+
+  "modulos": {
+    "auth": {
+      "metodo": "Google OAuth exclusivamente",
+      "sem_cadastro_manual": true,
+      "fluxo_primeiro_login": [
+        "Criar registro em users",
+        "Criar account",
+        "Vincular via account_members com role admin",
+        "Criar 5 etapas padrão do kanban",
+        "Criar subscription com plano free",
+        "Redirecionar para /dashboard"
+      ],
+      "rotas_publicas": ["/login", "/invite/[token]"]
+    },
+
+    "dashboard": {
+      "descricao": "Cards de métricas no topo, lista de jobs urgentes abaixo. Sem gráficos complexos no MVP.",
+      "metricas": [
+        { "nome": "Total de jobs ativos", "logica": "Jobs com stage is_final = false" },
+        { "nome": "Jobs atrasados", "logica": "deadline < hoje e is_final = false" },
+        {
+          "nome": "Jobs com prazo próximo",
+          "logica": "deadline entre hoje e +3 dias, is_final = false"
+        },
+        {
+          "nome": "Jobs entregues no mês",
+          "logica": "stage is_final = true, updated_at no mês atual"
+        },
+        { "nome": "Jobs a editar este mês", "logica": "deadline dentro do mês atual" }
+      ]
+    },
+
+    "contatos": {
+      "campos": [
+        { "nome": "name", "tipo": "text", "obrigatorio": true },
+        {
+          "nome": "email",
+          "tipo": "email",
+          "obrigatorio": true,
+          "uso": "Envio de notificação"
+        },
+        { "nome": "phone", "tipo": "text", "obrigatorio": false },
+        { "nome": "notes", "tipo": "textarea", "obrigatorio": false }
+      ],
+      "acoes": [
+        "Criar novo contato",
+        "Editar contato existente",
+        "Excluir contato (bloquear se houver jobs ativos vinculados)",
+        "Buscar por nome ou e-mail"
+      ]
+    },
+
+    "jobs": {
+      "campos": [
+        {
+          "nome": "name",
+          "label": "Nome do job / cliente",
+          "tipo": "text",
+          "obrigatorio": true,
+          "exemplo": "Ensaio Família Silva"
+        },
+        {
+          "nome": "contact_id",
+          "label": "Contato vinculado",
+          "tipo": "select",
+          "obrigatorio": false
+        },
+        {
+          "nome": "type",
+          "label": "Tipo",
+          "tipo": "enum",
+          "obrigatorio": true,
+          "opcoes": ["foto", "video", "foto_video"]
+        },
+        {
+          "nome": "deadline",
+          "label": "Prazo de entrega",
+          "tipo": "date",
+          "obrigatorio": true
+        },
+        {
+          "nome": "notes",
+          "label": "Observações / O que foi feito",
+          "tipo": "textarea",
+          "obrigatorio": false
+        },
+        {
+          "nome": "delivery_link",
+          "label": "Link do material final",
+          "tipo": "url",
+          "obrigatorio": false
+        },
+        {
+          "nome": "stage_id",
+          "label": "Etapa do kanban",
+          "tipo": "fk",
+          "obrigatorio": false,
+          "default": "primeira etapa da conta (menor position)"
+        }
+      ]
+    },
+
+    "kanban": {
+      "biblioteca": "dnd-kit",
+      "etapas_padrao": [
+        {
+          "position": 1,
+          "name": "Aguardando",
+          "color": "bg-violet-50",
+          "is_final": false
+        },
+        {
+          "position": 2,
+          "name": "Em Edição",
+          "color": "bg-amber-50",
+          "is_final": false
+        },
+        { "position": 3, "name": "Revisão", "color": "bg-blue-50", "is_final": false },
+        {
+          "position": 4,
+          "name": "Aprovado",
+          "color": "bg-green-50",
+          "is_final": false
+        },
+        { "position": 5, "name": "Entregue", "color": "bg-pink-50", "is_final": true }
+      ],
+      "comportamento_etapa_final": "Exibir modal perguntando se quer enviar e-mail ao cliente",
+      "personalizacao": {
+        "acoes": [
+          "Renomear etapa",
+          "Adicionar etapa",
+          "Reordenar (drag-and-drop)",
+          "Excluir (avisar se houver jobs)"
+        ],
+        "limites_por_plano": {
+          "free": { "max_etapas": 4 },
+          "pro": { "max_etapas": "ilimitado" }
+        }
+      }
+    },
+
+    "email": {
+      "envio_automatico": false,
+      "descricao": "Ação manual e opcional do profissional ao mover job para etapa final",
+      "fluxo": [
+        "Job movido para última etapa",
+        "Modal: 'Deseja enviar e-mail ao cliente?'",
+        "Se sim: abre editor com template pré-preenchido e editável",
+        "Profissional edita e confirma envio",
+        "Enviado via Resend"
+      ],
+      "template_padrao": {
+        "assunto": "Seu material está pronto! 📸",
+        "corpo": "Olá [Nome do Cliente],\n\nSeu material está finalizado e pronto para você!\n\n🔗 Link de acesso: [link inserido pelo profissional]\n\nQualquer dúvida, estou à disposição.\n\n[Nome do Fotógrafo]"
+      },
+      "remetente": "noreply@[dominio].com.br",
+      "reply_to": "e-mail do profissional (configurado em Settings)",
+      "disponivel_apenas_no_plano": "pro"
+    },
+
+    "configuracoes": {
+      "secoes": [
+        {
+          "secao": "Perfil",
+          "campos": ["Nome de exibição", "E-mail (reply-to)", "Foto de perfil"],
+          "acoes": ["Refazer o tour"]
+        },
+        { "secao": "Kanban", "descricao": "Gerenciar etapas do fluxo de edição" },
+        {
+          "secao": "Equipe",
+          "descricao": "Convidar membros, listar usuários, remover acesso",
+          "restrito_a": "admin",
+          "plano_minimo": "pro"
+        },
+        { "secao": "Plano", "descricao": "Plano ativo, nº de usuários, botão upgrade" },
+        {
+          "secao": "Faturamento",
+          "descricao": "Histórico de cobranças, detalhamento por usuário, próxima cobrança"
+        }
+      ]
+    },
+
+    "multi_usuario": {
+      "descricao": "Permite que estúdios adicionem membros à conta com login próprio compartilhando o mesmo workspace",
+      "disponivel_apenas_no_plano": "pro",
+      "cobranca": {
+        "usuario_adicional_mensal": 19.9
+      },
+      "fluxo_convite": [
+        "Admin acessa Settings → Equipe → Convidar usuário",
+        "Informa e-mail do novo membro",
+        "Sistema envia e-mail com token único (expira em 48h) via Resend",
+        "Convidado clica no link → faz login com Google",
+        "Sistema vincula usuário à account via account_members",
+        "Cobrança incremental criada no Asaas"
+      ],
+      "nota_google_oauth": "Aceita qualquer e-mail com Conta Google — não precisa ser @gmail.com",
+      "papeis": {
+        "admin": [
+          "Ver e mover jobs",
+          "Criar e editar jobs",
+          "Criar e editar contatos",
+          "Enviar e-mail ao cliente",
+          "Configurar etapas do kanban",
+          "Convidar e remover usuários",
+          "Gerenciar plano e pagamento"
+        ],
+        "member": [
+          "Ver e mover jobs",
+          "Criar e editar jobs",
+          "Criar e editar contatos",
+          "Enviar e-mail ao cliente"
+        ]
+      },
+      "remocao": {
+        "acesso_revogado": "imediatamente",
+        "cobranca_cancelada": "no próximo ciclo",
+        "dados_preservados": true
+      }
+    },
+
+    "onboarding_tour": {
+      "biblioteca": "driver.js",
+      "disparado_em": "primeiro login (tour_completed = false)",
+      "passos": [
+        {
+          "passo": 1,
+          "elemento": "#menu-contatos",
+          "mensagem": "Comece por aqui! Cadastre seus clientes para vincular aos seus trabalhos de edição."
+        },
+        {
+          "passo": 2,
+          "elemento": "#btn-novo-contato",
+          "mensagem": "Clique aqui para adicionar um cliente. Basta o nome e o e-mail dele."
+        },
+        {
+          "passo": 3,
+          "elemento": "#menu-edicoes",
+          "mensagem": "Aqui mora o coração do sistema: seu Kanban de pós-produção."
+        },
+        {
+          "passo": 4,
+          "elemento": "#btn-novo-job",
+          "mensagem": "Crie um job para cada trabalho de edição. Defina o prazo e as observações."
+        },
+        {
+          "passo": 5,
+          "elemento": "#kanban-board",
+          "mensagem": "Arraste os cards entre as colunas conforme avança na edição. Quando chegar em 'Entregue', você pode notificar seu cliente por e-mail."
+        },
+        {
+          "passo": 6,
+          "elemento": "#menu-settings",
+          "mensagem": "Personalize as etapas do seu fluxo aqui. Cada profissional tem um processo diferente."
+        }
+      ],
+      "pode_pular": true,
+      "refazer_em": "Settings → Perfil",
+      "ao_concluir": "salvar tour_completed = true no banco"
+    }
+  },
+
+  "planos": {
+    "free": {
+      "preco_mensal": 0,
+      "limites": {
+        "jobs_ativos": 5,
+        "etapas_kanban": 4,
+        "contatos": 20,
+        "envio_email": false,
+        "usuarios_adicionais": false
+      }
+    },
+    "pro": {
+      "preco_mensal": 29.9,
+      "preco_usuario_adicional": 19.9,
+      "trial_dias": 14,
+      "limites": {
+        "jobs_ativos": "ilimitado",
+        "etapas_kanban": "ilimitado",
+        "contatos": "ilimitado",
+        "envio_email": true,
+        "usuarios_adicionais": true
+      },
+      "exemplos_cobranca": [
+        { "usuarios": 1, "total_mensal": 29.9 },
+        { "usuarios": 2, "total_mensal": 49.8 },
+        { "usuarios": 3, "total_mensal": 69.7 },
+        { "usuarios": 5, "total_mensal": 109.5 }
+      ]
+    }
+  },
+
+  "pagamento": {
+    "pix": {
+      "plataforma": "AbacatePay",
+      "integracao": "webhook para confirmação e atualização automática do plano"
+    },
+    "cartao_credito": {
+      "plataforma": "Asaas",
+      "integracao": "webhook para eventos de pagamento e cancelamento",
+      "usuarios_adicionais": "cobrança incremental criada no Asaas ao convidar novo membro"
+    }
+  },
+
+  "design": {
+    "inspiracao": "Estética moderna com tons pastéis — similar a ferramentas como Linear e Notion",
+    "fonte": "Inter (Google Fonts)",
+    "paleta": {
+      "primaria": "violet-400 / #A78BFA",
+      "background_geral": "#F0F4F3 / slate-50",
+      "background_sidebar": "#FFFFFF",
+      "cards": "#FFFFFF com shadow-sm",
+      "textos_principais": "gray-800",
+      "textos_secundarios": "gray-500",
+      "bordas": "gray-200"
+    },
+    "colunas_kanban": {
+      "Aguardando": "bg-violet-50",
+      "Em Edição": "bg-amber-50",
+      "Revisão": "bg-blue-50",
+      "Aprovado": "bg-green-50",
+      "Entregue": "bg-pink-50"
+    },
+    "badges_tipo": {
+      "foto": { "fundo": "violet-100", "texto": "violet-700" },
+      "video": { "fundo": "blue-100", "texto": "blue-700" },
+      "foto_video": { "fundo": "amber-100", "texto": "amber-700" }
+    },
+    "badges_prazo": {
+      "normal": "sem badge",
+      "proximo": {
+        "condicao": "deadline <= hoje + 3 dias",
+        "estilo": "amber-100 com ícone de relógio"
+      },
+      "atrasado": {
+        "condicao": "deadline < hoje",
+        "estilo": "red-100 com ícone de alerta"
+      }
+    },
+    "regras": {
+      "fazer": [
+        "Cards do Kanban sempre brancos — cor vem do fundo da coluna",
+        "Muito espaço em branco — gaps de 16-24px",
+        "Border radius generoso: rounded-xl nos cards",
+        "Sombras suaves: shadow-sm apenas"
+      ],
+      "nao_fazer": [
+        "Cores saturadas ou vibrantes",
+        "Background colorido nos cards",
+        "Sombras pesadas ou bordas grossas",
+        "Misturar muitas cores na mesma tela"
+      ]
+    }
+  },
+
+  "roadmap": [
+    {
+      "fase": 1,
+      "nome": "Fundação",
+      "passos": [
+        {
+          "passo": 1,
+          "modulo": "Setup",
+          "entregavel": "Next.js 14 + Supabase + Tailwind configurados, repositório no GitHub"
+        },
+        {
+          "passo": 2,
+          "modulo": "Banco de dados",
+          "entregavel": "Todas as tabelas criadas no Supabase com RLS ativo"
+        },
+        {
+          "passo": 3,
+          "modulo": "Auth",
+          "entregavel": "Login Google funcionando, criação automática de conta no primeiro acesso"
+        }
+      ]
+    },
+    {
+      "fase": 2,
+      "nome": "Estrutura Visual",
+      "passos": [
+        {
+          "passo": 4,
+          "modulo": "Design System",
+          "entregavel": "Componentes base criados (Button, Modal, Badge, Card, Input, etc.)"
+        },
+        {
+          "passo": 5,
+          "modulo": "Layout base",
+          "entregavel": "Sidebar + navegação + páginas vazias com estrutura correta"
+        }
+      ]
+    },
+    {
+      "fase": 3,
+      "nome": "Módulos Funcionais",
+      "passos": [
+        {
+          "passo": 6,
+          "modulo": "Contatos",
+          "entregavel": "CRUD completo com validações, busca e estado vazio"
+        },
+        {
+          "passo": 7,
+          "modulo": "Jobs",
+          "entregavel": "Criar, editar e excluir jobs com dados reais"
+        },
+        {
+          "passo": 8,
+          "modulo": "Kanban",
+          "entregavel": "Board com drag-and-drop, cores por coluna, badges de prazo"
+        },
+        {
+          "passo": 9,
+          "modulo": "Config Kanban",
+          "entregavel": "Personalização de etapas em Settings com limites de plano"
+        },
+        {
+          "passo": 10,
+          "modulo": "Dashboard",
+          "entregavel": "5 métricas com queries reais + lista de jobs urgentes"
+        }
+      ]
+    },
+    {
+      "fase": 4,
+      "nome": "Integrações Externas",
+      "passos": [
+        {
+          "passo": 11,
+          "modulo": "E-mail",
+          "entregavel": "Modal de envio + Resend integrado + bloqueio por plano"
+        },
+        {
+          "passo": 12,
+          "modulo": "Multi-usuário",
+          "entregavel": "Convite por e-mail, papéis admin/member, remoção"
+        },
+        {
+          "passo": 13,
+          "modulo": "Pagamento",
+          "entregavel": "AbacatePay (PIX) + Asaas (cartão) + controle de limites"
+        }
+      ]
+    },
+    {
+      "fase": 5,
+      "nome": "Experiência e Deploy",
+      "passos": [
+        {
+          "passo": 14,
+          "modulo": "Onboarding Tour",
+          "entregavel": "driver.js com 6 passos, customizado visualmente"
+        },
+        {
+          "passo": 15,
+          "modulo": "Polish",
+          "entregavel": "Loading states, error states, toasts, responsividade, edge cases"
+        },
+        {
+          "passo": 16,
+          "modulo": "Deploy",
+          "entregavel": "Produto em produção no domínio final com todos os webhooks configurados"
+        }
+      ]
+    }
+  ],
+
+  "fora_do_escopo_mvp": [
+    "Portal do cliente (link público de acompanhamento)",
+    "Notificações por WhatsApp",
+    "Relatórios e histórico avançado",
+    "App mobile nativo",
+    "Integração com Google Drive",
+    "Modo escuro",
+    "Automações de lembrete de prazo"
+  ]
+}
