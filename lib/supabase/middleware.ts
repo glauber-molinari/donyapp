@@ -1,0 +1,73 @@
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
+
+import type { Database } from "@/types/database";
+
+function copyCookies(from: NextResponse, to: NextResponse) {
+  from.cookies.getAll().forEach((c) => {
+    to.cookies.set(c.name, c.value);
+  });
+}
+
+export async function updateSession(request: NextRequest) {
+  let response = NextResponse.next({
+    request,
+  });
+
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !key) {
+    console.error("Supabase: NEXT_PUBLIC_SUPABASE_URL / ANON_KEY ausentes");
+    return response;
+  }
+
+  const supabase = createServerClient<Database>(url, key, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) => {
+          request.cookies.set(name, value);
+        });
+        response = NextResponse.next({
+          request,
+        });
+        cookiesToSet.forEach(({ name, value, options }) => {
+          response.cookies.set(name, value, options);
+        });
+      },
+    },
+  });
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const path = request.nextUrl.pathname;
+
+  const isPublic =
+    path === "/login" || path.startsWith("/auth/") || path.startsWith("/invite");
+
+  if (!user && !isPublic) {
+    const redirect = NextResponse.redirect(new URL("/login", request.url));
+    copyCookies(response, redirect);
+    return redirect;
+  }
+
+  if (user && path === "/login") {
+    const redirect = NextResponse.redirect(new URL("/dashboard", request.url));
+    copyCookies(response, redirect);
+    return redirect;
+  }
+
+  if (path === "/") {
+    const target = user ? "/dashboard" : "/login";
+    const redirect = NextResponse.redirect(new URL(target, request.url));
+    copyCookies(response, redirect);
+    return redirect;
+  }
+
+  return response;
+}
