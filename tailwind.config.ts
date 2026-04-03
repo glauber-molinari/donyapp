@@ -14,6 +14,22 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        /** Canvas principal (#F0F4F3) — PRODUCT */
+        app: {
+          canvas: "#F0F4F3",
+          sidebar: "#FFFFFF",
+          /** violet-400 — primária, sem saturar */
+          primary: "#A78BFA",
+          border: "#E5E7EB",
+        },
+      },
+      borderRadius: {
+        xl: "0.75rem",
+        "2xl": "1rem",
+      },
+      spacing: {
+        /** Gaps recomendados 16–24px */
+        section: "1.25rem",
       },
     },
   },
