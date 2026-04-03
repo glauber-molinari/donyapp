@@ -48,7 +48,10 @@ export async function updateSession(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   const isPublic =
-    path === "/login" || path.startsWith("/auth/") || path.startsWith("/invite");
+    path === "/" ||
+    path === "/login" ||
+    path.startsWith("/auth/") ||
+    path.startsWith("/invite");
 
   if (!user && !isPublic) {
     const redirect = NextResponse.redirect(new URL("/login", request.url));
@@ -62,9 +65,8 @@ export async function updateSession(request: NextRequest) {
     return redirect;
   }
 
-  if (path === "/") {
-    const target = user ? "/dashboard" : "/login";
-    const redirect = NextResponse.redirect(new URL(target, request.url));
+  if (user && path === "/") {
+    const redirect = NextResponse.redirect(new URL("/dashboard", request.url));
     copyCookies(response, redirect);
     return redirect;
   }

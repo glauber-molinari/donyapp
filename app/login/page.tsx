@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { LoginForm } from "./login-form";
@@ -19,8 +20,18 @@ export default function LoginPage({
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-[#F0F4F3] px-4">
       <div className="w-full max-w-sm rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
-        <h1 className="text-2xl font-bold text-gray-900">Donyapp</h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <div className="mb-6 flex justify-center">
+          <Image
+            src="/brand/logo-wordmark.png"
+            alt="dony"
+            width={100}
+            height={32}
+            className="h-8 w-auto"
+            priority
+          />
+        </div>
+        <h1 className="sr-only">Donyapp — Entrar</h1>
+        <p className="text-center text-sm text-gray-500">
           Gestão de pós-produção para fotógrafos e videomakers.
         </p>
         {message ? (
@@ -31,7 +42,7 @@ export default function LoginPage({
             {message}
           </p>
         ) : null}
-        <div className="mt-8">
+        <div className="mt-6">
           <LoginForm />
         </div>
         <p className="mt-6 text-center text-xs text-gray-500">
