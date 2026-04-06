@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
+import { publicAppOrigin } from "@/lib/app-url";
 import { acceptInvitationForNewUser } from "@/lib/auth/accept-invitation";
 import { oauthAvatarUrlFromUser } from "@/lib/auth/oauth-profile";
 import { provisionNewStudio } from "@/lib/auth/provision-new-studio";
@@ -8,7 +9,8 @@ import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import type { Database } from "@/types/database";
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url);
+  const searchParams = request.nextUrl.searchParams;
+  const origin = publicAppOrigin(request);
   const code = searchParams.get("code");
   let nextPath = searchParams.get("next") ?? "/dashboard";
   if (!nextPath.startsWith("/") || nextPath.startsWith("//")) {
