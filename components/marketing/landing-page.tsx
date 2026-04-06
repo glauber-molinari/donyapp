@@ -1,12 +1,14 @@
-import { ArrowRight, Camera, ChevronRight, Columns3, UsersRound } from "lucide-react";
+import { ArrowRight, Camera, Check, ChevronRight, Columns3, UsersRound } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 import { cn } from "@/lib/utils";
 import { LegalLinks } from "@/components/legal/legal-links";
+import { FREE_MAX_ACTIVE_JOBS, FREE_MAX_CONTACTS, PRO_PRICE_MONTHLY_CENTS } from "@/lib/plan-limits";
 
 const heroNavItems = [
   { href: "#sobre", label: "Sobre" },
+  { href: "#prova", label: "Resultados" },
   { href: "#planos", label: "Planos" },
   { href: "#faq", label: "FAQ" },
 ] as const;
@@ -39,9 +41,9 @@ function ProductPreviewMock() {
       className="mx-auto w-full max-w-5xl rounded-t-ds-card border border-ds-border bg-ds-surface shadow-ds-card"
       aria-hidden
     >
-      <div className="flex min-h-[320px] sm:min-h-[380px]">
-        <aside className="hidden w-44 shrink-0 border-r border-ds-border-strong bg-ds-elevated p-3 sm:block">
-          <div className="mb-4 flex justify-center">
+      <div className="flex min-h-[340px] sm:min-h-[400px]">
+        <aside className="hidden w-48 shrink-0 border-r border-ds-border-strong bg-gradient-to-b from-ds-elevated to-ds-cream/70 p-3 sm:block">
+          <div className="mb-5 flex justify-start px-2 pt-1">
             <Image
               src="/brand/logo-dony-png.png"
               alt=""
@@ -50,13 +52,15 @@ function ProductPreviewMock() {
               className="h-5 w-auto max-w-[5.5rem] object-contain opacity-90"
             />
           </div>
-          <div className="space-y-2">
-            {["Board", "Contatos", "Config"].map((label, i) => (
+          <div className="space-y-1.5 px-1">
+            {["Dashboard", "Contatos", "Edições", "Agenda", "Configurações"].map((label) => (
               <div
                 key={label}
                 className={cn(
-                  "rounded-ds-xl px-2 py-2 text-xs font-medium",
-                  i === 0 ? "bg-ds-ink text-white" : "text-ds-muted",
+                  "rounded-ds-2xl px-3 py-2.5 text-xs font-medium transition",
+                  label === "Edições"
+                    ? "bg-ds-ink text-white shadow-sm"
+                    : "text-ds-muted hover:bg-white/40 hover:text-ds-ink",
                 )}
               >
                 {label}
@@ -65,11 +69,14 @@ function ProductPreviewMock() {
           </div>
         </aside>
         <div className="min-w-0 flex-1 overflow-x-auto p-4 sm:p-5">
-          <div className="mb-4 flex items-center justify-between gap-2">
-            <div className="h-7 w-40 rounded-ds-xl bg-ds-cream" />
-            <div className="h-8 w-28 rounded-ds-2xl border border-ds-border bg-ds-surface" />
+          <div className="mb-5 flex items-center justify-between gap-3">
+            <div className="h-7 w-44 rounded-ds-2xl bg-ds-cream sm:w-56" />
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-40 rounded-ds-2xl border border-ds-border bg-white/70 sm:w-48" />
+              <div className="h-8 w-8 rounded-full border border-ds-border bg-ds-surface" />
+            </div>
           </div>
-          <div className="flex gap-3 pb-2">
+          <div className="flex gap-4 pb-2">
             {[
               { title: "Backup", cards: [{ t: "Casamento A", tags: ["accent"] }] },
               {
@@ -84,7 +91,7 @@ function ProductPreviewMock() {
             ].map((col) => (
               <div
                 key={col.title}
-                className="w-[140px] shrink-0 rounded-ds-2xl border border-ds-border-strong bg-ds-cream p-2 sm:w-[160px]"
+                className="w-[150px] shrink-0 rounded-ds-2xl border border-ds-border-strong bg-ds-cream/85 p-2.5 sm:w-[175px]"
               >
                 <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-wide text-ds-subtle">
                   {col.title}
@@ -94,7 +101,7 @@ function ProductPreviewMock() {
                     <div
                       key={c.t}
                       className={cn(
-                        "rounded-ds-xl border bg-ds-surface p-2 text-xs font-medium text-ds-ink",
+                        "rounded-ds-xl border bg-ds-surface p-2.5 text-xs font-medium text-ds-ink shadow-[0_1px_0_rgba(0,0,0,0.02)]",
                         c.tags.includes("ring")
                           ? "border-ds-accent ring-1 ring-ds-accent/25"
                           : "border-ds-border-strong",
@@ -130,7 +137,12 @@ interface LandingPageProps {
   bodyClassName: string;
 }
 
+function formatBrl(value: number) {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+}
+
 export function LandingPage({ displayClassName, bodyClassName }: LandingPageProps) {
+  const proMonthly = PRO_PRICE_MONTHLY_CENTS / 100;
   return (
     <div className={cn(bodyClassName, "min-h-screen bg-ds-cream text-ds-ink antialiased")}>
       <header className="fixed top-0 z-50 w-full bg-ds-cream/70 transition-colors supports-[backdrop-filter]:backdrop-blur-md">
@@ -185,14 +197,10 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
           <div className="mx-auto max-w-[1200px] text-center">
             <Link
               href="/login"
-              className="group mb-8 inline-flex items-center gap-2 rounded-full bg-ds-ink px-1 py-1 pl-1.5 pr-3 text-[0.75rem] font-semibold text-white transition duration-ds ease-out hover:brightness-110 sm:mb-10"
+              className="group mb-8 inline-flex items-center gap-2 rounded-full bg-ds-accent px-1 py-1 pl-1.5 pr-3 text-[0.75rem] font-semibold text-white transition duration-ds ease-out hover:brightness-110 sm:mb-10"
             >
-              <span className="rounded-full bg-ds-accent px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
-                Novo
-              </span>
-              <span className="pr-0.5">Pós-produção, sem caos</span>
-              <ChevronRight className="h-3.5 w-3.5 opacity-80 transition group-hover:translate-x-0.5" />
-            </Link>
+                          <span className="pr-0.6">Pós-produção, sem caos</span>
+                          </Link>
 
             <h1
               className={cn(
@@ -203,12 +211,13 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
               Seu fluxo de edição,
               <br className="hidden sm:block" />
               <span className="sm:hidden"> </span>
-              <span className="text-ds-accent">do briefing ao entregue</span>.
+              <span className="text-ds-accent">do backup ao entregue</span>.
             </h1>
 
             <p className="mx-auto mt-8 max-w-[55ch] text-pretty text-center text-lg leading-relaxed text-ds-muted sm:text-xl">
-              Um kanban feito para fotógrafos e videomakers: prazos claros, clientes organizados e a equipe
-              alinhada, sem planilhas nem ferramentas genéricas.
+              <span className="font-medium text-ds-ink">Cada entrega atrasada custa confiança — e tempo.</span> Um
+              kanban feito para fotógrafos e videomakers: prazos claros, clientes organizados e a equipe alinhada,
+              sem planilhas nem ferramentas genéricas.
             </p>
 
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
@@ -248,7 +257,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                 "mx-auto max-w-3xl text-center text-balance text-3xl font-extrabold tracking-tight text-ds-ink sm:text-4xl lg:text-[2.75rem]",
               )}
             >
-              Tudo que o seu estúdio precisa em um só lugar
+              Tudo o que você precisa em um só lugar
             </h2>
             <p className="mx-auto mt-5 max-w-xl text-center text-lg text-ds-muted">
               Pensado para quem vive de prazo, revisão e cliente no WhatsApp.
@@ -267,8 +276,8 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                 },
                 {
                   icon: Camera,
-                  title: "Feito para creators",
-                  text: "Visual calmo, pastéis e foco no que importa: entregar no tempo.",
+                  title: "Feito para criativos",
+                  text: "Visual calmo, tons pastéis e foco no que importa: entregar no tempo.",
                 },
               ].map(({ icon: Icon, title, text }) => (
                 <li
@@ -287,23 +296,216 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
         </section>
 
         <section
+          id="prova"
+          className="scroll-mt-28 border-t border-ds-border bg-ds-surface/80 py-16 lg:scroll-mt-32 lg:py-20"
+        >
+          <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
+            <h2
+              className={cn(
+                displayClassName,
+                "mx-auto max-w-3xl text-center text-balance text-2xl font-extrabold tracking-tight text-ds-ink sm:text-3xl",
+              )}
+            >
+              Projetado para quem não pode falhar com prazo
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-center text-base text-ds-muted sm:text-lg">
+              Menos “Quando eu recebo o material?” no WhatsApp. Mais previsibilidade com prazos,
+              responsáveis e etapas claras para todos visualizarem.
+            </p>
+            <div className="mt-10 grid items-stretch gap-6 lg:grid-cols-2 lg:gap-10">
+              <figure className="flex h-full flex-col justify-between rounded-ds-card border border-ds-border-strong bg-ds-cream/60 p-8 shadow-ds-sm">
+                <blockquote className="text-base leading-relaxed text-ds-ink">
+                  <p>
+                    &ldquo;Quando um sistema substitui uma planilha, o cliente sente que tem processo e você
+                    respira na pós.&rdquo;
+                  </p>
+                </blockquote>
+                <figcaption className="mt-4 text-sm font-medium text-ds-muted">
+                  Equipe DonyApp
+                </figcaption>
+              </figure>
+              <ul className="flex h-full flex-col justify-center gap-4 rounded-ds-card border border-ds-border-strong bg-white p-8 shadow-ds-sm">
+                <li className="flex items-start gap-4">
+                  <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-ds-2xl border border-ds-border bg-ds-cream text-ds-accent">
+                    <UsersRound className="h-5 w-5" aria-hidden />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-ds-ink">Cresce com seu estúdio</p>
+                    <p className="mt-1 text-sm leading-relaxed text-ds-muted">
+                      Comece no essencial e aumente o volume sem virar bagunça: mais jobs, mais contatos e (no
+                      Pro) mais pessoas no fluxo.
+                    </p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-4">
+                  <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-ds-2xl border border-ds-border bg-ds-cream text-ds-accent">
+                    <Columns3 className="h-5 w-5" aria-hidden />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-ds-ink">Tudo centralizado em um quadro</p>
+                    <p className="mt-1 text-sm leading-relaxed text-ds-muted">
+                      Prazos, etapas e responsáveis no mesmo lugar. Todo mundo enxerga a mesma realidade — sem
+                      versões divergentes de planilhas.
+                    </p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section
           id="planos"
           className="mx-auto max-w-[1200px] scroll-mt-28 bg-ds-cream px-4 py-20 sm:px-6 lg:scroll-mt-32 lg:px-8 lg:py-24"
         >
-          <div className="rounded-ds-card border border-ds-border bg-ds-ink px-8 py-14 text-center text-ds-on-dark sm:px-12">
-            <h2 className={cn(displayClassName, "text-balance text-2xl font-extrabold sm:text-3xl")}>
-              Pronto para organizar sua pós?
+          <div className="mx-auto max-w-4xl text-center">
+            <h2 className={cn(displayClassName, "text-balance text-3xl font-extrabold tracking-tight sm:text-4xl")}>
+              Planos para o seu ritmo de entrega
             </h2>
-            <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-white/75 sm:text-base">
-              Crie sua conta em segundos com o Google e monte seu primeiro board.
+            <p className="mx-auto mt-5 max-w-[70ch] text-pretty text-base leading-relaxed text-ds-muted sm:text-lg">
+              O Free resolve o essencial. O Pro desbloqueia equipe, e-mail automático e remove limites.
             </p>
-            <Link
-              href="/login"
-              className="mt-8 inline-flex items-center gap-2 rounded-ds-2xl bg-ds-accent px-7 py-3.5 text-sm font-semibold text-white transition duration-ds ease-out hover:brightness-110"
-            >
-              Acessar o app
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+
+            <div className="mt-8 flex justify-center">
+              <div className="inline-flex items-center gap-1 rounded-full border border-ds-border bg-white/70 p-1 shadow-ds-sm">
+                <span className="rounded-full bg-ds-ink px-4 py-2 text-xs font-semibold text-white">
+                  Mensal
+                </span>
+                <span className="rounded-full px-4 py-2 text-xs font-semibold text-ds-muted">
+                  Anual <span className="ml-1 rounded-full bg-ds-cream px-2 py-0.5 text-[10px]">Em breve</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-12 mx-auto grid max-w-6xl justify-items-stretch gap-6 md:justify-items-center lg:grid-cols-3 lg:gap-6">
+            <div className="flex w-full max-w-[420px] flex-col rounded-[28px] border border-ds-border bg-ds-surface p-7 shadow-ds-card min-h-[640px]">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-ds-subtle">Free</p>
+                <p className="mt-1 text-sm text-ds-muted">Para começar sem compromisso</p>
+              </div>
+
+              <div className="mt-6 flex items-end gap-2">
+                <span className="text-5xl font-black tracking-tight text-ds-ink">R$ 0</span>
+                <span className="pb-2 text-sm font-medium text-ds-subtle">/ mês</span>
+              </div>
+
+              <Link
+                href="/login"
+                className="mt-7 inline-flex w-full items-center justify-center rounded-ds-2xl border-[1.5px] border-ds-border bg-ds-surface px-6 py-3 text-sm font-semibold text-ds-ink transition duration-ds ease-out hover:border-stone-300"
+              >
+                Começar
+              </Link>
+
+              <div className="mt-7 border-t border-ds-border pt-6">
+                <p className="text-xs font-semibold uppercase tracking-wide text-ds-subtle">Inclui</p>
+                <ul className="mt-4 space-y-3 text-sm text-ds-muted">
+                  {[
+                    `Até ${FREE_MAX_ACTIVE_JOBS} jobs ativos no quadro`,
+                    `Até ${FREE_MAX_CONTACTS} contatos`,
+                    "Kanban com até 4 etapas (Backup → Em Edição → Em Aprovação → Entregue)",
+                    "1 usuário por conta",
+                  ].map((item) => (
+                    <li key={item} className="flex gap-3">
+                      <span
+                        className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-ds-border bg-ds-cream text-ds-ink"
+                        aria-hidden
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                      </span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className="relative flex w-full max-w-[420px] flex-col overflow-hidden rounded-[28px] border border-ds-border bg-ds-ink p-7 text-ds-on-dark shadow-ds-card min-h-[640px]">
+              <div className="pointer-events-none absolute -right-28 -top-28 h-60 w-60 rounded-full bg-ds-accent/40 blur-3xl" />
+              <div className="pointer-events-none absolute -bottom-24 -left-24 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
+
+              <div className="relative flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-white/75">Pro</p>
+                  <p className="mt-1 text-sm text-white/70">Para estúdios em crescimento</p>
+                </div>
+                <span className="rounded-full bg-ds-accent px-3 py-1 text-[0.75rem] font-semibold text-white">
+                  Recomendado
+                </span>
+              </div>
+
+              <div className="relative mt-6 flex items-end gap-2">
+                <span className="text-5xl font-black tracking-tight text-white">
+                  {formatBrl(proMonthly)}
+                </span>
+                <span className="pb-2 text-sm font-medium text-white/70">/ mês</span>
+              </div>
+
+              <Link
+                href="/login"
+                className="relative mt-7 inline-flex w-full items-center justify-center gap-2 rounded-ds-2xl bg-ds-accent px-6 py-3 text-sm font-semibold text-white transition duration-ds ease-out hover:brightness-110"
+              >
+                Assinar o Pro
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+
+              <p className="relative mt-3 text-center text-xs text-white/60">
+                Aceita cartão de crédito e Pix automático.
+              </p>
+
+              <div className="relative mt-7 border-t border-white/10 pt-6">
+                <p className="text-xs font-semibold uppercase tracking-wide text-white/60">Tudo do Free, mais</p>
+                <ul className="mt-4 space-y-3 text-sm text-white/75">
+                  {[
+                    "Jobs e contatos ilimitados",
+                    "Etapas ilimitadas no kanban (reordenar, renomear e definir etapa final)",
+                    "Equipe: convites por e-mail (multi-usuário)",
+                    "E-mail automático ao enviar material para o cliente",
+                    "Modelos de e-mail de entrega personalizáveis",
+                  ].map((item) => (
+                    <li key={item} className="flex gap-3">
+                      <span
+                        className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white"
+                        aria-hidden
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                      </span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className="flex w-full max-w-[420px] flex-col justify-between rounded-[28px] border-2 border-dashed border-ds-border/90 bg-gradient-to-b from-ds-surface to-ds-cream/50 p-7 shadow-ds-sm lg:max-w-none">
+              <div>
+                <p className="text-sm font-semibold text-ds-subtle">Pro Anual</p>
+                <p className="mt-1 text-sm text-ds-muted">
+                  Referência de valor (Good / Better / Best) — estimativa para quando o ciclo anual estiver
+                  disponível.
+                </p>
+                <span className="mt-3 inline-flex rounded-full bg-ds-cream px-3 py-1 text-[0.7rem] font-semibold text-ds-muted">
+                  Em breve
+                </span>
+              </div>
+              <div className="mt-8 space-y-2 border-t border-ds-border pt-6">
+                <p className="text-xs font-semibold uppercase tracking-wide text-ds-subtle">Comparável</p>
+                <p className="text-sm text-ds-muted line-through decoration-ds-subtle/80">
+                  12 × {formatBrl(proMonthly)} no mensal integrado
+                </p>
+                <p className="text-2xl font-black tracking-tight text-ds-ink">
+                  ~{formatBrl(proMonthly * 10)}{" "}
+                  <span className="text-sm font-semibold text-ds-muted">/ ano (referência ~10 meses)</span>
+                </p>
+                <p className="text-xs leading-relaxed text-ds-subtle">
+                  O Pro mensal ao lado continua sendo a opção flexível de hoje; este card só ancora o benefício
+                  futuro do anual, sem obrigar você a escolher mais de uma ação agora.
+                </p>
+              </div>
+              <div className="mt-6 rounded-ds-2xl border border-ds-border bg-white/80 px-4 py-3 text-center text-sm font-semibold text-ds-muted">
+                Lista de espera em breve
+              </div>
+            </div>
           </div>
         </section>
 

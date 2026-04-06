@@ -12,12 +12,16 @@ import {
   Search,
   Sparkles,
   Trash2,
+  UsersRound,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { differenceInCalendarDays, parseISO } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
 
+import { ActivationChecklist } from "@/components/app/activation-checklist";
 import { ContactSearchField } from "@/components/app/contact-search-field";
+import { KanbanMiniPreview } from "@/components/app/kanban-mini-preview";
 import { useOnboardingTour } from "@/components/app/onboarding-tour";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +36,7 @@ import type { DashboardMetrics } from "@/lib/dashboard-metrics";
 import { deadlineBadge, formatDeadlinePt } from "@/lib/job-display";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import type { Database } from "@/types/database";
+import type { Database, Plan } from "@/types/database";
 import { createJob, deleteJob, updateJob } from "../jobs/actions";
 
 type JobRow = Database["public"]["Tables"]["jobs"]["Row"];
@@ -70,6 +74,9 @@ interface DashboardViewProps {
   stages: Pick<Database["public"]["Tables"]["kanban_stages"]["Row"], "id" | "name" | "position">[];
   workTypes: WorkTypeRow[];
   metrics: DashboardMetrics;
+  agendaConnected: boolean;
+  tourCompleted: boolean;
+  plan: Plan;
 }
 
 type DateBase = "deadline" | "internal_deadline";
@@ -171,9 +178,18 @@ export function DashboardView({
   stages,
   workTypes,
   metrics,
+  agendaConnected,
+  tourCompleted,
+  plan,
 }: DashboardViewProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const onboardingTour = useOnboardingTour();
+
+  const attentionParam = searchParams.get("attention");
+  const attentionFilter =
+    attentionParam === "overdue" || attentionParam === "dueSoon" ? attentionParam : null;
 
   const [query, setQuery] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
@@ -280,8 +296,21 @@ export function DashboardView({
         if (toMs && dt > toMs) return false;
         return true;
       })
+      .filter((j) => {
+        if (!attentionFilter) return true;
+        if (j.kanban_stages?.is_final) return false;
+        const prox = deadlineProximity(j.deadline);
+        if (attentionFilter === "overdue") return prox.tone === "danger";
+        if (attentionFilter === "dueSoon") return prox.tone === "warn";
+        return true;
+      })
       .sort((a, b) => a.deadline.localeCompare(b.deadline));
-  }, [dateBase, dateFrom, dateTo, jobs, query, tab]);
+  }, [attentionFilter, dateBase, dateFrom, dateTo, jobs, query, tab]);
+
+  const jobsForChecklist = useMemo(
+    () => jobs.filter((j) => j.job_kind !== "video_edit"),
+    [jobs],
+  );
 
   const totalItems = filteredJobs.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
@@ -297,7 +326,16 @@ export function DashboardView({
 
   useEffect(() => {
     setPage(1);
-  }, [query, tab, dateBase, dateFrom, dateTo, pageSize]);
+  }, [query, tab, dateBase, dateFrom, dateTo, pageSize, attentionFilter]);
+
+  useEffect(() => {
+    if (pathname !== "/dashboard") return;
+    if (typeof window === "undefined") return;
+    if (window.location.hash !== "#btn-novo-job") return;
+    window.requestAnimationFrame(() => {
+      document.getElementById("btn-novo-job")?.scrollIntoView({ block: "center", behavior: "smooth" });
+    });
+  }, [pathname]);
 
   function refresh() {
     router.refresh();
@@ -363,13 +401,14 @@ export function DashboardView({
   }
 
   const noStages = stageOptions.length === 0;
+  const needsAttention = metrics.overdue > 0 || metrics.dueSoon > 0;
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-ds-ink">Dashboard</h1>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-          {onboardingTour ? (
+          {!tourCompleted && onboardingTour ? (
             <Button
               type="button"
               variant="secondary"
@@ -398,72 +437,197 @@ export function DashboardView({
         </div>
       </div>
 
+      <ActivationChecklist
+        contactsCount={contacts.length}
+        jobsCount={jobsForChecklist.length}
+        stagesSorted={stages.map((s) => ({ id: s.id, position: s.position }))}
+        jobs={jobs.map((j) => ({ stage_id: j.stage_id, job_kind: j.job_kind }))}
+        agendaConnected={agendaConnected}
+        tourCompleted={tourCompleted}
+      />
+
+      {plan === "pro" && members.length === 1 ? (
+        <Card className="border border-ds-accent/25 bg-ds-cream/40 p-4 shadow-sm">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-ds-xl bg-white/80 text-ds-accent shadow-sm">
+                <UsersRound className="h-5 w-5" aria-hidden />
+              </div>
+              <div className="min-w-0">
+                <p className="font-semibold text-ds-ink">Trabalhe em equipe no Pro</p>
+                <p className="mt-1 text-sm text-ds-muted">
+                  Convide editores ou produção — menos gargalo, mais entregas no prazo.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/settings/team"
+              className="inline-flex h-10 shrink-0 items-center justify-center rounded-ds-xl border border-app-border bg-app-sidebar px-4 text-sm font-medium text-ds-ink shadow-sm transition-colors hover:bg-ds-cream"
+            >
+              Convidar agora
+            </Link>
+          </div>
+        </Card>
+      ) : null}
+
       {noStages ? (
         <p className="text-sm text-amber-800" role="status">
           Não há etapas no kanban. Configure o quadro antes de criar jobs.
         </p>
       ) : null}
 
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5" aria-label="Métricas do estúdio">
-        <Card className="p-4 shadow-sm">
-          <div className="flex items-start gap-3">
-            <div className="rounded-ds-xl bg-ds-cream/90 p-2 text-ds-accent">
-              <ClipboardList className="h-5 w-5 shrink-0" aria-hidden />
-            </div>
-            <div className="min-w-0">
-              <p className="text-2xl font-bold tabular-nums text-ds-ink">{metrics.activeJobs}</p>
-              <p className="text-xs leading-snug text-ds-muted">Jobs ativos</p>
-            </div>
+      {metrics.activeJobs > 0 ? (
+        <p className="text-sm text-ds-muted">
+          <span className="font-medium text-ds-ink">Neste mês:</span>{" "}
+          {metrics.deliveredThisMonth} entrega(s) registrada(s) e {metrics.toEditThisMonth} job(s) com
+          edição prevista — ajuste no quadro para não perder o ritmo.
+        </p>
+      ) : null}
+
+      {needsAttention ? (
+        <div
+          className="rounded-ds-xl border border-amber-200/80 bg-amber-50/90 px-4 py-4 sm:px-5"
+          role="status"
+        >
+          <p className="text-sm font-semibold text-amber-950">
+            {metrics.overdue > 0 && metrics.dueSoon > 0
+              ? `${metrics.overdue} atrasado(s) e ${metrics.dueSoon} com prazo em até 3 dias.`
+              : metrics.overdue > 0
+                ? `${metrics.overdue} job(s) atrasado(s) — vale priorizar hoje.`
+                : `${metrics.dueSoon} job(s) com prazo apertado nos próximos dias.`}
+          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            {metrics.overdue > 0 ? (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="border-amber-200 bg-white"
+                onClick={() => router.push("/dashboard?attention=overdue")}
+              >
+                Ver atrasados
+              </Button>
+            ) : null}
+            {metrics.dueSoon > 0 ? (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="border-amber-200 bg-white"
+                onClick={() => router.push("/dashboard?attention=dueSoon")}
+              >
+                Ver prazo em até 3 dias
+              </Button>
+            ) : null}
+            <Link
+              href="/board"
+              className="inline-flex h-8 items-center gap-1 rounded-ds-xl px-3 text-sm font-medium text-amber-950 underline-offset-4 hover:underline"
+            >
+              Abrir quadro
+              <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+            </Link>
+            {attentionFilter ? (
+              <Button type="button" variant="ghost" size="sm" onClick={() => router.push("/dashboard")}>
+                Limpar filtro
+              </Button>
+            ) : null}
           </div>
-        </Card>
-        <Card className="p-4 shadow-sm">
-          <div className="flex items-start gap-3">
-            <div className="rounded-ds-xl bg-red-50 p-2 text-red-700">
-              <AlertCircle className="h-5 w-5 shrink-0" aria-hidden />
+        </div>
+      ) : null}
+
+      <section aria-label="Métricas do estúdio">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <Card className="p-4 shadow-sm">
+            <div className="flex items-start gap-3">
+              <div className="rounded-ds-xl bg-ds-cream/90 p-2 text-ds-accent">
+                <ClipboardList className="h-5 w-5 shrink-0" aria-hidden />
+              </div>
+              <div className="min-w-0">
+                <p className="text-2xl font-bold tabular-nums text-ds-ink">{metrics.activeJobs}</p>
+                <p className="text-xs leading-snug text-ds-muted">Jobs ativos</p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-2xl font-bold tabular-nums text-ds-ink">{metrics.overdue}</p>
-              <p className="text-xs leading-snug text-ds-muted">Atrasados</p>
+          </Card>
+          <Card className="p-4 shadow-sm">
+            <div className="flex items-start gap-3">
+              <div className="rounded-ds-xl bg-red-50 p-2 text-red-700">
+                <AlertCircle className="h-5 w-5 shrink-0" aria-hidden />
+              </div>
+              <div className="min-w-0">
+                <p className="text-2xl font-bold tabular-nums text-ds-ink">{metrics.overdue}</p>
+                <p className="text-xs leading-snug text-ds-muted">Atrasados</p>
+              </div>
             </div>
+          </Card>
+          <Card className="p-4 shadow-sm">
+            <div className="flex items-start gap-3">
+              <div className="rounded-ds-xl bg-amber-50 p-2 text-amber-800">
+                <CalendarClock className="h-5 w-5 shrink-0" aria-hidden />
+              </div>
+              <div className="min-w-0">
+                <p className="text-2xl font-bold tabular-nums text-ds-ink">{metrics.dueSoon}</p>
+                <p className="text-xs leading-snug text-ds-muted">Prazo em até 3 dias</p>
+              </div>
+            </div>
+          </Card>
+          <Card className="hidden p-4 shadow-sm lg:block">
+            <div className="flex items-start gap-3">
+              <div className="rounded-ds-xl bg-emerald-50 p-2 text-emerald-800">
+                <PackageCheck className="h-5 w-5 shrink-0" aria-hidden />
+              </div>
+              <div className="min-w-0">
+                <p className="text-2xl font-bold tabular-nums text-ds-ink">
+                  {metrics.deliveredThisMonth}
+                </p>
+                <p className="text-xs leading-snug text-ds-muted">Entregues no mês</p>
+              </div>
+            </div>
+          </Card>
+          <Card className="hidden p-4 shadow-sm lg:block">
+            <div className="flex items-start gap-3">
+              <div className="rounded-ds-xl bg-sky-50 p-2 text-sky-800">
+                <CalendarDays className="h-5 w-5 shrink-0" aria-hidden />
+              </div>
+              <div className="min-w-0">
+                <p className="text-2xl font-bold tabular-nums text-ds-ink">
+                  {metrics.toEditThisMonth}
+                </p>
+                <p className="text-xs leading-snug text-ds-muted">A editar neste mês</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+        <details className="mt-3 rounded-ds-xl border border-app-border bg-app-sidebar/60 px-3 py-2 lg:hidden">
+          <summary className="cursor-pointer text-sm font-medium text-ds-ink">Mais indicadores</summary>
+          <div className="mt-3 grid grid-cols-2 gap-3 pb-2">
+            <Card className="p-4 shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="rounded-ds-xl bg-emerald-50 p-2 text-emerald-800">
+                  <PackageCheck className="h-5 w-5 shrink-0" aria-hidden />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xl font-bold tabular-nums text-ds-ink">
+                    {metrics.deliveredThisMonth}
+                  </p>
+                  <p className="text-xs leading-snug text-ds-muted">Entregues no mês</p>
+                </div>
+              </div>
+            </Card>
+            <Card className="p-4 shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="rounded-ds-xl bg-sky-50 p-2 text-sky-800">
+                  <CalendarDays className="h-5 w-5 shrink-0" aria-hidden />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xl font-bold tabular-nums text-ds-ink">
+                    {metrics.toEditThisMonth}
+                  </p>
+                  <p className="text-xs leading-snug text-ds-muted">A editar neste mês</p>
+                </div>
+              </div>
+            </Card>
           </div>
-        </Card>
-        <Card className="p-4 shadow-sm">
-          <div className="flex items-start gap-3">
-            <div className="rounded-ds-xl bg-amber-50 p-2 text-amber-800">
-              <CalendarClock className="h-5 w-5 shrink-0" aria-hidden />
-            </div>
-            <div className="min-w-0">
-              <p className="text-2xl font-bold tabular-nums text-ds-ink">{metrics.dueSoon}</p>
-              <p className="text-xs leading-snug text-ds-muted">Prazo em até 3 dias</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-4 shadow-sm">
-          <div className="flex items-start gap-3">
-            <div className="rounded-ds-xl bg-emerald-50 p-2 text-emerald-800">
-              <PackageCheck className="h-5 w-5 shrink-0" aria-hidden />
-            </div>
-            <div className="min-w-0">
-              <p className="text-2xl font-bold tabular-nums text-ds-ink">
-                {metrics.deliveredThisMonth}
-              </p>
-              <p className="text-xs leading-snug text-ds-muted">Entregues no mês</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-4 shadow-sm">
-          <div className="flex items-start gap-3">
-            <div className="rounded-ds-xl bg-sky-50 p-2 text-sky-800">
-              <CalendarDays className="h-5 w-5 shrink-0" aria-hidden />
-            </div>
-            <div className="min-w-0">
-              <p className="text-2xl font-bold tabular-nums text-ds-ink">
-                {metrics.toEditThisMonth}
-              </p>
-              <p className="text-xs leading-snug text-ds-muted">A editar neste mês</p>
-            </div>
-          </div>
-        </Card>
+        </details>
       </section>
 
       {errorMessage ? (
@@ -476,22 +640,26 @@ export function DashboardView({
       ) : null}
 
       {jobs.length === 0 ? (
-        <EmptyState
-          title="Nenhum job ainda"
-          description="Cadastre trabalhos de edição com prazo, tipo e observações."
-        >
-          <Button
-            type="button"
-            disabled={noStages}
-            onClick={() => {
-              setErrorMessage(null);
-              setCreateOpen(true);
-            }}
+        <div className="flex flex-col items-center gap-8">
+          <KanbanMiniPreview />
+          <EmptyState
+            title="Nenhum job ainda"
+            description="Em poucos cliques você vê o quadro como na prévia acima: prazos claros e etapas alinhadas."
+            className="w-full max-w-lg"
           >
-            <Plus className="h-4 w-4" aria-hidden />
-            Novo job
-          </Button>
-        </EmptyState>
+            <Button
+              type="button"
+              disabled={noStages}
+              onClick={() => {
+                setErrorMessage(null);
+                setCreateOpen(true);
+              }}
+            >
+              <Plus className="h-4 w-4" aria-hidden />
+              Criar primeiro job
+            </Button>
+          </EmptyState>
+        </div>
       ) : !noStages ? (
         <section className="flex flex-col gap-4" aria-labelledby="dashboard-jobs-heading">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
@@ -603,13 +771,24 @@ export function DashboardView({
               </div>
 
               {totalItems === 0 ? (
-                <p className="text-sm text-ds-muted">
-                  {query.trim()
-                    ? `Nenhum job encontrado para “${query.trim()}”.`
-                    : tab === "done"
-                      ? "Nenhuma edição concluída ainda."
-                      : "Nenhum job ativo na fila — todos podem estar na etapa final."}
-                </p>
+                <div className="space-y-3">
+                  <p className="text-sm text-ds-muted">
+                    {query.trim()
+                      ? `Nenhum job encontrado para “${query.trim()}”.`
+                      : attentionFilter === "overdue"
+                        ? "Nenhum job atrasado na lista atual."
+                        : attentionFilter === "dueSoon"
+                          ? "Nenhum job ativo com prazo nos próximos 3 dias."
+                          : tab === "done"
+                            ? "Nenhuma edição concluída ainda."
+                            : "Nenhum job ativo na fila — todos podem estar na etapa final."}
+                  </p>
+                  {attentionFilter ? (
+                    <Button type="button" variant="secondary" size="sm" onClick={() => router.push("/dashboard")}>
+                      Limpar filtro de atenção
+                    </Button>
+                  ) : null}
+                </div>
               ) : (
                 <>
                   <div className="hidden overflow-hidden rounded-ds-xl border border-app-border lg:block">

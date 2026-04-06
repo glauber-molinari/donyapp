@@ -7,7 +7,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useRef,
   type MutableRefObject,
@@ -188,12 +187,11 @@ export interface OnboardingTourProviderProps {
 }
 
 export function OnboardingTourProvider({ tourCompleted, children }: OnboardingTourProviderProps) {
+  void tourCompleted;
   const router = useRouter();
   const routerRef = useRef(router);
   routerRef.current = router;
   const driverRef = useRef<ReturnType<typeof driver> | null>(null);
-  const autoTimerRef = useRef<number | null>(null);
-
   const mountDriver = useCallback((persistCompletion: boolean) => {
     driverRef.current?.destroy();
     const steps = buildSteps(routerRef.current);
@@ -203,42 +201,10 @@ export function OnboardingTourProvider({ tourCompleted, children }: OnboardingTo
   }, []);
 
   const startTour = useCallback(() => {
-    if (autoTimerRef.current != null) {
-      clearTimeout(autoTimerRef.current);
-      autoTimerRef.current = null;
-    }
-    mountDriver(false);
+    mountDriver(true);
   }, [mountDriver]);
 
   const contextValue = useMemo(() => ({ startTour }), [startTour]);
-
-  useEffect(() => {
-    if (tourCompleted) {
-      if (autoTimerRef.current != null) {
-        clearTimeout(autoTimerRef.current);
-        autoTimerRef.current = null;
-      }
-      return;
-    }
-
-    let cancelled = false;
-
-    autoTimerRef.current = window.setTimeout(() => {
-      autoTimerRef.current = null;
-      if (cancelled) return;
-      mountDriver(true);
-    }, 600);
-
-    return () => {
-      cancelled = true;
-      if (autoTimerRef.current != null) {
-        clearTimeout(autoTimerRef.current);
-        autoTimerRef.current = null;
-      }
-      driverRef.current?.destroy();
-      driverRef.current = null;
-    };
-  }, [tourCompleted, mountDriver]);
 
   return (
     <OnboardingTourContext.Provider value={contextValue}>{children}</OnboardingTourContext.Provider>

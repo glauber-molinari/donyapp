@@ -1,6 +1,16 @@
 "use client";
 
-import { Calendar, LaptopMinimal, LayoutDashboard, Menu, Settings, Users, X } from "lucide-react";
+import {
+  Calendar,
+  HelpCircle,
+  LaptopMinimal,
+  LayoutDashboard,
+  Menu,
+  MessageCircle,
+  Settings,
+  Users,
+  X,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -9,6 +19,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { OnboardingTourProvider } from "@/components/app/onboarding-tour";
 import { AppToaster } from "@/components/ui/app-toaster";
 import { Avatar } from "@/components/ui/avatar";
+import { getSupportEmail, supportMailtoLink, supportWhatsAppLink } from "@/lib/support";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -49,6 +60,13 @@ export interface AppShellProps {
 export function AppShell({ children, userName, userEmail, avatarUrl, tourCompleted }: AppShellProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const supportEmail = getSupportEmail();
+  const helpBody = `Olá, equipe Donyapp.\n\nEstou na tela: ${pathname}\nPreciso de ajuda com: `;
+  const helpMail = supportMailtoLink({
+    subject: "Ajuda — Donyapp",
+    body: helpBody,
+  });
+  const helpWhats = supportWhatsAppLink(helpBody);
 
   useEffect(() => {
     setMobileOpen(false);
@@ -123,6 +141,32 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
             </Link>
           ))}
         </nav>
+
+        <div className="border-t border-app-border px-3 pb-2 pt-1">
+          <p className="px-3 pb-1 text-[0.65rem] font-semibold uppercase tracking-wide text-ds-subtle">
+            Ajuda
+          </p>
+          <div className="flex flex-col gap-0.5">
+            <a
+              href={helpMail}
+              className="flex items-center gap-3 rounded-ds-xl px-3 py-2.5 text-sm font-medium text-ds-muted transition-colors duration-ds ease-out hover:bg-ds-cream/80 hover:text-ds-ink"
+            >
+              <HelpCircle className="h-5 w-5 shrink-0 opacity-80" aria-hidden />
+              E-mail ({supportEmail})
+            </a>
+            {helpWhats ? (
+              <a
+                href={helpWhats}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 rounded-ds-xl px-3 py-2.5 text-sm font-medium text-ds-muted transition-colors duration-ds ease-out hover:bg-ds-cream/80 hover:text-ds-ink"
+              >
+                <MessageCircle className="h-5 w-5 shrink-0 opacity-80" aria-hidden />
+                WhatsApp
+              </a>
+            ) : null}
+          </div>
+        </div>
 
         <div className="border-t border-app-border p-3">
           <div className="mb-3 flex items-center gap-3 rounded-ds-xl px-2 py-2">
