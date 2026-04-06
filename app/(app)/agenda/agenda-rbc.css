@@ -1,73 +1,118 @@
-/* react-big-calendar — alinhado ao design system Donyapp */
+/* react-big-calendar — visual próximo a agendas tipo dashboard; cores vêm do eventPropGetter (Google). */
 .agenda-rbc .rbc-calendar {
   font-family: var(--font-inter), system-ui, sans-serif;
   color: #0c0a09;
 }
 
-.agenda-rbc .rbc-toolbar {
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.agenda-rbc .rbc-toolbar button {
-  border-radius: 0.75rem;
-  border: 1px solid #e8e4df;
-  background: #ffffff;
-  color: #57534e;
-  font-size: 0.875rem;
-  font-weight: 500;
-  padding: 0.35rem 0.75rem;
-  transition: background 150ms ease-out, color 150ms ease-out;
-}
-
-.agenda-rbc .rbc-toolbar button:hover {
-  background: #f5f2ef;
-  color: #0c0a09;
-}
-
-.agenda-rbc .rbc-toolbar button.rbc-active {
-  background: #f5f2ef;
-  color: #0c0a09;
+.agenda-rbc .rbc-header {
+  padding: 0.5rem 0.25rem;
+  font-size: 0.75rem;
   font-weight: 600;
+  text-transform: capitalize;
+  color: #57534e;
+  border-color: #e8e4df;
 }
 
-.agenda-rbc .rbc-header,
-.agenda-rbc .rbc-time-header-content,
-.agenda-rbc .rbc-day-bg,
-.agenda-rbc .rbc-time-content,
 .agenda-rbc .rbc-month-view,
-.agenda-rbc .rbc-agenda-view,
-.agenda-rbc .rbc-time-view {
+.agenda-rbc .rbc-time-view,
+.agenda-rbc .rbc-time-content,
+.agenda-rbc .rbc-day-bg,
+.agenda-rbc .rbc-time-header-content {
   border-color: #e8e4df;
 }
 
 .agenda-rbc .rbc-off-range-bg {
-  background: #f5f2ef;
+  background: #faf8f6;
+}
+
+.agenda-rbc .rbc-off-range .rbc-button-link {
+  color: #a8a29e;
 }
 
 .agenda-rbc .rbc-today {
-  background: rgba(255, 85, 0, 0.06);
+  background: rgba(255, 85, 0, 0.07);
+}
+
+.agenda-rbc .rbc-date-cell {
+  text-align: right;
+  padding: 0.35rem 0.4rem 0;
+}
+
+.agenda-rbc .rbc-date-cell .rbc-button-link {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #44403c;
+  min-width: 1.65rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  padding: 0.15rem 0.35rem;
+}
+
+.agenda-rbc .rbc-now .rbc-button-link {
+  background: rgba(255, 85, 0, 0.18);
+  color: #0c0a09;
 }
 
 .agenda-rbc .rbc-event {
-  border-radius: 0.35rem;
-  background: #ff5500;
-  border: none;
-  font-size: 0.75rem;
+  padding: 2px 5px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  box-shadow: none;
+  min-height: 1.35rem;
 }
 
 .agenda-rbc .rbc-event:focus {
-  outline: 2px solid rgba(255, 85, 0, 0.35);
+  outline: 2px solid rgba(12, 10, 9, 0.2);
   outline-offset: 1px;
+}
+
+.agenda-rbc .rbc-event.rbc-selected {
+  box-shadow: 0 0 0 1px rgba(12, 10, 9, 0.15);
+}
+
+.agenda-rbc .rbc-row-segment .rbc-event {
+  border-radius: 3px;
 }
 
 .agenda-rbc .rbc-show-more {
   color: #ff5500;
   font-weight: 600;
+  font-size: 0.7rem;
+  background: transparent;
+}
+
+.agenda-rbc .rbc-time-slot {
+  border-color: #f0ebe6;
+}
+
+.agenda-rbc .rbc-timeslot-group {
+  border-color: #e8e4df;
+}
+
+.agenda-rbc .rbc-time-header-gutter,
+.agenda-rbc .rbc-time-gutter {
+  font-size: 0.7rem;
+  color: #78716c;
+}
+
+.agenda-rbc .rbc-day-slot .rbc-time-slot {
+  border-top: 1px solid #f5f2ef;
+}
+
+.agenda-rbc .rbc-agenda-view {
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid #e8e4df;
 }
 
 .agenda-rbc .rbc-agenda-table {
-  border-radius: 0.75rem;
-  overflow: hidden;
+  border: none;
+}
+
+.agenda-rbc .rbc-agenda-date-cell,
+.agenda-rbc .rbc-agenda-time-cell {
+  font-size: 0.8rem;
+  color: #57534e;
 }

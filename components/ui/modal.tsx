@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 import { Button } from "./button";
 
-export type ModalSize = "sm" | "md" | "lg";
+export type ModalSize = "sm" | "md" | "lg" | "xl";
 
 export interface ModalProps {
   open: boolean;
@@ -22,6 +22,7 @@ const widthClass: Record<ModalSize, string> = {
   sm: "max-w-sm",
   md: "max-w-md",
   lg: "max-w-lg",
+  xl: "max-w-xl",
 };
 
 export function Modal({

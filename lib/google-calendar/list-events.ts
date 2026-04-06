@@ -11,6 +11,11 @@ export type NormalizedCalendarEvent = {
   allDay: boolean;
   description?: string;
   htmlLink?: string;
+  location?: string;
+  /** Cor de fundo como no Google Calendar (hex). */
+  backgroundColor: string;
+  /** Cor do texto sugerida pelo Google (hex). */
+  textColor: string;
 };
 
 function eventBounds(e: {
@@ -23,6 +28,9 @@ function eventBounds(e: {
   const allDay = Boolean(e.start?.date && !e.start?.dateTime);
   return { start: s, end: en, allDay };
 }
+
+const FALLBACK_BG = "#039be5";
+const FALLBACK_FG = "#ffffff";
 
 export async function listCalendarEventsForAccount(
   accountId: string,
@@ -41,16 +49,26 @@ export async function listCalendarEventsForAccount(
 
   oauth2.setCredentials({ access_token: tokenRes.accessToken });
   const cal = google.calendar({ version: "v3", auth: oauth2 });
+  const calendarId = tokenRes.row.calendar_id || "primary";
 
   try {
-    const res = await cal.events.list({
-      calendarId: tokenRes.row.calendar_id || "primary",
-      timeMin: timeMin.toISOString(),
-      timeMax: timeMax.toISOString(),
-      singleEvents: true,
-      orderBy: "startTime",
-      maxResults: 2500,
-    });
+    const [colorsRes, calListRes, res] = await Promise.all([
+      cal.colors.get().catch(() => ({ data: undefined })),
+      cal.calendarList.get({ calendarId }).catch(() => ({ data: undefined })),
+      cal.events.list({
+        calendarId,
+        timeMin: timeMin.toISOString(),
+        timeMax: timeMax.toISOString(),
+        singleEvents: true,
+        orderBy: "startTime",
+        maxResults: 2500,
+      }),
+    ]);
+
+    const eventPalette = colorsRes.data?.event ?? {};
+    const listEntry = calListRes.data;
+    const defaultBg = listEntry?.backgroundColor ?? FALLBACK_BG;
+    const defaultFg = listEntry?.foregroundColor ?? FALLBACK_FG;
 
     const items = res.data.items ?? [];
     const events: NormalizedCalendarEvent[] = [];
@@ -59,6 +77,15 @@ export async function listCalendarEventsForAccount(
       if (!ev.id) continue;
       const b = eventBounds(ev);
       if (!b) continue;
+
+      let backgroundColor = defaultBg;
+      let textColor = defaultFg;
+      if (ev.colorId && eventPalette[ev.colorId]) {
+        const c = eventPalette[ev.colorId];
+        if (c?.background) backgroundColor = c.background;
+        if (c?.foreground) textColor = c.foreground;
+      }
+
       events.push({
         id: ev.id,
         title: ev.summary ?? "(Sem título)",
@@ -67,6 +94,9 @@ export async function listCalendarEventsForAccount(
         allDay: b.allDay,
         description: ev.description ?? undefined,
         htmlLink: ev.htmlLink ?? undefined,
+        location: ev.location ?? undefined,
+        backgroundColor,
+        textColor,
       });
     }
 

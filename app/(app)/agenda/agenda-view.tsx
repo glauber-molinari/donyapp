@@ -4,7 +4,6 @@ import { CalendarDays } from "lucide-react";
 import Link from "next/link";
 
 import { AgendaCalendar } from "./agenda-calendar";
-import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 
 export function AgendaView({
@@ -40,43 +39,25 @@ export function AgendaView({
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+    <div className="flex flex-col gap-5">
+      <header className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-ds-ink">Agenda</h1>
-          <p className="mt-1 text-sm text-ds-muted">
+          <p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-ds-muted">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-emerald-900 ring-1 ring-emerald-200/80">
+              <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" aria-hidden />
+              <span className="font-medium">Google Calendar conectado</span>
+            </span>
             {googleEmail ? (
-              <>
-                Sincronizado com <span className="font-medium text-ds-ink">{googleEmail}</span> (calendário
-                principal).
-              </>
-            ) : (
-              "Eventos do Google Calendar conectado ao estúdio."
-            )}
+              <span className="text-ds-subtle">
+                · <span className="text-ds-ink">{googleEmail}</span>
+              </span>
+            ) : null}
           </p>
         </div>
-      </div>
+      </header>
 
-      <Card className="border-app-border bg-ds-cream/40 px-4 py-2.5 shadow-none">
-        <p className="text-xs text-ds-muted">
-          {isAdmin ? (
-            <>
-              Para trocar ou desconectar a conta Google, use{" "}
-              <Link
-                href="/settings/agenda"
-                className="font-medium text-app-primary underline-offset-2 hover:underline"
-              >
-                Configurações → Agenda
-              </Link>
-              .
-            </>
-          ) : (
-            "Somente administradores podem alterar qual conta Google está conectada."
-          )}
-        </p>
-      </Card>
-
-      <AgendaCalendar />
+      <AgendaCalendar isAdmin={isAdmin} />
     </div>
   );
 }

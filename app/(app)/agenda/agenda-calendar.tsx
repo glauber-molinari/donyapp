@@ -4,14 +4,18 @@ import { addDays, addMonths, startOfMonth } from "date-fns";
 import { format, getDay, parse, parseISO, startOfWeek } from "date-fns";
 import { ptBR } from "date-fns/locale/pt-BR";
 import { Loader2 } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Calendar,
   dateFnsLocalizer,
   type Event as RbcEvent,
+  type View,
 } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 
+import { AgendaEventModal, type AgendaEventDetail } from "./agenda-event-modal";
+import { AgendaToolbar } from "./agenda-toolbar";
 import "./agenda-rbc.css";
 
 import { Card } from "@/components/ui/card";
@@ -22,7 +26,7 @@ const locales = { "pt-BR": ptBR };
 const localizer = dateFnsLocalizer({
   format,
   parse: (value: string, formatString: string) => parse(value, formatString, new Date()),
-  startOfWeek: (date: Date) => startOfWeek(date, { locale: ptBR }),
+  startOfWeek: (date: Date) => startOfWeek(date, { locale: ptBR, weekStartsOn: 0 }),
   getDay,
   locales,
 });
@@ -34,22 +38,13 @@ const MESSAGES = {
   month: "Mês",
   week: "Semana",
   day: "Dia",
-  agenda: "Agenda",
   date: "Data",
   time: "Hora",
   event: "Evento",
   showMore: (n: number) => `+${n} mais`,
 };
 
-type ApiEvent = {
-  id: string;
-  title: string;
-  start: string;
-  end: string;
-  allDay: boolean;
-  description?: string;
-  htmlLink?: string;
-};
+type ApiEvent = AgendaEventDetail;
 
 function toRbcEvent(e: ApiEvent): RbcEvent {
   if (e.allDay) {
@@ -88,11 +83,13 @@ function initialMonthRange(): { start: Date; end: Date } {
   return { start, end: addMonths(start, 1) };
 }
 
-export function AgendaCalendar() {
+export function AgendaCalendar({ isAdmin }: { isAdmin: boolean }) {
   const [events, setEvents] = useState<RbcEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [range, setRange] = useState<{ start: Date; end: Date }>(initialMonthRange);
+  const [detail, setDetail] = useState<AgendaEventDetail | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const paddedRange = useMemo(
     () => ({
@@ -141,47 +138,87 @@ export function AgendaCalendar() {
 
   const onSelectEvent = useCallback((ev: RbcEvent) => {
     const res = ev.resource as ApiEvent | undefined;
-    if (res?.htmlLink) {
-      window.open(res.htmlLink, "_blank", "noopener,noreferrer");
+    if (res) {
+      setDetail(res);
+      setModalOpen(true);
     }
   }, []);
 
+  const closeModal = useCallback(() => {
+    setModalOpen(false);
+    setDetail(null);
+  }, []);
+
+  const eventPropGetter = useCallback((ev: RbcEvent) => {
+    const r = ev.resource as ApiEvent | undefined;
+    if (!r) return {};
+    return {
+      style: {
+        backgroundColor: r.backgroundColor,
+        color: r.textColor,
+        border: "none",
+        borderRadius: "4px",
+      },
+    };
+  }, []);
+
+  const [calView, setCalView] = useState<View>("month");
+  const [calDate, setCalDate] = useState(() => new Date());
+
   return (
-    <Card className="border-app-border bg-app-sidebar p-4 shadow-ds-card sm:p-5">
-      {error ? (
-        <p
-          className="mb-3 rounded-ds-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950"
-          role="alert"
-        >
-          {error}
-        </p>
-      ) : null}
-      <div className="agenda-rbc relative min-h-[560px]">
-        {loading ? (
-          <div
-            className="absolute inset-0 z-10 flex items-center justify-center rounded-ds-xl bg-app-sidebar/70"
-            aria-busy
-            aria-label="Carregando eventos"
+    <>
+      <Card className="border-app-border bg-app-sidebar p-4 shadow-ds-card sm:p-6">
+        {error ? (
+          <p
+            className="mb-3 rounded-ds-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950"
+            role="alert"
           >
-            <Loader2 className="h-8 w-8 shrink-0 animate-spin text-app-primary" aria-hidden />
-          </div>
+            {error}
+          </p>
         ) : null}
-        <Calendar
-          culture="pt-BR"
-          localizer={localizer}
-          events={events}
-          startAccessor="start"
-          endAccessor="end"
-          style={{ minHeight: 560 }}
-          defaultView="month"
-          views={["month", "week", "agenda"]}
-          messages={MESSAGES}
-          onRangeChange={onRangeChange}
-          onSelectEvent={onSelectEvent}
-          popup
-          className={cn(loading && "opacity-60")}
-        />
-      </div>
-    </Card>
+        <div className="agenda-rbc relative min-h-[560px]">
+          {loading ? (
+            <div
+              className="absolute inset-0 z-10 flex items-center justify-center rounded-ds-xl bg-app-sidebar/70"
+              aria-busy
+              aria-label="Carregando eventos"
+            >
+              <Loader2 className="h-8 w-8 shrink-0 animate-spin text-app-primary" aria-hidden />
+            </div>
+          ) : null}
+          <Calendar
+            culture="pt-BR"
+            localizer={localizer}
+            date={calDate}
+            onNavigate={setCalDate}
+            events={events}
+            startAccessor="start"
+            endAccessor="end"
+            style={{ minHeight: 560 }}
+            view={calView}
+            views={["month", "week", "day"]}
+            messages={MESSAGES}
+            onRangeChange={onRangeChange}
+            onSelectEvent={onSelectEvent}
+            onView={setCalView}
+            eventPropGetter={eventPropGetter}
+            components={{ toolbar: AgendaToolbar }}
+            popup
+            className={cn(loading && "opacity-60")}
+          />
+        </div>
+        {isAdmin ? (
+          <p className="mt-4 text-xs text-ds-muted">
+            <Link href="/settings/agenda" className="font-medium text-app-primary underline-offset-2 hover:underline">
+              Configurações → Agenda
+            </Link>
+            {" — "}
+            trocar conta Google ou desconectar.
+          </p>
+        ) : null}
+      </Card>
+
+      <AgendaEventModal event={detail} open={modalOpen} onClose={closeModal} />
+    </>
   );
 }
