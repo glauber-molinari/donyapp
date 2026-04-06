@@ -1,11 +1,18 @@
 /**
- * Link de pagamento Asaas com assinatura recorrente (checkout: cartão, PIX, boleto conforme link).
- * @see https://docs.asaas.com/reference/criar-um-link-de-pagamentos
- * @see https://docs.asaas.com/docs/link-de-pagamentos
+ * Checkout Asaas (sessão hospedada): cartão + PIX, assinatura recorrente — sem boleto.
+ * O link de pagamentos (`/v3/paymentLinks` + `UNDEFINED`) inclui boleto; o checkout não.
+ *
+ * @see https://docs.asaas.com/reference/create-new-checkout
+ * @see https://docs.asaas.com/docs/link-do-checkout-e-redirecionamento-do-cliente
+ * @see https://docs.asaas.com/docs/checkout-com-assinatura-recorrente
  */
 
 import { asaasPostJson, validateAsaasApiEnvMatch } from "@/lib/payments/asaas-client";
 import { PRO_PRICE_MONTHLY_CENTS, PRO_PRICE_YEARLY_CENTS } from "@/lib/plan-limits";
+
+/** PNG 1×1 (placeholder exigido em `items[].imageBase64`). */
+const CHECKOUT_ITEM_IMAGE_BASE64 =
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
 
 /** Valor mensal em reais (API Asaas usa decimal). */
 function proPriceMonthlyReais(): number {
@@ -17,10 +24,22 @@ function proPriceYearlyReais(): number {
   return PRO_PRICE_YEARLY_CENTS / 100;
 }
 
-type PaymentLinkCreateResponse = {
+type CheckoutCreateResponse = {
   id?: string;
-  url?: string;
 };
+
+function checkoutShowUrl(checkoutId: string): string {
+  return `https://asaas.com/checkoutSession/show?id=${encodeURIComponent(checkoutId)}`;
+}
+
+function subscriptionDates(): { nextDueDate: string; endDate: string } {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const ymd = (d: Date) => `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
+  const start = new Date();
+  const end = new Date(start);
+  end.setUTCFullYear(end.getUTCFullYear() + 10);
+  return { nextDueDate: ymd(start), endDate: ymd(end) };
+}
 
 /**
  * Cria um link de pagamento com cobrança recorrente mensal e `externalReference` = `accountId` (UUID da conta Donyapp).
@@ -34,7 +53,8 @@ export async function createAsaasProPaymentLink(accountId: string): Promise<
 export type AsaasSubscriptionCycle = "MONTHLY" | "YEARLY";
 
 /**
- * Cria um link de pagamento recorrente (mensal ou anual) e `externalReference` = `accountId`.
+ * Cria sessão de checkout recorrente (mensal ou anual): PIX automático + cartão.
+ * `externalReference` = `accountId` (webhooks de cobrança, assinatura e CHECKOUT_PAID).
  */
 export async function createAsaasProPaymentLinkWithCycle(
   accountId: string,
@@ -52,37 +72,47 @@ export async function createAsaasProPaymentLinkWithCycle(
 
   const value = cycle === "YEARLY" ? proPriceYearlyReais() : proPriceMonthlyReais();
   const cycleLabel = cycle === "YEARLY" ? "anual" : "mensal";
+  const { nextDueDate, endDate } = subscriptionDates();
 
-  const { ok, json } = await asaasPostJson<PaymentLinkCreateResponse>("/v3/paymentLinks", {
-    name: "Dony — Plano Pro",
-    description: `Assinatura ${cycleLabel} — gestão de pós-produção`,
-    value,
-    billingType: "UNDEFINED",
-    chargeType: "RECURRENT",
-    subscriptionCycle: cycle,
+  const { ok, json } = await asaasPostJson<CheckoutCreateResponse>("/v3/checkouts", {
+    billingTypes: ["CREDIT_CARD", "PIX"],
+    chargeTypes: ["RECURRENT"],
+    minutesToExpire: 1440,
     externalReference: accountId,
-    notificationEnabled: true,
-    /** Boleto: doc exige prazo quando o link permite boleto (@see PaymentLink guia). */
-    dueDateLimitDays: 10,
     callback: {
       successUrl: `${appUrl}/settings/plan?status=success`,
-      autoRedirect: true,
+      cancelUrl: `${appUrl}/settings/plan?status=cancel`,
+      expiredUrl: `${appUrl}/settings/plan?status=expired`,
+    },
+    items: [
+      {
+        name: "Dony — Plano Pro",
+        description: `Assinatura ${cycleLabel} — gestão de pós-produção`,
+        imageBase64: CHECKOUT_ITEM_IMAGE_BASE64,
+        quantity: 1,
+        value,
+      },
+    ],
+    subscription: {
+      cycle,
+      nextDueDate,
+      endDate,
     },
   });
 
   if (!ok) {
-    let msg = json.errors?.[0]?.description ?? "Falha ao criar link Asaas.";
+    let msg = json.errors?.[0]?.description ?? "Falha ao criar checkout Asaas.";
     const low = msg.toLowerCase();
     if (low.includes("inválid") || low.includes("invalid")) {
       msg +=
-        " Confira na Vercel: cole a chave completa (começa com $), sem \\ antes do $; ASAAS_API_URL=https://api.asaas.com para chave de produção; marque as vars para Production e faça redeploy.";
+        " Confira na Vercel: cole a chave completa (começa com $), sem \\ antes do $; ASAAS_API_URL=https://api.asaas.com para chave de produção; permissão CHECKOUT:WRITE na chave; marque as vars para Production e faça redeploy.";
     }
     return { ok: false, error: msg };
   }
 
-  if (!json.id || !json.url) {
-    return { ok: false, error: "Resposta inválida do Asaas." };
+  if (!json.id) {
+    return { ok: false, error: "Resposta inválida do Asaas (sem id do checkout)." };
   }
 
-  return { ok: true, id: json.id, url: json.url };
+  return { ok: true, id: json.id, url: checkoutShowUrl(json.id) };
 }

@@ -34,10 +34,12 @@ export function parseAsaasWebhookPayload(body: Record<string, unknown>): ParsedA
 
   const payment = body.payment as Record<string, unknown> | undefined;
   const subscription = body.subscription as Record<string, unknown> | undefined;
+  const checkout = body.checkout as Record<string, unknown> | undefined;
 
   const accountId =
     pickString(payment?.externalReference) ??
     pickString(subscription?.externalReference) ??
+    pickString(checkout?.externalReference) ??
     pickString(body.externalReference);
 
   const asaasSubscriptionId =
@@ -55,6 +57,11 @@ export function parseAsaasWebhookPayload(body: Record<string, unknown>): ParsedA
 export function shouldActivatePro(body: Record<string, unknown>, parsed: ParsedAsaasWebhook): boolean {
   const { event } = parsed;
   if (!parsed.accountId) return false;
+
+  /** Checkout Asaas pago (PIX ou cartão) — `externalReference` vem do checkout criado na API. */
+  if (event === "CHECKOUT_PAID") {
+    return true;
+  }
 
   if (PAYMENT_SUCCESS_EVENTS.has(event)) {
     return true;
