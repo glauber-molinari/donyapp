@@ -9,6 +9,7 @@ import {
   FREE_MAX_ACTIVE_JOBS,
   FREE_MAX_CONTACTS,
   PRO_PRICE_MONTHLY_CENTS,
+  PRO_PRICE_YEARLY_CENTS,
 } from "@/lib/plan-limits";
 import { toast } from "@/lib/toast";
 import type { Database } from "@/types/database";
@@ -82,6 +83,7 @@ export function SettingsPlanSection({
   const [error, setError] = useState<string | null>(null);
 
   const priceLabel = formatBrlCents(PRO_PRICE_MONTHLY_CENTS);
+  const yearlyLabel = formatBrlCents(PRO_PRICE_YEARLY_CENTS);
 
   function resetModal() {
     setError(null);
@@ -100,11 +102,15 @@ export function SettingsPlanSection({
     window.location.assign(url);
   }
 
-  async function handleCard() {
+  async function handleCard(cycle: "MONTHLY" | "YEARLY") {
     setError(null);
     setCardBusy(true);
     try {
-      const res = await fetch("/api/payment/card/create", { method: "POST" });
+      const res = await fetch("/api/payment/card/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cycle }),
+      });
       const data = (await res.json()) as { ok?: boolean; error?: string; url?: string };
       if (!res.ok || !data.ok || !data.url) {
         setError(data.error ?? "Não foi possível abrir o pagamento.");
@@ -194,7 +200,7 @@ export function SettingsPlanSection({
       <Modal open={upgradeOpen} onClose={closeUpgrade} title="Assinar Pro" size="md">
         <div className="flex flex-col gap-4">
           <p className="text-sm text-ds-muted">
-            Valor: <span className="font-medium text-ds-ink">{priceLabel}</span> / mês. Você será
+            Escolha a forma de pagamento e o ciclo. Você será
             redirecionado para o checkout seguro da Asaas. Após a confirmação, o plano Pro é ativado
             automaticamente.
           </p>
@@ -203,14 +209,25 @@ export function SettingsPlanSection({
               {error}
             </p>
           ) : null}
-          <Button
-            type="button"
-            className="w-full"
-            disabled={cardBusy}
-            onClick={() => void handleCard()}
-          >
-            {cardBusy ? "Abrindo…" : "Pagar com cartão ou link"}
-          </Button>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Button
+              type="button"
+              className="w-full"
+              disabled={cardBusy}
+              onClick={() => void handleCard("MONTHLY")}
+            >
+              {cardBusy ? "Abrindo…" : `Mensal — ${priceLabel}/mês`}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              className="w-full"
+              disabled={cardBusy}
+              onClick={() => void handleCard("YEARLY")}
+            >
+              {cardBusy ? "Abrindo…" : `Anual — ${yearlyLabel}/ano`}
+            </Button>
+          </div>
           <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
             <Button type="button" variant="secondary" onClick={() => handlePaidRefresh()}>
               Já paguei — atualizar

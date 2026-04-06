@@ -1,9 +1,18 @@
 import { NextResponse } from "next/server";
 
-import { createAsaasProPaymentLink } from "@/lib/payments/asaas";
+import { createAsaasProPaymentLinkWithCycle } from "@/lib/payments/asaas";
 import { createClient } from "@/lib/supabase/server";
 
-export async function POST() {
+export async function POST(req: Request) {
+  let cycle: "MONTHLY" | "YEARLY" = "MONTHLY";
+  try {
+    const body = (await req.json()) as null | { cycle?: string };
+    const raw = body?.cycle;
+    if (raw === "YEARLY" || raw === "MONTHLY") cycle = raw;
+  } catch {
+    // body opcional
+  }
+
   const supabase = createClient();
   const {
     data: { user },
@@ -33,7 +42,7 @@ export async function POST() {
     return NextResponse.json({ ok: false, error: "Esta conta já está no plano Pro." }, { status: 400 });
   }
 
-  const result = await createAsaasProPaymentLink(profile.account_id);
+  const result = await createAsaasProPaymentLinkWithCycle(profile.account_id, cycle);
   if (!result.ok) {
     return NextResponse.json({ ok: false, error: result.error }, { status: 502 });
   }

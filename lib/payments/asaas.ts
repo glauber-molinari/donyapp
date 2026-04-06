@@ -5,11 +5,16 @@
  */
 
 import { asaasPostJson, getAsaasApiKey } from "@/lib/payments/asaas-client";
-import { PRO_PRICE_MONTHLY_CENTS } from "@/lib/plan-limits";
+import { PRO_PRICE_MONTHLY_CENTS, PRO_PRICE_YEARLY_CENTS } from "@/lib/plan-limits";
 
 /** Valor mensal em reais (API Asaas usa decimal). */
 function proPriceMonthlyReais(): number {
   return PRO_PRICE_MONTHLY_CENTS / 100;
+}
+
+/** Valor anual em reais (API Asaas usa decimal). */
+function proPriceYearlyReais(): number {
+  return PRO_PRICE_YEARLY_CENTS / 100;
 }
 
 type PaymentLinkCreateResponse = {
@@ -23,6 +28,18 @@ type PaymentLinkCreateResponse = {
 export async function createAsaasProPaymentLink(accountId: string): Promise<
   { ok: true; url: string; id: string } | { ok: false; error: string }
 > {
+  return createAsaasProPaymentLinkWithCycle(accountId, "MONTHLY");
+}
+
+export type AsaasSubscriptionCycle = "MONTHLY" | "YEARLY";
+
+/**
+ * Cria um link de pagamento recorrente (mensal ou anual) e `externalReference` = `accountId`.
+ */
+export async function createAsaasProPaymentLinkWithCycle(
+  accountId: string,
+  cycle: AsaasSubscriptionCycle
+): Promise<{ ok: true; url: string; id: string } | { ok: false; error: string }> {
   if (!getAsaasApiKey()) {
     return { ok: false, error: "ASAAS_API_KEY não configurada." };
   }
@@ -32,15 +49,16 @@ export async function createAsaasProPaymentLink(accountId: string): Promise<
     return { ok: false, error: "NEXT_PUBLIC_APP_URL é obrigatório para o retorno do checkout." };
   }
 
-  const value = proPriceMonthlyReais();
+  const value = cycle === "YEARLY" ? proPriceYearlyReais() : proPriceMonthlyReais();
+  const cycleLabel = cycle === "YEARLY" ? "anual" : "mensal";
 
   const { ok, json } = await asaasPostJson<PaymentLinkCreateResponse>("/v3/paymentLinks", {
     name: "Dony — Plano Pro",
-    description: "Assinatura mensal — gestão de pós-produção",
+    description: `Assinatura ${cycleLabel} — gestão de pós-produção`,
     value,
     billingType: "UNDEFINED",
     chargeType: "RECURRENT",
-    subscriptionCycle: "MONTHLY",
+    subscriptionCycle: cycle,
     externalReference: accountId,
     notificationEnabled: true,
     /** Boleto: doc exige prazo quando o link permite boleto (@see PaymentLink guia). */
