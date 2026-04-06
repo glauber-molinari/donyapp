@@ -34,14 +34,12 @@ export function SettingsAgendaSection({
   connected,
   googleEmail,
   integrationServerReady,
-  oauthCallbackPreview,
   searchParams,
 }: {
   isAdmin: boolean;
   connected: boolean;
   googleEmail: string | null;
   integrationServerReady: boolean;
-  oauthCallbackPreview: string;
   searchParams: Record<string, string | string[] | undefined>;
 }) {
   const router = useRouter();
