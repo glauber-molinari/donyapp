@@ -39,7 +39,8 @@ export default async function BoardPage() {
     );
   }
 
-  const [jobsRes, stagesRes, contactsRes, workTypesRes, subRes, accountRes] = await Promise.all([
+  const [jobsRes, stagesRes, contactsRes, workTypesRes, subRes, accountRes, membersRes] =
+    await Promise.all([
     supabase
       .from("jobs")
       .select(
@@ -67,6 +68,11 @@ export default async function BoardPage() {
       .limit(1)
       .maybeSingle(),
     supabase.from("accounts").select("*").eq("id", profile.account_id).single(),
+    supabase
+      .from("users")
+      .select("id, name, email, avatar_url")
+      .eq("account_id", profile.account_id)
+      .order("created_at", { ascending: true }),
   ]);
 
   const fetchError =
@@ -75,7 +81,8 @@ export default async function BoardPage() {
     contactsRes.error ??
     workTypesRes.error ??
     subRes.error ??
-    accountRes.error;
+    accountRes.error ??
+    membersRes.error;
 
   if (fetchError) {
     if (process.env.NODE_ENV === "development") {
@@ -98,6 +105,12 @@ export default async function BoardPage() {
       contacts={contactsRes.data ?? []}
       workTypes={workTypesRes.data ?? []}
       plan={subRes.data?.plan ?? "free"}
+      members={(membersRes.data ?? []).map((m) => ({
+        id: m.id,
+        name: m.name ?? m.email ?? "Usuário",
+        email: m.email ?? null,
+        avatarUrl: m.avatar_url ?? null,
+      }))}
       senderName={profile.name}
       replyToEmail={profile.email}
       accountSubjectTemplate={accountRes.data?.delivery_email_subject_template ?? null}

@@ -6,7 +6,6 @@ import { useState } from "react";
 
 import { disconnectGoogleCalendar } from "./agenda-actions";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { toast } from "@/lib/toast";
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -102,26 +101,6 @@ export function SettingsAgendaSection({
           {flashError}
         </p>
       ) : null}
-
-      <Card className="border-app-border bg-app-sidebar p-5 shadow-ds-sm">
-        <p className="text-sm text-ds-muted">
-          Use uma conta Google do estúdio. No{" "}
-          <a
-            href="https://console.cloud.google.com/apis/credentials"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-medium text-app-primary underline-offset-2 hover:underline"
-          >
-            Google Cloud Console
-          </a>
-          , crie credenciais OAuth (aplicação web) e autorize o redirect{" "}
-          <code className="break-all rounded bg-ds-cream px-1 py-0.5 text-xs text-ds-muted">
-            {oauthCallbackPreview}
-          </code>
-          . Escopos: leitura de calendário e e-mail (para exibir qual conta foi conectada). Tokens ficam só no
-          servidor.
-        </p>
-      </Card>
 
       <div className="flex flex-col gap-3 rounded-ds-xl border border-app-border bg-ds-cream/40 px-4 py-4">
         <p className="text-sm font-medium text-ds-ink">Status</p>

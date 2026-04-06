@@ -317,6 +317,8 @@ export interface Database {
           notes: string | null;
           delivery_link: string | null;
           client_revision: number;
+          photo_editor_id: string | null;
+          video_editor_id: string | null;
           created_by: string | null;
           created_at: string;
           updated_at: string;
@@ -337,6 +339,8 @@ export interface Database {
           notes?: string | null;
           delivery_link?: string | null;
           client_revision?: number;
+          photo_editor_id?: string | null;
+          video_editor_id?: string | null;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -357,6 +361,8 @@ export interface Database {
           notes?: string | null;
           delivery_link?: string | null;
           client_revision?: number;
+          photo_editor_id?: string | null;
+          video_editor_id?: string | null;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -395,6 +401,18 @@ export interface Database {
           {
             foreignKeyName: "jobs_created_by_fkey";
             columns: ["created_by"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "jobs_photo_editor_id_fkey";
+            columns: ["photo_editor_id"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "jobs_video_editor_id_fkey";
+            columns: ["video_editor_id"];
             referencedRelation: "users";
             referencedColumns: ["id"];
           },

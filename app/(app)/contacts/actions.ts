@@ -159,5 +159,7 @@ export async function deleteContact(contactId: string): Promise<ActionResult> {
   }
 
   revalidatePath("/contacts");
+  revalidatePath("/dashboard");
+  revalidatePath("/board");
   return { ok: true };
 }

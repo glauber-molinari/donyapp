@@ -202,7 +202,15 @@ type ParsedJobFields = {
   notes: string | null;
   delivery_link: string | null;
   stage_id: string | null;
+  photo_editor_id: string | null;
+  video_editor_id: string | null;
 };
+
+function parseOptionalUserId(v: FormDataEntryValue | null): string | null {
+  if (typeof v !== "string") return null;
+  const s = v.trim();
+  return s ? s : null;
+}
 
 function parseJobForm(formData: FormData): { error: string } | ParsedJobFields {
   const name = (formData.get("name") as string)?.trim() ?? "";
@@ -229,6 +237,9 @@ function parseJobForm(formData: FormData): { error: string } | ParsedJobFields {
   if (!internal_deadline) return { error: "Prazo interno inválido." };
   if (!deadline) return { error: "Prazo final inválido." };
 
+  const photo_editor_id = parseOptionalUserId(formData.get("photo_editor_id"));
+  const video_editor_id = parseOptionalUserId(formData.get("video_editor_id"));
+
   return {
     name,
     type,
@@ -239,7 +250,24 @@ function parseJobForm(formData: FormData): { error: string } | ParsedJobFields {
     notes,
     delivery_link,
     stage_id,
+    photo_editor_id,
+    video_editor_id,
   };
+}
+
+async function verifyUserBelongs(
+  supabase: ReturnType<typeof createClient>,
+  accountId: string,
+  userId: string | null
+): Promise<boolean> {
+  if (!userId) return true;
+  const { data } = await supabase
+    .from("users")
+    .select("id")
+    .eq("id", userId)
+    .eq("account_id", accountId)
+    .maybeSingle();
+  return Boolean(data);
 }
 
 export async function createJob(formData: FormData): Promise<ActionResult> {
@@ -263,6 +291,11 @@ export async function createJob(formData: FormData): Promise<ActionResult> {
 
   const stageOk = await verifyStageBelongs(supabase, ctx.accountId, parsed.stage_id);
   if (!stageOk) return { ok: false, error: "Etapa inválida." };
+
+  const photoEditorOk = await verifyUserBelongs(supabase, ctx.accountId, parsed.photo_editor_id);
+  if (!photoEditorOk) return { ok: false, error: "Editor de foto inválido." };
+  const videoEditorOk = await verifyUserBelongs(supabase, ctx.accountId, parsed.video_editor_id);
+  if (!videoEditorOk) return { ok: false, error: "Editor de vídeo inválido." };
 
   const { data: sub } = await supabase
     .from("subscriptions")
@@ -296,6 +329,8 @@ export async function createJob(formData: FormData): Promise<ActionResult> {
     notes: parsed.notes,
     delivery_link: parsed.delivery_link,
     created_by: ctx.userId,
+    photo_editor_id: parsed.photo_editor_id,
+    video_editor_id: parsed.video_editor_id,
     job_kind: "standard" as const,
     parent_job_id: null as string | null,
   };
@@ -329,6 +364,8 @@ export async function createJob(formData: FormData): Promise<ActionResult> {
       notes: null,
       delivery_link: null,
       created_by: ctx.userId,
+      photo_editor_id: null,
+      video_editor_id: parsed.video_editor_id,
       job_kind: "video_edit",
       parent_job_id: inserted.id,
     });
@@ -364,9 +401,14 @@ export async function updateJob(jobId: string, formData: FormData): Promise<Acti
   const stageOk = await verifyStageBelongs(supabase, ctx.accountId, parsed.stage_id);
   if (!stageOk) return { ok: false, error: "Etapa inválida." };
 
+  const photoEditorOk = await verifyUserBelongs(supabase, ctx.accountId, parsed.photo_editor_id);
+  if (!photoEditorOk) return { ok: false, error: "Editor de foto inválido." };
+  const videoEditorOk = await verifyUserBelongs(supabase, ctx.accountId, parsed.video_editor_id);
+  if (!videoEditorOk) return { ok: false, error: "Editor de vídeo inválido." };
+
   const { data: existing } = await supabase
     .from("jobs")
-    .select("stage_id")
+    .select("stage_id, parent_job_id, job_kind")
     .eq("id", jobId)
     .eq("account_id", ctx.accountId)
     .maybeSingle();
@@ -393,12 +435,31 @@ export async function updateJob(jobId: string, formData: FormData): Promise<Acti
       work_type_id: parsed.work_type_id,
       notes: parsed.notes,
       delivery_link: parsed.delivery_link,
+      photo_editor_id: parsed.photo_editor_id,
+      video_editor_id: parsed.video_editor_id,
     })
     .eq("id", jobId)
     .eq("account_id", ctx.accountId);
 
   if (error) {
     return { ok: false, error: error.message };
+  }
+
+  if (existing.job_kind === "standard") {
+    const { data: child } = await supabase
+      .from("jobs")
+      .select("id")
+      .eq("account_id", ctx.accountId)
+      .eq("parent_job_id", jobId)
+      .eq("job_kind", "video_edit")
+      .maybeSingle();
+    if (child?.id) {
+      await supabase
+        .from("jobs")
+        .update({ video_editor_id: parsed.video_editor_id })
+        .eq("id", child.id)
+        .eq("account_id", ctx.accountId);
+    }
   }
 
   revalidatePath("/dashboard");

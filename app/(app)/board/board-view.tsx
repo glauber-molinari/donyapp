@@ -35,6 +35,7 @@ import {
 import { DeliveryEmailModal } from "@/components/app/delivery-email-modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Avatar } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { Select } from "@/components/ui/select";
@@ -279,10 +280,43 @@ interface BoardViewProps {
   contacts: ContactPick[];
   workTypes: WorkTypeRow[];
   plan: Plan;
+  members: { id: string; name: string; email: string | null; avatarUrl: string | null }[];
   senderName: string | null;
   replyToEmail: string | null;
   accountSubjectTemplate: string | null;
   accountBodyTemplate: string | null;
+}
+
+function AvatarStack({
+  people,
+  max = 2,
+}: {
+  people: { id: string; name: string; avatarUrl: string | null }[];
+  max?: number;
+}) {
+  if (people.length === 0) return null;
+  const shown = people.slice(0, max);
+  const rest = people.length - shown.length;
+  return (
+    <div className="flex items-center">
+      <div className="flex -space-x-2">
+        {shown.map((p) => (
+          <Avatar
+            key={p.id}
+            src={p.avatarUrl}
+            name={p.name}
+            size="sm"
+            className="ring-2 ring-ds-surface"
+          />
+        ))}
+        {rest > 0 ? (
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-ds-cream text-[0.7rem] font-semibold text-ds-muted ring-2 ring-ds-surface">
+            +{rest}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
 }
 
 function JobCardContent({
@@ -292,6 +326,7 @@ function JobCardContent({
   isDragging,
   overlay,
   revisionInteractive,
+  assignees,
 }: {
   job: JobWithRelations;
   stageFinal: boolean;
@@ -300,6 +335,7 @@ function JobCardContent({
   overlay?: boolean;
   /** Quando falso (ex.: coluna só leitura com busca), não mostra o seletor de revisão. */
   revisionInteractive?: boolean;
+  assignees: { id: string; name: string; avatarUrl: string | null }[];
 }) {
   const dl = deadlineBadge(job.deadline, stageFinal);
   const rev = job.client_revision ?? 0;
@@ -329,6 +365,12 @@ function JobCardContent({
           </span>
         ) : null}
       </div>
+      {assignees.length ? (
+        <div className="mt-2 flex items-center justify-between gap-2">
+          <span className="text-xs font-medium text-ds-subtle">Responsável</span>
+          <AvatarStack people={assignees} />
+        </div>
+      ) : null}
       {revisionInteractive && !overlay ? <ClientRevisionSelect job={job} /> : null}
       {job.contacts?.name ? (
         <p className="mt-2 text-sm text-ds-muted">{job.contacts.name}</p>
@@ -346,12 +388,14 @@ function SortableJobCard({
   accentHex,
   dragDisabled,
   revisionInteractive,
+  assignees,
 }: {
   job: JobWithRelations;
   stageFinal: boolean;
   accentHex: string;
   dragDisabled: boolean;
   revisionInteractive: boolean;
+  assignees: { id: string; name: string; avatarUrl: string | null }[];
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: job.id,
@@ -376,6 +420,7 @@ function SortableJobCard({
         accentHex={accentHex}
         isDragging={isDragging}
         revisionInteractive={revisionInteractive}
+        assignees={assignees}
       />
     </div>
   );
@@ -387,12 +432,14 @@ function KanbanColumn({
   jobsById,
   dragDisabled,
   searchQuery,
+  assigneesByJobId,
 }: {
   stage: StageRow;
   jobIds: string[];
   jobsById: Map<string, JobWithRelations>;
   dragDisabled: boolean;
   searchQuery: string;
+  assigneesByJobId: Map<string, { id: string; name: string; avatarUrl: string | null }[]>;
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: `stage-${stage.id}`,
@@ -436,6 +483,7 @@ function KanbanColumn({
                 stageFinal={stage.is_final}
                 accentHex={accentHex}
                 revisionInteractive
+                assignees={assigneesByJobId.get(id) ?? []}
               />
             );
           })}
@@ -454,6 +502,7 @@ function KanbanColumn({
                   accentHex={accentHex}
                   dragDisabled={false}
                   revisionInteractive
+                  assignees={assigneesByJobId.get(id) ?? []}
                 />
               );
             })}
@@ -470,6 +519,7 @@ export function BoardView({
   contacts,
   workTypes,
   plan,
+  members,
   senderName,
   replyToEmail,
   accountSubjectTemplate,
@@ -495,6 +545,43 @@ export function BoardView({
     for (const j of filteredJobs) m.set(j.id, j);
     return m;
   }, [filteredJobs]);
+
+  const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
+  const singleMemberId = members.length === 1 ? members[0]!.id : null;
+  const memberOptions = useMemo(
+    () => members.map((m) => ({ value: m.id, label: m.name })),
+    [members]
+  );
+
+  const assigneesByJobId = useMemo(() => {
+    const get = (id: string | null | undefined) => {
+      if (!id) return null;
+      const m = membersById.get(id);
+      if (!m) return null;
+      return { id: m.id, name: m.name, avatarUrl: m.avatarUrl };
+    };
+    const map = new Map<string, { id: string; name: string; avatarUrl: string | null }[]>();
+    for (const j of filteredJobs) {
+      const photoId = j.photo_editor_id;
+      const videoId = j.video_editor_id;
+      let list: { id: string; name: string; avatarUrl: string | null }[] = [];
+      if (j.type === "foto_video") {
+        const a = get(photoId) ?? (singleMemberId ? get(singleMemberId) : null);
+        const b = get(videoId) ?? (singleMemberId ? get(singleMemberId) : null);
+        list = [a, b].filter(
+          (x): x is { id: string; name: string; avatarUrl: string | null } => Boolean(x)
+        );
+      } else if (j.type === "video") {
+        const a = get(videoId) ?? (singleMemberId ? get(singleMemberId) : null);
+        list = a ? [a] : [];
+      } else {
+        const a = get(photoId) ?? (singleMemberId ? get(singleMemberId) : null);
+        list = a ? [a] : [];
+      }
+      map.set(j.id, list);
+    }
+    return map;
+  }, [filteredJobs, membersById, singleMemberId]);
 
   const [columnItems, setColumnItems] = useState<Record<string, string[]>>({});
   const columnItemsRef = useRef(columnItems);
@@ -746,6 +833,7 @@ export function BoardView({
                 jobsById={jobsById}
                 dragDisabled={dragDisabled}
                 searchQuery={searchQuery}
+        assigneesByJobId={assigneesByJobId}
               />
             ))}
           </div>
@@ -757,6 +845,7 @@ export function BoardView({
                 stageFinal={activeStage.is_final}
                 accentHex={kanbanStageAccentHex(activeStage.color)}
                 overlay
+                assignees={assigneesByJobId.get(activeJob.id) ?? []}
               />
             ) : null}
           </DragOverlay>
@@ -818,6 +907,37 @@ export function BoardView({
             onChange={(e) => setDeliveryType(e.target.value as JobRow["type"])}
             options={JOB_DELIVERY_OPTIONS}
           />
+          {members.length <= 1 ? (
+            <>
+              <input type="hidden" name="photo_editor_id" value={singleMemberId ?? ""} />
+              <input type="hidden" name="video_editor_id" value={singleMemberId ?? ""} />
+            </>
+          ) : deliveryType === "foto_video" ? (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <Select
+                id="board-job-create-photo-editor"
+                name="photo_editor_id"
+                label="Editor (foto)"
+                placeholder="Selecione"
+                options={memberOptions}
+              />
+              <Select
+                id="board-job-create-video-editor"
+                name="video_editor_id"
+                label="Editor (vídeo)"
+                placeholder="Selecione"
+                options={memberOptions}
+              />
+            </div>
+          ) : (
+            <Select
+              id="board-job-create-editor"
+              name={deliveryType === "video" ? "video_editor_id" : "photo_editor_id"}
+              label="Editor responsável"
+              placeholder="Selecione"
+              options={memberOptions}
+            />
+          )}
           {deliveryType === "video" || deliveryType === "foto_video" ? (
             <div className="rounded-ds-xl border border-sky-200 bg-sky-50/90 p-4">
               <p className="text-sm font-semibold text-sky-950">Edição de vídeo</p>

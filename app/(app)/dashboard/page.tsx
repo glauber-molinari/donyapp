@@ -22,7 +22,7 @@ export default async function DashboardPage() {
 
   const { data: profile } = await supabase
     .from("users")
-    .select("account_id")
+    .select("account_id, name, email, avatar_url")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -37,7 +37,7 @@ export default async function DashboardPage() {
     );
   }
 
-  const [jobsRes, contactsRes, stagesRes, workTypesRes, metrics] = await Promise.all([
+  const [jobsRes, contactsRes, stagesRes, workTypesRes, membersRes, metrics] = await Promise.all([
     supabase
       .from("jobs")
       .select(
@@ -59,10 +59,15 @@ export default async function DashboardPage() {
       .select("*")
       .eq("account_id", profile.account_id)
       .order("position", { ascending: true }),
+    supabase
+      .from("users")
+      .select("id, name, email, avatar_url")
+      .eq("account_id", profile.account_id)
+      .order("created_at", { ascending: true }),
     fetchDashboardMetrics(supabase),
   ]);
 
-  if (jobsRes.error || contactsRes.error || stagesRes.error || workTypesRes.error) {
+  if (jobsRes.error || contactsRes.error || stagesRes.error || workTypesRes.error || membersRes.error) {
     return (
       <div>
         <h1 className="text-2xl font-bold text-ds-ink">Dashboard</h1>
@@ -75,6 +80,12 @@ export default async function DashboardPage() {
 
   return (
     <DashboardView
+      members={(membersRes.data ?? []).map((m) => ({
+        id: m.id,
+        name: m.name ?? m.email ?? "Usuário",
+        email: m.email ?? null,
+        avatarUrl: m.avatar_url ?? null,
+      }))}
       jobs={(jobsRes.data ?? []) as JobWithRelations[]}
       contacts={contactsRes.data ?? []}
       stages={stagesRes.data ?? []}
