@@ -13,9 +13,54 @@ export function getAsaasApiBaseUrl(): string {
   return DEFAULT_BASE_SANDBOX;
 }
 
-export function getAsaasApiKey(): string | null {
-  const k = process.env.ASAAS_API_KEY?.trim();
+/**
+ * Normaliza chave vinda de .env / Vercel: aspas, BOM, barra antes de $
+ * (alguns tutoriais sugerem `\$` — na Vercel isso costuma ir literal e quebra o auth).
+ */
+export function normalizeAsaasApiKey(raw: string | undefined | null): string | null {
+  if (raw == null) return null;
+  let k = raw.replace(/^\uFEFF/, "").trim();
+  if (!k) return null;
+  if ((k.startsWith('"') && k.endsWith('"')) || (k.startsWith("'") && k.endsWith("'"))) {
+    k = k.slice(1, -1).trim();
+  }
+  if (k.startsWith("\\$")) {
+    k = k.slice(1);
+  }
   return k || null;
+}
+
+export function getAsaasApiKey(): string | null {
+  return normalizeAsaasApiKey(process.env.ASAAS_API_KEY);
+}
+
+/**
+ * Chave de produção com URL sandbox (ou o contrário) → Asaas retorna "API inválida".
+ */
+export function validateAsaasApiEnvMatch(): { ok: true } | { ok: false; error: string } {
+  const key = getAsaasApiKey();
+  const base = getAsaasApiBaseUrl();
+  if (!key) {
+    return { ok: false, error: "ASAAS_API_KEY não configurada." };
+  }
+  const isSandboxHost = base.includes("sandbox");
+  const looksProdKey = key.includes("$aact_prod") || key.includes("_prod_");
+  const looksSandboxKey = key.includes("$aact_hmlg") || key.includes("_hmlg_");
+  if (isSandboxHost && looksProdKey) {
+    return {
+      ok: false,
+      error:
+        "Configuração Asaas: URL é sandbox, mas a chave parece ser de produção. Na Vercel, defina ASAAS_API_URL=https://api.asaas.com (sem sandbox) e faça redeploy.",
+    };
+  }
+  if (!isSandboxHost && looksSandboxKey) {
+    return {
+      ok: false,
+      error:
+        "Configuração Asaas: URL é produção, mas a chave parece ser de sandbox (hmlg). Use uma chave $aact_prod na produção ou aponte ASAAS_API_URL para https://api-sandbox.asaas.com.",
+    };
+  }
+  return { ok: true };
 }
 
 export function asaasHeaders(): Record<string, string> {

@@ -44,7 +44,11 @@ export async function POST(req: Request) {
 
   const result = await createAsaasProPaymentLinkWithCycle(profile.account_id, cycle);
   if (!result.ok) {
-    return NextResponse.json({ ok: false, error: result.error }, { status: 502 });
+    const isConfig =
+      result.error.startsWith("Configuração Asaas:") ||
+      result.error.includes("ASAAS_API_KEY não") ||
+      result.error.includes("NEXT_PUBLIC_APP_URL");
+    return NextResponse.json({ ok: false, error: result.error }, { status: isConfig ? 400 : 502 });
   }
 
   return NextResponse.json({

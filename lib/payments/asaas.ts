@@ -4,7 +4,7 @@
  * @see https://docs.asaas.com/docs/link-de-pagamentos
  */
 
-import { asaasPostJson, getAsaasApiKey } from "@/lib/payments/asaas-client";
+import { asaasPostJson, validateAsaasApiEnvMatch } from "@/lib/payments/asaas-client";
 import { PRO_PRICE_MONTHLY_CENTS, PRO_PRICE_YEARLY_CENTS } from "@/lib/plan-limits";
 
 /** Valor mensal em reais (API Asaas usa decimal). */
@@ -40,8 +40,9 @@ export async function createAsaasProPaymentLinkWithCycle(
   accountId: string,
   cycle: AsaasSubscriptionCycle
 ): Promise<{ ok: true; url: string; id: string } | { ok: false; error: string }> {
-  if (!getAsaasApiKey()) {
-    return { ok: false, error: "ASAAS_API_KEY não configurada." };
+  const envMatch = validateAsaasApiEnvMatch();
+  if (!envMatch.ok) {
+    return { ok: false, error: envMatch.error };
   }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
@@ -70,7 +71,12 @@ export async function createAsaasProPaymentLinkWithCycle(
   });
 
   if (!ok) {
-    const msg = json.errors?.[0]?.description ?? "Falha ao criar link Asaas.";
+    let msg = json.errors?.[0]?.description ?? "Falha ao criar link Asaas.";
+    const low = msg.toLowerCase();
+    if (low.includes("inválid") || low.includes("invalid")) {
+      msg +=
+        " Confira na Vercel: cole a chave completa (começa com $), sem \\ antes do $; ASAAS_API_URL=https://api.asaas.com para chave de produção; marque as vars para Production e faça redeploy.";
+    }
     return { ok: false, error: msg };
   }
 
