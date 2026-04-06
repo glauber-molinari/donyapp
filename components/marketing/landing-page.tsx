@@ -4,7 +4,12 @@ import Link from "next/link";
 
 import { cn } from "@/lib/utils";
 import { LegalLinks } from "@/components/legal/legal-links";
-import { FREE_MAX_ACTIVE_JOBS, FREE_MAX_CONTACTS, PRO_PRICE_MONTHLY_CENTS } from "@/lib/plan-limits";
+import {
+  FREE_MAX_ACTIVE_JOBS,
+  FREE_MAX_CONTACTS,
+  PRO_PRICE_MONTHLY_CENTS,
+  PRO_PRICE_YEARLY_CENTS,
+} from "@/lib/plan-limits";
 
 const heroNavItems = [
   { href: "#sobre", label: "Sobre" },
@@ -143,6 +148,11 @@ function formatBrl(value: number) {
 
 export function LandingPage({ displayClassName, bodyClassName }: LandingPageProps) {
   const proMonthly = PRO_PRICE_MONTHLY_CENTS / 100;
+  const proYearly = PRO_PRICE_YEARLY_CENTS / 100;
+  const yearlySavingsPercent = Math.max(
+    0,
+    Math.round((1 - proYearly / (proMonthly * 12)) * 100),
+  );
   return (
     <div className={cn(bodyClassName, "min-h-screen bg-ds-cream text-ds-ink antialiased")}>
       <header className="fixed top-0 z-50 w-full bg-ds-cream/70 transition-colors supports-[backdrop-filter]:backdrop-blur-md">
@@ -366,16 +376,9 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
               O Free resolve o essencial. O Pro desbloqueia equipe, e-mail automático e remove limites.
             </p>
 
-            <div className="mt-8 flex justify-center">
-              <div className="inline-flex items-center gap-1 rounded-full border border-ds-border bg-white/70 p-1 shadow-ds-sm">
-                <span className="rounded-full bg-ds-ink px-4 py-2 text-xs font-semibold text-white">
-                  Mensal
-                </span>
-                <span className="rounded-full px-4 py-2 text-xs font-semibold text-ds-muted">
-                  Anual <span className="ml-1 rounded-full bg-ds-cream px-2 py-0.5 text-[10px]">Em breve</span>
-                </span>
-              </div>
-            </div>
+            <p className="mt-8 text-sm text-ds-subtle">
+              Mensal para flexibilidade. Anual para economizar {yearlySavingsPercent}%.
+            </p>
           </div>
 
           <div className="mt-12 mx-auto grid max-w-6xl justify-items-stretch gap-6 md:justify-items-center lg:grid-cols-3 lg:gap-6">
@@ -477,33 +480,61 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
               </div>
             </div>
 
-            <div className="flex w-full max-w-[420px] flex-col justify-between rounded-[28px] border-2 border-dashed border-ds-border/90 bg-gradient-to-b from-ds-surface to-ds-cream/50 p-7 shadow-ds-sm lg:max-w-none">
-              <div>
-                <p className="text-sm font-semibold text-ds-subtle">Pro Anual</p>
-                <p className="mt-1 text-sm text-ds-muted">
-                  Referência de valor (Good / Better / Best) — estimativa para quando o ciclo anual estiver
-                  disponível.
-                </p>
-                <span className="mt-3 inline-flex rounded-full bg-ds-cream px-3 py-1 text-[0.7rem] font-semibold text-ds-muted">
-                  Em breve
-                </span>
+            <div className="flex w-full max-w-[420px] flex-col justify-between rounded-[28px] border border-ds-border bg-ds-surface p-7 shadow-ds-card min-h-[640px] lg:max-w-none">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-ds-subtle">Pro Anual</p>
+                  <p className="mt-1 text-sm text-ds-muted">Economize no plano anual</p>
+                </div>
+                {yearlySavingsPercent > 0 ? (
+                  <span className="rounded-full bg-ds-cream px-3 py-1 text-[0.75rem] font-semibold text-ds-ink">
+                    -{yearlySavingsPercent}%
+                  </span>
+                ) : null}
               </div>
-              <div className="mt-8 space-y-2 border-t border-ds-border pt-6">
-                <p className="text-xs font-semibold uppercase tracking-wide text-ds-subtle">Comparável</p>
-                <p className="text-sm text-ds-muted line-through decoration-ds-subtle/80">
-                  12 × {formatBrl(proMonthly)} no mensal integrado
-                </p>
-                <p className="text-2xl font-black tracking-tight text-ds-ink">
-                  ~{formatBrl(proMonthly * 10)}{" "}
-                  <span className="text-sm font-semibold text-ds-muted">/ ano (referência ~10 meses)</span>
-                </p>
-                <p className="text-xs leading-relaxed text-ds-subtle">
-                  O Pro mensal ao lado continua sendo a opção flexível de hoje; este card só ancora o benefício
-                  futuro do anual, sem obrigar você a escolher mais de uma ação agora.
-                </p>
+
+              <div className="mt-6 flex items-end gap-2">
+                <span className="text-5xl font-black tracking-tight text-ds-ink">{formatBrl(proYearly)}</span>
+                <span className="pb-2 text-sm font-medium text-ds-subtle">/ ano</span>
               </div>
-              <div className="mt-6 rounded-ds-2xl border border-ds-border bg-white/80 px-4 py-3 text-center text-sm font-semibold text-ds-muted">
-                Lista de espera em breve
+
+              <Link
+                href="/login"
+                className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-ds-2xl border-[1.5px] border-ds-border bg-ds-surface px-6 py-3 text-sm font-semibold text-ds-ink transition duration-ds ease-out hover:border-stone-300"
+              >
+                Assinar anual
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+
+              <p className="mt-3 text-center text-xs text-ds-subtle">
+                {yearlySavingsPercent > 0
+                  ? `Equivale a ${formatBrl(proYearly / 12)}/mês no anual.`
+                  : "Pagamento anual."}
+              </p>
+
+              <div className="mt-7 border-t border-ds-border pt-6">
+                <p className="text-xs font-semibold uppercase tracking-wide text-ds-subtle">
+                  Tudo do Pro, mais economia
+                </p>
+                <ul className="mt-4 space-y-3 text-sm text-ds-muted">
+                  {[
+                    "Jobs e contatos ilimitados",
+                    "Etapas ilimitadas no kanban (reordenar, renomear e definir etapa final)",
+                    "Equipe: convites por e-mail (multi-usuário)",
+                    "E-mail automático ao enviar material para o cliente",
+                    "Modelos de e-mail de entrega personalizáveis",
+                  ].map((item) => (
+                    <li key={item} className="flex gap-3">
+                      <span
+                        className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-ds-border bg-ds-cream text-ds-ink"
+                        aria-hidden
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                      </span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           </div>
