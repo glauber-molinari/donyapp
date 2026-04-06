@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
+import { LegalLinks } from "@/components/legal/legal-links";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,9 @@ export default async function InvitePage({ params }: { params: { token: string }
           <p className="mt-2 text-sm text-ds-muted">
             O servidor não está configurado para validar convites (service role).
           </p>
+        </div>
+        <div className="mt-6 text-center text-xs text-ds-subtle">
+          <LegalLinks linkClassName="text-ds-subtle hover:text-ds-ink" />
         </div>
       </div>
     );
@@ -43,6 +47,9 @@ export default async function InvitePage({ params }: { params: { token: string }
           >
             Voltar ao início
           </Link>
+        </div>
+        <div className="mt-6 text-center text-xs text-ds-subtle">
+          <LegalLinks linkClassName="text-ds-subtle hover:text-ds-ink" />
         </div>
       </div>
     );
@@ -75,6 +82,9 @@ export default async function InvitePage({ params }: { params: { token: string }
         <p className="mt-4 text-xs text-ds-subtle">
           Primeiro acesso? Após o Google, você entra direto na equipe.
         </p>
+      </div>
+      <div className="mt-6 text-center text-xs text-ds-subtle">
+        <LegalLinks linkClassName="text-ds-subtle hover:text-ds-ink" />
       </div>
     </div>
   );

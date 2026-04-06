@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { LoginForm } from "./login-form";
+import { LegalLinks } from "@/components/legal/legal-links";
 
 const errorMessages: Record<string, string> = {
   auth: "Não foi possível concluir o login. Tente novamente.",
@@ -53,8 +54,8 @@ export default function LoginPage({
           <LoginForm next={next} />
         </div>
         <p className="mt-6 text-center text-xs text-ds-subtle">
-          Ao entrar, você concorda em usar apenas sua Conta Google conforme as políticas
-          do produto.
+          Ao entrar, você concorda com os <Link href="/termos-de-servico" className="underline-offset-4 hover:underline">Termos de Serviço</Link> e a{" "}
+          <Link href="/politica-de-privacidade" className="underline-offset-4 hover:underline">Política de Privacidade</Link>.
         </p>
       </div>
       <Link
@@ -63,6 +64,9 @@ export default function LoginPage({
       >
         Voltar
       </Link>
+      <div className="mt-4 text-center text-xs text-ds-subtle">
+        <LegalLinks linkClassName="text-ds-subtle hover:text-ds-ink" />
+      </div>
     </div>
   );
 }

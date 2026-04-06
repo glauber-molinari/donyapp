@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { cn } from "@/lib/utils";
+import { LegalLinks } from "@/components/legal/legal-links";
 
 const heroNavItems = [
   { href: "#sobre", label: "Sobre" },
@@ -368,7 +369,10 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
               className="h-6 w-auto max-w-[8rem] object-contain opacity-90"
             />
           </div>
-          <p className="text-ds-muted">Donyapp — gestão de pós-produção para fotógrafos e videomakers.</p>
+          <div className="flex flex-col items-center gap-2 sm:items-end sm:text-right">
+            <p className="text-ds-muted">Donyapp — gestão de pós-produção para fotógrafos e videomakers.</p>
+            <LegalLinks className="text-xs" linkClassName="text-ds-subtle hover:text-ds-ink" />
+          </div>
         </div>
       </footer>
     </div>
