@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { googleCalendarOAuthRedirectUri } from "@/lib/app-url";
 import { getIntegrationPublicMeta } from "@/lib/google-calendar/integration-db";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import { createClient } from "@/lib/supabase/server";
@@ -44,8 +43,6 @@ export default async function SettingsAgendaPage({
 
   const integrationServerReady = createServiceRoleClient() != null;
   const meta = await getIntegrationPublicMeta(profile.account_id);
-  const oauthCallbackPreview =
-    googleCalendarOAuthRedirectUri() || "(defina NEXT_PUBLIC_APP_URL no .env)";
 
   const isAdmin = profile.role === "admin";
 
@@ -63,7 +60,6 @@ export default async function SettingsAgendaPage({
         connected={meta.connected}
         googleEmail={meta.googleEmail}
         integrationServerReady={integrationServerReady}
-        oauthCallbackPreview={oauthCallbackPreview}
         searchParams={searchParams}
       />
     </div>
