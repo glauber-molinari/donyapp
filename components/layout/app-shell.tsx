@@ -1,10 +1,13 @@
 "use client";
 
-import { Clapperboard, LayoutDashboard, Menu, Settings, Users, X } from "lucide-react";
+import { Calendar, LaptopMinimal, LayoutDashboard, Menu, Settings, Users, X } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 
+import { OnboardingTourProvider } from "@/components/app/onboarding-tour";
+import { AppToaster } from "@/components/ui/app-toaster";
 import { Avatar } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
@@ -25,7 +28,13 @@ const navItems = [
     href: "/board",
     label: "Edições",
     id: "menu-edicoes",
-    icon: Clapperboard,
+    icon: LaptopMinimal,
+  },
+  {
+    href: "/agenda",
+    label: "Agenda",
+    id: "menu-agenda",
+    icon: Calendar,
   },
 ] as const;
 
@@ -34,9 +43,10 @@ export interface AppShellProps {
   userName: string;
   userEmail: string | null;
   avatarUrl: string | null;
+  tourCompleted: boolean;
 }
 
-export function AppShell({ children, userName, userEmail, avatarUrl }: AppShellProps) {
+export function AppShell({ children, userName, userEmail, avatarUrl, tourCompleted }: AppShellProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -55,19 +65,20 @@ export function AppShell({ children, userName, userEmail, avatarUrl }: AppShellP
 
   const linkClass = (href: string) =>
     cn(
-      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+      "flex items-center gap-3 rounded-ds-xl px-3 py-2.5 text-sm font-medium transition-colors duration-ds ease-out",
       pathname === href ||
         (href !== "/dashboard" && href !== "/" && pathname.startsWith(href))
-        ? "bg-violet-100 text-violet-700"
-        : "text-gray-600 hover:bg-gray-50 hover:text-gray-800"
+        ? "bg-ds-cream text-ds-ink font-semibold"
+        : "text-ds-muted hover:bg-ds-cream/80 hover:text-ds-ink"
     );
 
   return (
+    <OnboardingTourProvider tourCompleted={tourCompleted}>
     <div className="flex min-h-screen bg-app-canvas">
       {mobileOpen ? (
         <button
           type="button"
-          className="fixed inset-0 z-40 bg-black/30 md:hidden"
+          className="fixed inset-0 z-40 bg-ds-ink/30 md:hidden"
           aria-label="Fechar menu"
           onClick={() => setMobileOpen(false)}
         />
@@ -75,21 +86,29 @@ export function AppShell({ children, userName, userEmail, avatarUrl }: AppShellP
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-60 flex-col border-r border-gray-200 bg-white transition-transform duration-200 md:static md:z-0 md:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 flex w-60 flex-col border-r border-app-border bg-app-sidebar transition-transform duration-ds ease-out md:static md:z-0 md:translate-x-0",
           mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
       >
-        <div className="flex h-14 items-center justify-between border-b border-gray-200 px-4 md:h-16">
+        <div className="relative flex h-14 items-center justify-center border-b border-app-border px-4 md:h-16">
           <Link
             href="/dashboard"
-            className="text-lg font-semibold tracking-tight text-gray-800"
+            className="flex items-center justify-center"
+            aria-label="Donyapp — início"
           >
-            Donyapp
+            <Image
+              src="/brand/logo-dony-png.png"
+              alt="Donyapp"
+              width={120}
+              height={32}
+              className="h-9 w-auto max-w-[9.5rem] object-contain"
+              priority
+            />
           </Link>
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
-            className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 md:hidden"
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-ds-xl p-2 text-ds-subtle hover:bg-ds-cream md:hidden"
             aria-label="Fechar menu"
           >
             <X className="h-5 w-5" />
@@ -105,46 +124,51 @@ export function AppShell({ children, userName, userEmail, avatarUrl }: AppShellP
           ))}
         </nav>
 
-        <div className="border-t border-gray-200 p-3">
-          <div className="mb-3 flex items-center gap-3 rounded-xl px-2 py-2">
+        <div className="border-t border-app-border p-3">
+          <div className="mb-3 flex items-center gap-3 rounded-ds-xl px-2 py-2">
             <Avatar src={avatarUrl} name={userName} size="md" />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-gray-800">{userName}</p>
+              <p className="truncate text-sm font-medium text-ds-ink">{userName}</p>
               {userEmail ? (
-                <p className="truncate text-xs text-gray-500">{userEmail}</p>
+                <p className="truncate text-xs text-ds-muted">{userEmail}</p>
               ) : null}
             </div>
           </div>
-          <Link href="/settings" id="menu-settings" className={linkClass("/settings")}>
+          <Link href="/settings/kanban" id="menu-settings" className={linkClass("/settings")}>
             <Settings className="h-5 w-5 shrink-0 opacity-80" aria-hidden />
             Configurações
           </Link>
           <form action="/auth/signout" method="post" className="mt-2 px-1">
             <button
               type="submit"
-              className="w-full rounded-xl px-3 py-2 text-left text-sm font-medium text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700"
+              className="w-full rounded-ds-xl px-3 py-2 text-left text-sm font-medium text-ds-subtle transition-colors duration-ds ease-out hover:bg-ds-cream hover:text-ds-ink"
             >
               Sair
             </button>
           </form>
         </div>
+
       </aside>
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-gray-200 bg-white px-4 md:hidden">
+        <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-app-border bg-app-sidebar px-4 md:hidden">
           <button
             type="button"
             onClick={() => setMobileOpen(true)}
-            className="rounded-lg p-2 text-gray-600 hover:bg-gray-100"
+            className="rounded-ds-xl p-2 text-ds-muted hover:bg-ds-cream"
             aria-label="Abrir menu"
           >
             <Menu className="h-5 w-5" />
           </button>
-          <span className="text-base font-semibold text-gray-800">Donyapp</span>
+          <span className="text-base font-semibold text-ds-ink">Donyapp</span>
         </header>
 
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+        <main className="flex-1 overflow-auto px-4 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom,0px))] sm:px-6 sm:pt-6 sm:pb-8">
+          {children}
+        </main>
       </div>
+      <AppToaster />
     </div>
+    </OnboardingTourProvider>
   );
 }

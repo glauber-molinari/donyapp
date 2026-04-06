@@ -1,0 +1,73 @@
+/* react-big-calendar — alinhado ao design system Donyapp */
+.agenda-rbc .rbc-calendar {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  color: #0c0a09;
+}
+
+.agenda-rbc .rbc-toolbar {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.agenda-rbc .rbc-toolbar button {
+  border-radius: 0.75rem;
+  border: 1px solid #e8e4df;
+  background: #ffffff;
+  color: #57534e;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.35rem 0.75rem;
+  transition: background 150ms ease-out, color 150ms ease-out;
+}
+
+.agenda-rbc .rbc-toolbar button:hover {
+  background: #f5f2ef;
+  color: #0c0a09;
+}
+
+.agenda-rbc .rbc-toolbar button.rbc-active {
+  background: #f5f2ef;
+  color: #0c0a09;
+  font-weight: 600;
+}
+
+.agenda-rbc .rbc-header,
+.agenda-rbc .rbc-time-header-content,
+.agenda-rbc .rbc-day-bg,
+.agenda-rbc .rbc-time-content,
+.agenda-rbc .rbc-month-view,
+.agenda-rbc .rbc-agenda-view,
+.agenda-rbc .rbc-time-view {
+  border-color: #e8e4df;
+}
+
+.agenda-rbc .rbc-off-range-bg {
+  background: #f5f2ef;
+}
+
+.agenda-rbc .rbc-today {
+  background: rgba(255, 85, 0, 0.06);
+}
+
+.agenda-rbc .rbc-event {
+  border-radius: 0.35rem;
+  background: #ff5500;
+  border: none;
+  font-size: 0.75rem;
+}
+
+.agenda-rbc .rbc-event:focus {
+  outline: 2px solid rgba(255, 85, 0, 0.35);
+  outline-offset: 1px;
+}
+
+.agenda-rbc .rbc-show-more {
+  color: #ff5500;
+  font-weight: 600;
+}
+
+.agenda-rbc .rbc-agenda-table {
+  border-radius: 0.75rem;
+  overflow: hidden;
+}

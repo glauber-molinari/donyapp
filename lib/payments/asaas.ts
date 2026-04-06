@@ -1,0 +1,64 @@
+/**
+ * Link de pagamento Asaas com assinatura recorrente (checkout: cartão, PIX, boleto conforme link).
+ * @see https://docs.asaas.com/reference/criar-um-link-de-pagamentos
+ * @see https://docs.asaas.com/docs/link-de-pagamentos
+ */
+
+import { asaasPostJson, getAsaasApiKey } from "@/lib/payments/asaas-client";
+import { PRO_PRICE_MONTHLY_CENTS } from "@/lib/plan-limits";
+
+/** Valor mensal em reais (API Asaas usa decimal). */
+function proPriceMonthlyReais(): number {
+  return PRO_PRICE_MONTHLY_CENTS / 100;
+}
+
+type PaymentLinkCreateResponse = {
+  id?: string;
+  url?: string;
+};
+
+/**
+ * Cria um link de pagamento com cobrança recorrente mensal e `externalReference` = `accountId` (UUID da conta Donyapp).
+ */
+export async function createAsaasProPaymentLink(accountId: string): Promise<
+  { ok: true; url: string; id: string } | { ok: false; error: string }
+> {
+  if (!getAsaasApiKey()) {
+    return { ok: false, error: "ASAAS_API_KEY não configurada." };
+  }
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
+  if (!appUrl) {
+    return { ok: false, error: "NEXT_PUBLIC_APP_URL é obrigatório para o retorno do checkout." };
+  }
+
+  const value = proPriceMonthlyReais();
+
+  const { ok, json } = await asaasPostJson<PaymentLinkCreateResponse>("/v3/paymentLinks", {
+    name: "Dony — Plano Pro",
+    description: "Assinatura mensal — gestão de pós-produção",
+    value,
+    billingType: "UNDEFINED",
+    chargeType: "RECURRENT",
+    subscriptionCycle: "MONTHLY",
+    externalReference: accountId,
+    notificationEnabled: true,
+    /** Boleto: doc exige prazo quando o link permite boleto (@see PaymentLink guia). */
+    dueDateLimitDays: 10,
+    callback: {
+      successUrl: `${appUrl}/settings/plan?status=success`,
+      autoRedirect: true,
+    },
+  });
+
+  if (!ok) {
+    const msg = json.errors?.[0]?.description ?? "Falha ao criar link Asaas.";
+    return { ok: false, error: msg };
+  }
+
+  if (!json.id || !json.url) {
+    return { ok: false, error: "Resposta inválida do Asaas." };
+  }
+
+  return { ok: true, id: json.id, url: json.url };
+}

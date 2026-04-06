@@ -1,0 +1,149 @@
+{
+  "meta": {
+    "source": "attio.com",
+    "type": "SaaS Landing Page",
+    "category": "CRM / B2B Software",
+    "aesthetic": "Modern Minimal / Clean Tech"
+  },
+
+  "typography": {
+    "display": {
+      "fontFamily": "System sans-serif com peso pesado (semelhante a SF Pro Display ou Geist)",
+      "fontWeight": "800–900 (ExtraBold / Black)",
+      "fontSize": "clamp(3rem, 8vw, 7rem)",
+      "lineHeight": "1.0–1.1",
+      "letterSpacing": "-0.03em",
+      "color": "#0A0A0A",
+      "style": "flush left com quebra de linha intencional para efeito dramático"
+    },
+    "body": {
+      "fontFamily": "Sans-serif legível, peso regular",
+      "fontWeight": "400",
+      "fontSize": "1.1–1.25rem",
+      "lineHeight": "1.6",
+      "color": "#444",
+      "maxWidth": "55ch",
+      "textAlign": "center"
+    },
+    "badge": {
+      "fontFamily": "Monospace ou sans-serif compacto",
+      "fontSize": "0.75rem",
+      "fontWeight": "600",
+      "letterSpacing": "0.02em",
+      "textTransform": "none"
+    },
+    "nav": {
+      "fontWeight": "500",
+      "fontSize": "0.9rem",
+      "color": "#333"
+    }
+  },
+
+  "colorPalette": {
+    "background": "#FFFFFF",
+    "foreground": "#0A0A0A",
+    "muted": "#F5F5F5",
+    "border": "#E5E5E5",
+    "accent": "#18181B",
+    "accentForeground": "#FFFFFF",
+    "secondaryButton": {
+      "background": "transparent",
+      "border": "#D0D0D0",
+      "text": "#0A0A0A"
+    },
+    "badge": {
+      "background": "#18181B",
+      "text": "#FFFFFF",
+      "borderRadius": "999px"
+    },
+    "appPreview": {
+      "background": "#FFFFFF",
+      "sidebar": "#F9F9F9",
+      "border": "#EBEBEB",
+      "tagWon": "#22C55E",
+      "tagExpansion": "#3B82F6",
+      "highlight": "#6366F1"
+    }
+  },
+
+  "layout": {
+    "maxWidth": "1200px",
+    "heroAlignment": "center",
+    "navStyle": "fixed top, transparent, minimal links",
+    "spacing": {
+      "sectionPadding": "120px 0",
+      "heroTopPadding": "180px",
+      "elementGap": "24px"
+    },
+    "grid": "single column hero com preview de produto centralizado abaixo"
+  },
+
+  "components": {
+    "navbar": {
+      "style": "flat, sem sombra, fundo branco ou transparente",
+      "logo": "ícone geométrico + wordmark em bold",
+      "links": "texto simples com dropdown indicator",
+      "cta": {
+        "primary": {
+          "label": "Start for free",
+          "style": "background preto, texto branco, border-radius 8px, padding 10px 20px"
+        },
+        "secondary": {
+          "label": "Sign in",
+          "style": "ghost, borda sutil, texto escuro"
+        }
+      }
+    },
+    "badge": {
+      "style": "pill com fundo escuro, texto branco, ícone emoji, seta chevron à direita",
+      "prefix": "tag colorida 'New' dentro do pill",
+      "usage": "anúncio de feature acima do headline"
+    },
+    "heroCTA": {
+      "layout": "dois botões lado a lado, centralizados",
+      "primaryButton": {
+        "background": "#18181B",
+        "color": "#FFF",
+        "borderRadius": "8px",
+        "padding": "14px 28px",
+        "fontWeight": "600"
+      },
+      "secondaryButton": {
+        "background": "transparent",
+        "border": "1.5px solid #D0D0D0",
+        "color": "#18181B",
+        "borderRadius": "8px",
+        "padding": "14px 28px"
+      }
+    },
+    "productPreview": {
+      "style": "screenshot ou mockup de app flutuando abaixo dos botões CTA",
+      "position": "centralizado, cortado na parte inferior da viewport para criar curiosidade",
+      "border": "1px solid #E5E5E5",
+      "borderRadius": "12px 12px 0 0",
+      "shadow": "0 4px 40px rgba(0,0,0,0.08)",
+      "content": "UI real do produto (tabela/kanban/CRM view)"
+    }
+  },
+
+  "effects": {
+    "animations": "mínimas — sem parallax ou scroll effects agressivos",
+    "hover": "sutil scale ou shadow nos botões",
+    "transitions": "150–200ms ease",
+    "backgroundTexture": "nenhuma — fundo branco puro"
+  },
+
+  "tone": {
+    "copyStyle": "bold, direto, com palavra de poder no headline",
+    "headlinePattern": "[Substantivo poderoso] + [resultado/benefit] + [palavra que surpreende]",
+    "example": "Customer relationship magic.",
+    "subheadlinePattern": "1–2 frases descrevendo o produto com foco em flexibilidade e resultado",
+    "wordCount": "headline < 5 palavras, subheadline < 30 palavras"
+  },
+
+  "promptInstructions": {
+    "useFor": "Claude Code, v0, Lovable, Replit",
+    "howToUse": "Referencie este JSON como 'design system reference' no início do prompt. Especifique qual seção da landing page você quer construir (hero, features, pricing, etc.) e peça para seguir os tokens de tipografia, cor e componentes descritos aqui.",
+    "examplePrompt": "Crie um hero section de landing page SaaS seguindo este design system: tipografia display extrabold com letter-spacing negativo, headline curto e impactante, dois CTAs (primário preto, secundário ghost), badge de novidade em pill escuro acima do título, e um mockup do produto cortado na borda inferior. Fundo branco, paleta monocromática com accent preto. Veja os tokens em attio-landing-style.json."
+  }
+}

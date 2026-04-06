@@ -23,16 +23,14 @@ Sistema SaaS de gestão de pós-produção (Kanban) especializado para fotógraf
 | Banco de dados / Auth | Supabase (PostgreSQL + Auth Google OAuth) |
 | Drag-and-drop Kanban | dnd-kit |
 | Envio de e-mail | Resend |
-| Pagamento PIX | AbacatePay |
-| Pagamento Cartão | Asaas |
+| Pagamentos (cartão, link, assinaturas) | Asaas |
 | Deploy | Vercel |
 | Ícones | Lucide React |
 | Onboarding Tour | driver.js |
 
 **Regras de stack:**
 - Nunca substituir Supabase por outro banco
-- Nunca substituir AbacatePay por Stripe ou outro para PIX
-- Nunca substituir Asaas para cartão de crédito
+- Nunca substituir Asaas como provedor de pagamentos do produto
 - Nunca usar Prisma — usar Supabase client direto
 - Nunca usar next-auth — usar Supabase Auth com Google OAuth
 
@@ -130,11 +128,10 @@ Ações: criar, editar, excluir (bloquear se houver jobs ativos vinculados), bus
 
 | Ordem | Nome | Cor de fundo (Tailwind) |
 |---|---|---|
-| 1 | Aguardando | `violet-50` |
+| 1 | Backup | `ds-accent/10` |
 | 2 | Em Edição | `amber-50` |
-| 3 | Revisão | `blue-50` |
-| 4 | Aprovado | `green-50` |
-| 5 | Entregue | `pink-50` |
+| 3 | Em Aprovação | `blue-50` |
+| 4 | Entregue | `pink-50` |
 
 ### Personalização do Kanban (em /settings)
 
@@ -239,9 +236,7 @@ Reply-to: e-mail do profissional (configurado em Settings)
 | Trial Pro | — | 14 dias grátis |
 
 ### Meios de pagamento
-- **PIX:** AbacatePay
-- **Cartão de crédito:** Asaas
-- Ambos via webhook para atualização automática do status da assinatura
+- **Asaas:** checkout (cartão, link de pagamento, assinatura) e webhook para atualização automática do status da assinatura
 
 ---
 
@@ -284,10 +279,9 @@ Disparado automaticamente apenas no **primeiro login** (checar campo `tour_compl
 
 | Coluna | Fundo Tailwind |
 |---|---|
-| Aguardando | `bg-violet-50` |
+| Backup | `bg-ds-accent/10` |
 | Em Edição | `bg-amber-50` |
-| Revisão | `bg-blue-50` |
-| Aprovado | `bg-green-50` |
+| Em Aprovação | `bg-blue-50` |
 | Entregue | `bg-pink-50` |
 
 ### Regras de design — NUNCA violar
@@ -346,7 +340,7 @@ O que fazer:
 - Configurar Tailwind CSS
 - Configurar ESLint + Prettier com regras padrão
 - Criar repositório no GitHub e fazer primeiro commit
-- Configurar variáveis de ambiente: `.env.local` com placeholders para Supabase, Resend, AbacatePay, Asaas
+- Configurar variáveis de ambiente: `.env.local` com placeholders para Supabase, Resend, Asaas
 - Criar `.env.example` documentado com todas as variáveis necessárias
 - Instalar dependências base: `lucide-react`, `clsx`, `tailwind-merge`
 
@@ -442,7 +436,6 @@ create table subscriptions (
   current_period_ends_at timestamptz,
   extra_users integer default 0,
   asaas_subscription_id text,
-  abacatepay_subscription_id text,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
@@ -464,7 +457,7 @@ O que fazer:
 - Implementar fluxo completo:
   - Clique em "Entrar com Google" → OAuth → callback
   - No callback: verificar se usuário já existe em `users`
-  - Se novo usuário: criar `account`, criar registro em `users` com role `admin`, criar as 5 etapas padrão do kanban para a conta, criar registro em `subscriptions` com plano `free`
+  - Se novo usuário: criar `account`, criar registro em `users` com role `admin`, criar as 4 etapas padrão do kanban (Backup → Em Edição → Em Aprovação → Entregue) para a conta, criar registro em `subscriptions` com plano `free`
   - Redirecionar para `/dashboard`
 - Middleware Next.js protegendo todas as rotas exceto `/login` e `/invite/[token]`
 - Implementar logout
@@ -655,12 +648,7 @@ Critério de conclusão: fluxo completo de convite por e-mail funcionando, membr
 
 O que fazer:
 
-**AbacatePay (PIX):**
-- Criar API route `POST /api/payment/pix/create` — gera cobrança PIX via AbacatePay
-- Criar webhook `POST /api/webhooks/abacatepay` — recebe confirmação de pagamento
-- Ao confirmar pagamento: atualizar `subscriptions` para plano `pro`
-
-**Asaas (Cartão):**
+**Asaas:**
 - Criar API route `POST /api/payment/card/create` — cria assinatura recorrente no Asaas
 - Criar webhook `POST /api/webhooks/asaas` — recebe eventos de pagamento/cancelamento
 - Ao confirmar: atualizar `subscriptions` para plano `pro`
@@ -671,7 +659,7 @@ O que fazer:
 
 **Página de upgrade:**
 - Em Settings → Plano: exibir plano atual, limites, botão "Fazer upgrade para Pro"
-- Modal de upgrade: escolha PIX ou cartão, fluxo de pagamento, confirmação
+- Modal de upgrade: redirecionamento ao checkout Asaas, confirmação
 
 **Aplicar limites em todo o sistema:**
 - Jobs: bloquear criação se Free e já tiver 5 ativos
@@ -680,7 +668,7 @@ O que fazer:
 - E-mail: já feito no Passo 11
 - Usuários adicionais: já feito no Passo 12
 
-Critério de conclusão: upgrade funcional via PIX e cartão, webhooks recebendo e atualizando plano, todos os limites do Free aplicados corretamente.
+Critério de conclusão: upgrade funcional via Asaas, webhook recebendo e atualizando plano, todos os limites do Free aplicados corretamente.
 
 ---
 
@@ -727,7 +715,7 @@ O que fazer:
 - Configurar todas as variáveis de ambiente na Vercel (produção)
 - Configurar domínio customizado
 - Configurar URLs de callback do Google OAuth para o domínio de produção
-- Configurar URLs de webhook (AbacatePay e Asaas) apontando para produção
+- Configurar URL de webhook Asaas apontando para produção
 - Configurar domínio de e-mail no Resend para produção
 - Deploy e smoke test completo em produção: login, criar job, mover kanban, enviar e-mail, webhook de pagamento
 

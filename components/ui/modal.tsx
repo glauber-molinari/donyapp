@@ -52,7 +52,7 @@ export function Modal({
     >
       <button
         type="button"
-        className="absolute inset-0 z-0 bg-black/40"
+        className="absolute inset-0 z-0 bg-ds-ink/40"
         onClick={onClose}
         aria-label="Fechar modal"
       />
@@ -61,14 +61,14 @@ export function Modal({
         aria-modal="true"
         aria-labelledby={titleId}
         className={cn(
-          "relative z-10 w-full rounded-xl border border-gray-200 bg-white p-6 shadow-sm",
+          "relative z-10 w-full rounded-ds-xl border border-app-border bg-app-sidebar p-6 shadow-ds-md",
           widthClass[size],
           className
         )}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-start justify-between gap-4">
-          <h2 id={titleId} className="text-lg font-semibold text-gray-900">
+          <h2 id={titleId} className="text-lg font-semibold text-ds-ink">
             {title}
           </h2>
           <Button

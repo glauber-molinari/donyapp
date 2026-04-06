@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 
 import { ContactsView } from "./contacts-view";
+
+export const metadata: Metadata = {
+  title: "Contatos",
+};
 
 export default async function ContactsPage() {
   const supabase = createClient();
@@ -22,7 +27,7 @@ export default async function ContactsPage() {
   if (error) {
     return (
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Contatos</h1>
+        <h1 className="text-2xl font-bold text-ds-ink">Contatos</h1>
         <p className="mt-2 text-sm text-red-600" role="alert">
           Não foi possível carregar os contatos. Tente novamente.
         </p>

@@ -3,8 +3,10 @@
 @tailwind utilities;
 
 :root {
-  --background: #f0f4f3;
-  --foreground: #1f2937;
+  --background: #f5f2ef;
+  --foreground: #0c0a09;
+  --ds-accent: #ff5500;
+  --ds-border: #e8e4df;
 }
 
 body {
@@ -13,7 +15,7 @@ body {
   font-family: var(--font-inter), system-ui, sans-serif;
 }
 
-/* Landing: entrada suave (CSS only) */
+/* Landing: entrada suave (CSS only) — legado, opcional */
 @keyframes landing-reveal {
   from {
     opacity: 0;
@@ -46,4 +48,75 @@ body {
 .landing-hero-visual {
   opacity: 0;
   animation: landing-reveal 0.8s cubic-bezier(0.22, 1, 0.36, 1) 260ms forwards;
+}
+
+/* driver.js — tour (cores do app: accent #ff5500, cream, bordas ds) */
+.driver-popover.dony-driver-popover {
+  max-width: min(320px, calc(100vw - 32px));
+  padding: 18px 16px 16px;
+  border-radius: 1rem;
+  border: 1px solid var(--ds-border);
+  background: #ffffff;
+  box-shadow:
+    0 4px 40px rgba(12, 10, 9, 0.06),
+    0 1px 0 rgba(12, 10, 9, 0.04);
+}
+
+.driver-popover.dony-driver-popover .driver-popover-title {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.driver-popover.dony-driver-popover .driver-popover-description {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #57534e;
+}
+
+.driver-popover.dony-driver-popover .driver-popover-progress-text {
+  color: var(--ds-accent);
+  font-weight: 600;
+}
+
+.driver-popover.dony-driver-popover .driver-popover-footer button {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 0.75rem;
+  border: 1px solid var(--ds-border);
+  background: #ffffff;
+  color: #57534e;
+  text-shadow: none;
+}
+
+.driver-popover.dony-driver-popover .driver-popover-footer button:hover,
+.driver-popover.dony-driver-popover .driver-popover-footer button:focus {
+  background: #f5f2ef;
+  color: var(--foreground);
+}
+
+.driver-popover.dony-driver-popover .driver-popover-navigation-btns button:last-child {
+  background: var(--ds-accent);
+  border-color: var(--ds-accent);
+  color: #ffffff;
+}
+
+.driver-popover.dony-driver-popover .driver-popover-navigation-btns button:last-child:hover,
+.driver-popover.dony-driver-popover .driver-popover-navigation-btns button:last-child:focus {
+  background: #e64e00;
+  border-color: #e64e00;
+  color: #ffffff;
+}
+
+.driver-popover.dony-driver-popover .driver-popover-close-btn {
+  color: #78716c;
+}
+
+.driver-popover.dony-driver-popover .driver-popover-close-btn:hover,
+.driver-popover.dony-driver-popover .driver-popover-close-btn:focus {
+  color: var(--foreground);
 }

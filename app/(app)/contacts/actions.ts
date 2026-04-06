@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
+import { FREE_MAX_CONTACTS } from "@/lib/plan-limits";
 import { isValidEmail, normalizeOptionalText } from "@/lib/validation/contact";
 
 type ActionResult = { ok: true } | { ok: false; error: string };
@@ -49,6 +50,27 @@ export async function createContact(formData: FormData): Promise<ActionResult> {
   if (!isValidEmail(email)) return { ok: false, error: "E-mail inválido." };
 
   const supabase = createClient();
+
+  const { data: sub } = await supabase
+    .from("subscriptions")
+    .select("plan")
+    .eq("account_id", ctx.accountId)
+    .maybeSingle();
+
+  if ((sub?.plan ?? "free") === "free") {
+    const { count } = await supabase
+      .from("contacts")
+      .select("*", { count: "exact", head: true })
+      .eq("account_id", ctx.accountId);
+
+    if ((count ?? 0) >= FREE_MAX_CONTACTS) {
+      return {
+        ok: false,
+        error: `No plano Free, o limite é ${FREE_MAX_CONTACTS} contatos. Faça upgrade em Configurações → Plano.`,
+      };
+    }
+  }
+
   const { error } = await supabase.from("contacts").insert({
     account_id: ctx.accountId,
     name,

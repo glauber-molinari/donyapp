@@ -1,18 +1,12 @@
 import type { Metadata } from "next";
-import { DM_Sans, Fraunces } from "next/font/google";
+import { Inter } from "next/font/google";
 
 import { LandingPage } from "@/components/marketing/landing-page";
 
-const display = Fraunces({
+const inter = Inter({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-landing-display",
-});
-
-const body = DM_Sans({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-landing-body",
+  weight: ["400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
@@ -27,6 +21,6 @@ export const metadata: Metadata = {
  */
 export default function Home() {
   return (
-    <LandingPage displayClassName={display.className} bodyClassName={body.className} />
+    <LandingPage displayClassName={inter.className} bodyClassName={inter.className} />
   );
 }

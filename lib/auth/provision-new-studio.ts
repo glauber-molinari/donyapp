@@ -1,5 +1,6 @@
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 
+import { oauthAvatarUrlFromUser } from "@/lib/auth/oauth-profile";
 import type { Database } from "@/types/database";
 
 const DEFAULT_STAGES: {
@@ -8,11 +9,10 @@ const DEFAULT_STAGES: {
   color: string;
   is_final: boolean;
 }[] = [
-  { position: 1, name: "Aguardando", color: "bg-violet-50", is_final: false },
+  { position: 1, name: "Backup", color: "bg-ds-accent/10", is_final: false },
   { position: 2, name: "Em Edição", color: "bg-amber-50", is_final: false },
-  { position: 3, name: "Revisão", color: "bg-blue-50", is_final: false },
-  { position: 4, name: "Aprovado", color: "bg-green-50", is_final: false },
-  { position: 5, name: "Entregue", color: "bg-pink-50", is_final: true },
+  { position: 3, name: "Em Aprovação", color: "bg-blue-50", is_final: false },
+  { position: 4, name: "Entregue", color: "bg-pink-50", is_final: true },
 ];
 
 /**
@@ -29,10 +29,7 @@ export async function provisionNewStudio(
     user.email?.split("@")[0] ||
     "Meu estúdio";
 
-  const avatarUrl =
-    (typeof meta.avatar_url === "string" && meta.avatar_url) ||
-    (typeof meta.picture === "string" && meta.picture) ||
-    null;
+  const avatarUrl = oauthAvatarUrlFromUser(user);
 
   const { data: account, error: accErr } = await supabase
     .from("accounts")
@@ -81,6 +78,16 @@ export async function provisionNewStudio(
 
   if (stagesErr) {
     return { ok: false, message: stagesErr.message };
+  }
+
+  const { error: workTypesErr } = await supabase.from("job_work_types").insert({
+    account_id: accountId,
+    name: "Geral",
+    position: 1,
+  });
+
+  if (workTypesErr) {
+    return { ok: false, message: workTypesErr.message };
   }
 
   const { error: subErr } = await supabase.from("subscriptions").insert({

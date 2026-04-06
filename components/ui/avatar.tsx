@@ -31,11 +31,12 @@ export interface AvatarProps {
 export function Avatar({ src, name, size = "md", className }: AvatarProps) {
   const [failed, setFailed] = useState(false);
   const showImg = Boolean(src) && !failed;
+  const remoteSrc = typeof src === "string" && /^https?:\/\//i.test(src);
 
   return (
     <div
       className={cn(
-        "relative flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-violet-100 font-medium text-violet-700 ring-1 ring-gray-200",
+        "relative flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-ds-cream font-medium text-ds-ink ring-1 ring-app-border",
         sizeClass[size],
         className
       )}
@@ -46,7 +47,8 @@ export function Avatar({ src, name, size = "md", className }: AvatarProps) {
         <img
           src={src!}
           alt=""
-          className="h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover"
+          referrerPolicy={remoteSrc ? "no-referrer" : undefined}
           onError={() => setFailed(true)}
         />
       ) : (

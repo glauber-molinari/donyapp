@@ -8,6 +8,7 @@ export type Json =
 
 export type UserRole = "admin" | "member";
 export type JobType = "foto" | "video" | "foto_video";
+export type JobKind = "standard" | "video_edit";
 export type Plan = "free" | "pro";
 export type SubscriptionStatus = "active" | "trialing" | "past_due" | "canceled";
 
@@ -19,18 +20,64 @@ export interface Database {
           id: string;
           name: string;
           created_at: string;
+          delivery_email_subject_template: string | null;
+          delivery_email_body_template: string | null;
         };
         Insert: {
           id?: string;
           name: string;
           created_at?: string;
+          delivery_email_subject_template?: string | null;
+          delivery_email_body_template?: string | null;
         };
         Update: {
           id?: string;
           name?: string;
           created_at?: string;
+          delivery_email_subject_template?: string | null;
+          delivery_email_body_template?: string | null;
         };
         Relationships: [];
+      };
+      account_google_calendar: {
+        Row: {
+          account_id: string;
+          refresh_token: string;
+          access_token: string | null;
+          access_token_expires_at: string | null;
+          google_email: string | null;
+          calendar_id: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          account_id: string;
+          refresh_token: string;
+          access_token?: string | null;
+          access_token_expires_at?: string | null;
+          google_email?: string | null;
+          calendar_id?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          account_id?: string;
+          refresh_token?: string;
+          access_token?: string | null;
+          access_token_expires_at?: string | null;
+          google_email?: string | null;
+          calendar_id?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "account_google_calendar_account_id_fkey";
+            columns: ["account_id"];
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       users: {
         Row: {
@@ -185,6 +232,37 @@ export interface Database {
           },
         ];
       };
+      job_work_types: {
+        Row: {
+          id: string;
+          account_id: string;
+          name: string;
+          position: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          name: string;
+          position?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          name?: string;
+          position?: number;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "job_work_types_account_id_fkey";
+            columns: ["account_id"];
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       kanban_stages: {
         Row: {
           id: string;
@@ -228,11 +306,17 @@ export interface Database {
           account_id: string;
           contact_id: string | null;
           stage_id: string | null;
+          position: number;
           name: string;
           type: JobType;
+          internal_deadline: string;
           deadline: string;
+          work_type_id: string;
+          parent_job_id: string | null;
+          job_kind: JobKind;
           notes: string | null;
           delivery_link: string | null;
+          client_revision: number;
           created_by: string | null;
           created_at: string;
           updated_at: string;
@@ -242,11 +326,17 @@ export interface Database {
           account_id: string;
           contact_id?: string | null;
           stage_id?: string | null;
+          position?: number;
           name: string;
           type: JobType;
+          internal_deadline: string;
           deadline: string;
+          work_type_id: string;
+          parent_job_id?: string | null;
+          job_kind?: JobKind;
           notes?: string | null;
           delivery_link?: string | null;
+          client_revision?: number;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -256,11 +346,17 @@ export interface Database {
           account_id?: string;
           contact_id?: string | null;
           stage_id?: string | null;
+          position?: number;
           name?: string;
           type?: JobType;
+          internal_deadline?: string;
           deadline?: string;
+          work_type_id?: string;
+          parent_job_id?: string | null;
+          job_kind?: JobKind;
           notes?: string | null;
           delivery_link?: string | null;
+          client_revision?: number;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -285,6 +381,18 @@ export interface Database {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "jobs_work_type_id_fkey";
+            columns: ["work_type_id"];
+            referencedRelation: "job_work_types";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "jobs_parent_job_id_fkey";
+            columns: ["parent_job_id"];
+            referencedRelation: "jobs";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "jobs_created_by_fkey";
             columns: ["created_by"];
             referencedRelation: "users";
@@ -302,7 +410,6 @@ export interface Database {
           current_period_ends_at: string | null;
           extra_users: number;
           asaas_subscription_id: string | null;
-          abacatepay_subscription_id: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -315,7 +422,6 @@ export interface Database {
           current_period_ends_at?: string | null;
           extra_users?: number;
           asaas_subscription_id?: string | null;
-          abacatepay_subscription_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -328,7 +434,6 @@ export interface Database {
           current_period_ends_at?: string | null;
           extra_users?: number;
           asaas_subscription_id?: string | null;
-          abacatepay_subscription_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };

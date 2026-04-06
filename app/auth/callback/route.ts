@@ -1,7 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
+import { acceptInvitationForNewUser } from "@/lib/auth/accept-invitation";
+import { oauthAvatarUrlFromUser } from "@/lib/auth/oauth-profile";
 import { provisionNewStudio } from "@/lib/auth/provision-new-studio";
+import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import type { Database } from "@/types/database";
 
 export async function GET(request: NextRequest) {
@@ -60,10 +63,49 @@ export async function GET(request: NextRequest) {
     .maybeSingle();
 
   if (!existing) {
-    const result = await provisionNewStudio(supabase, user);
+    const service = createServiceRoleClient();
+    const db = service ?? supabase;
+    if (!service) {
+      console.warn(
+        "auth/callback: SUPABASE_SERVICE_ROLE_KEY ausente — convites/provisionamento podem falhar."
+      );
+    }
+
+    const inviteMatch = /^\/invite\/([^/?#]+)/.exec(nextPath);
+    const inviteToken = inviteMatch?.[1];
+
+    if (inviteToken) {
+      if (!service) {
+        return NextResponse.redirect(`${origin}/login?error=invite_config`);
+      }
+      const accepted = await acceptInvitationForNewUser(service, user, inviteToken);
+      if (accepted.ok) {
+        return response;
+      }
+      const err =
+        accepted.reason === "email"
+          ? "invite_email"
+          : accepted.reason === "exists"
+            ? "invite_exists"
+            : "invite_invalid";
+      return NextResponse.redirect(`${origin}/login?error=${err}`);
+    }
+
+    const result = await provisionNewStudio(db, user);
     if (!result.ok) {
       console.error("provisionNewStudio:", result.message);
       return NextResponse.redirect(`${origin}/login?error=provision`);
+    }
+  }
+
+  const remoteAvatar = oauthAvatarUrlFromUser(user);
+  if (remoteAvatar) {
+    const { error: avatarErr } = await supabase
+      .from("users")
+      .update({ avatar_url: remoteAvatar })
+      .eq("id", user.id);
+    if (avatarErr) {
+      console.warn("auth/callback: falha ao sincronizar avatar_url:", avatarErr.message);
     }
   }
 

@@ -1,0 +1,864 @@
+"use client";
+
+import {
+  DndContext,
+  DragOverlay,
+  KeyboardSensor,
+  PointerSensor,
+  closestCorners,
+  useDroppable,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { Plus, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import { ContactSearchField } from "@/components/app/contact-search-field";
+import type { JobWithRelations } from "../dashboard/dashboard-view";
+import {
+  createJob,
+  syncKanbanState,
+  updateJobClientRevision,
+  type KanbanColumnSync,
+} from "../jobs/actions";
+import { DeliveryEmailModal } from "@/components/app/delivery-email-modal";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Modal } from "@/components/ui/modal";
+import { Select } from "@/components/ui/select";
+import { kanbanStageAccentHex } from "@/lib/kanban-stage-accent";
+import { deadlineBadge, formatDeadlinePt } from "@/lib/job-display";
+import { toast } from "@/lib/toast";
+import { cn } from "@/lib/utils";
+import type { Database, Plan } from "@/types/database";
+
+type JobRow = Database["public"]["Tables"]["jobs"]["Row"];
+type StageRow = Database["public"]["Tables"]["kanban_stages"]["Row"];
+type WorkTypeRow = Database["public"]["Tables"]["job_work_types"]["Row"];
+type ContactPick = Pick<Database["public"]["Tables"]["contacts"]["Row"], "id" | "name" | "email">;
+
+const JOB_DELIVERY_OPTIONS: { value: JobRow["type"]; label: string }[] = [
+  { value: "foto", label: "Foto" },
+  { value: "video", label: "Vídeo" },
+  { value: "foto_video", label: "Foto e Vídeo" },
+];
+
+function todayYmd(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+/** YYYY-MM do mês corrente (fuso local). */
+function currentYearMonth(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function lastYmdOfMonth(ym: string): string {
+  const [y, m] = ym.split("-").map(Number);
+  if (!y || !m) return `${ym}-31`;
+  const last = new Date(y, m, 0).getDate();
+  return `${y}-${String(m).padStart(2, "0")}-${String(last).padStart(2, "0")}`;
+}
+
+/** Prazo (YYYY-MM-DD) cai dentro do mês YYYY-MM. */
+function ymdInCalendarMonth(ymd: string, ym: string): boolean {
+  const start = `${ym}-01`;
+  const end = lastYmdOfMonth(ym);
+  return ymd >= start && ymd <= end;
+}
+
+function updatedAtInCalendarMonth(iso: string, ym: string): boolean {
+  const [y, m] = ym.split("-").map(Number);
+  if (!y || !m) return false;
+  const start = new Date(y, m - 1, 1, 0, 0, 0, 0);
+  const end = new Date(y, m, 0, 23, 59, 59, 999);
+  const t = new Date(iso).getTime();
+  return t >= start.getTime() && t <= end.getTime();
+}
+
+/**
+ * Job aparece no quadro do mês se o prazo interno ou final cair naquele mês,
+ * ou (entregue) se tiver sido atualizado na etapa final naquele mês.
+ */
+function jobVisibleInBoardMonth(job: JobWithRelations, ym: string): boolean {
+  if (ymdInCalendarMonth(job.deadline, ym) || ymdInCalendarMonth(job.internal_deadline, ym)) {
+    return true;
+  }
+  const isFinal = job.kanban_stages?.is_final === true;
+  if (isFinal && updatedAtInCalendarMonth(job.updated_at, ym)) {
+    return true;
+  }
+  return false;
+}
+
+const CLIENT_REVISION_OPTIONS = [0, 1, 2, 3, 4, 5].map((n) => ({
+  value: String(n),
+  label: n === 0 ? "0 — sem alteração" : `${n}ª alteração`,
+}));
+
+function ClientRevisionSelect({ job }: { job: JobWithRelations }) {
+  const router = useRouter();
+  const [value, setValue] = useState(String(job.client_revision ?? 0));
+  const [pending, setPending] = useState(false);
+
+  useEffect(() => {
+    setValue(String(job.client_revision ?? 0));
+  }, [job.client_revision, job.id]);
+
+  return (
+    <div
+      className="mt-2"
+      onPointerDown={(e) => e.stopPropagation()}
+      onKeyDown={(e) => e.stopPropagation()}
+    >
+      <label htmlFor={`client-revision-${job.id}`} className="sr-only">
+        Alteração do cliente (0 a 5)
+      </label>
+      <select
+        id={`client-revision-${job.id}`}
+        disabled={pending}
+        value={value}
+        aria-label="Número da alteração pedida pelo cliente"
+        onChange={async (e) => {
+          const next = e.target.value;
+          const num = Number(next);
+          setValue(next);
+          setPending(true);
+          const res = await updateJobClientRevision(job.id, num);
+          setPending(false);
+          if (!res.ok) {
+            setValue(String(job.client_revision ?? 0));
+            toast.error(res.error);
+            return;
+          }
+          router.refresh();
+        }}
+        className="w-full rounded-lg border border-app-border bg-app-sidebar px-2 py-1.5 text-xs text-ds-ink shadow-sm focus:border-app-primary/50 focus:outline-none focus:ring-2 focus:ring-app-primary/20 disabled:opacity-60"
+      >
+        {CLIENT_REVISION_OPTIONS.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+function buildColumnItemsFromJobs(
+  jobList: JobWithRelations[],
+  stageIds: string[]
+): Record<string, string[]> {
+  const map: Record<string, JobWithRelations[]> = {};
+  for (const id of stageIds) map[id] = [];
+  for (const j of jobList) {
+    if (!j.stage_id || !Object.prototype.hasOwnProperty.call(map, j.stage_id)) continue;
+    map[j.stage_id].push(j);
+  }
+  const out: Record<string, string[]> = {};
+  for (const sid of stageIds) {
+    const list = map[sid] ?? [];
+    list.sort((a, b) => {
+      const pa = a.position ?? 0;
+      const pb = b.position ?? 0;
+      if (pa !== pb) return pa - pb;
+      return a.deadline.localeCompare(b.deadline);
+    });
+    out[sid] = list.map((j) => j.id);
+  }
+  return out;
+}
+
+function findContainer(jobId: string, columns: Record<string, string[]>): string | undefined {
+  for (const [stageId, ids] of Object.entries(columns)) {
+    if (ids.includes(jobId)) return stageId;
+  }
+  return undefined;
+}
+
+function applyDragEnd(
+  prev: Record<string, string[]>,
+  event: DragEndEvent,
+  stageIdsOrdered: string[]
+): Record<string, string[]> | null {
+  const { active, over } = event;
+  if (!over || active.id === over.id) return null;
+
+  const activeId = String(active.id);
+  const overId = String(over.id);
+
+  const activeContainer = findContainer(activeId, prev);
+  let overContainer = findContainer(overId, prev);
+  if (!overContainer && overId.startsWith("stage-")) {
+    overContainer = overId.slice("stage-".length);
+  }
+  if (!activeContainer || !overContainer) return null;
+
+  const next: Record<string, string[]> = {};
+  for (const sid of stageIdsOrdered) {
+    next[sid] = [...(prev[sid] ?? [])];
+  }
+
+  if (activeContainer === overContainer) {
+    const items = next[activeContainer];
+    const oldIndex = items.indexOf(activeId);
+    const newIndex = items.indexOf(overId);
+    if (oldIndex === -1 || newIndex === -1) return null;
+    next[activeContainer] = arrayMove(items, oldIndex, newIndex);
+    return next;
+  }
+
+  const source = [...next[activeContainer]];
+  const dest = [...next[overContainer]];
+  const fromIndex = source.indexOf(activeId);
+  if (fromIndex === -1) return null;
+  source.splice(fromIndex, 1);
+
+  let insertIndex: number;
+  if (overId.startsWith("stage-")) {
+    insertIndex = dest.length;
+  } else {
+    const overIndex = dest.indexOf(overId);
+    insertIndex = overIndex >= 0 ? overIndex : dest.length;
+  }
+  dest.splice(insertIndex, 0, activeId);
+
+  next[activeContainer] = source;
+  next[overContainer] = dest;
+  return next;
+}
+
+function toKanbanMoves(
+  columns: Record<string, string[]>,
+  stageIdsOrdered: string[]
+): KanbanColumnSync[] {
+  return stageIdsOrdered.map((stageId) => ({
+    stageId,
+    jobIdsOrdered: columns[stageId] ?? [],
+  }));
+}
+
+function cloneColumnIds(prev: Record<string, string[]>): Record<string, string[]> {
+  const out: Record<string, string[]> = {};
+  for (const k of Object.keys(prev)) {
+    out[k] = [...prev[k]];
+  }
+  return out;
+}
+
+function jobMatchesQuery(job: JobWithRelations | undefined, q: string): boolean {
+  if (!job) return false;
+  const t = q.trim().toLowerCase();
+  if (!t) return true;
+  return (
+    job.name.toLowerCase().includes(t) ||
+    (job.contacts?.name?.toLowerCase().includes(t) ?? false) ||
+    (job.job_work_types?.name?.toLowerCase().includes(t) ?? false)
+  );
+}
+
+interface BoardViewProps {
+  jobs: JobWithRelations[];
+  stages: StageRow[];
+  contacts: ContactPick[];
+  workTypes: WorkTypeRow[];
+  plan: Plan;
+  senderName: string | null;
+  replyToEmail: string | null;
+  accountSubjectTemplate: string | null;
+  accountBodyTemplate: string | null;
+}
+
+function JobCardContent({
+  job,
+  stageFinal,
+  accentHex,
+  isDragging,
+  overlay,
+  revisionInteractive,
+}: {
+  job: JobWithRelations;
+  stageFinal: boolean;
+  accentHex: string;
+  isDragging?: boolean;
+  overlay?: boolean;
+  /** Quando falso (ex.: coluna só leitura com busca), não mostra o seletor de revisão. */
+  revisionInteractive?: boolean;
+}) {
+  const dl = deadlineBadge(job.deadline, stageFinal);
+  const rev = job.client_revision ?? 0;
+
+  return (
+    <div
+      className={cn(
+        "rounded-ds-xl border-2 bg-ds-surface p-3 shadow-ds-sm",
+        isDragging && "opacity-50",
+        overlay && "shadow-ds-md ring-2 ring-ds-accent/20"
+      )}
+      style={{ borderColor: accentHex }}
+    >
+      <p className="text-base font-semibold text-ds-ink">{job.name}</p>
+      {job.job_kind === "video_edit" ? (
+        <p className="mt-1 text-xs font-medium text-sky-800">Edição de vídeo</p>
+      ) : null}
+      {job.job_work_types?.name ? (
+        <p className="mt-1 text-xs text-ds-muted">{job.job_work_types.name}</p>
+      ) : null}
+      <div className="mt-2 flex flex-wrap gap-2">
+        <Badge kind="job-type" value={job.type} />
+        {dl ? <Badge kind="deadline" value={dl} /> : null}
+        {overlay || !revisionInteractive ? (
+          <span className="inline-flex items-center rounded-full border border-ds-subtle/25 bg-ds-cream px-2 py-0.5 text-[11px] font-medium text-ds-muted">
+            Alt. cliente: {rev}
+          </span>
+        ) : null}
+      </div>
+      {revisionInteractive && !overlay ? <ClientRevisionSelect job={job} /> : null}
+      {job.contacts?.name ? (
+        <p className="mt-2 text-sm text-ds-muted">{job.contacts.name}</p>
+      ) : null}
+      <p className="mt-1 text-xs text-ds-subtle">
+        Interno {formatDeadlinePt(job.internal_deadline)} · Final {formatDeadlinePt(job.deadline)}
+      </p>
+    </div>
+  );
+}
+
+function SortableJobCard({
+  job,
+  stageFinal,
+  accentHex,
+  dragDisabled,
+  revisionInteractive,
+}: {
+  job: JobWithRelations;
+  stageFinal: boolean;
+  accentHex: string;
+  dragDisabled: boolean;
+  revisionInteractive: boolean;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: job.id,
+    disabled: dragDisabled,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn("touch-none", dragDisabled && "cursor-default")}
+      {...(dragDisabled ? {} : { ...attributes, ...listeners })}
+    >
+      <JobCardContent
+        job={job}
+        stageFinal={stageFinal}
+        accentHex={accentHex}
+        isDragging={isDragging}
+        revisionInteractive={revisionInteractive}
+      />
+    </div>
+  );
+}
+
+function KanbanColumn({
+  stage,
+  jobIds,
+  jobsById,
+  dragDisabled,
+  searchQuery,
+}: {
+  stage: StageRow;
+  jobIds: string[];
+  jobsById: Map<string, JobWithRelations>;
+  dragDisabled: boolean;
+  searchQuery: string;
+}) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: `stage-${stage.id}`,
+    disabled: dragDisabled,
+  });
+
+  const visibleIds = useMemo(() => {
+    const q = searchQuery.trim();
+    if (!q) return jobIds;
+    return jobIds.filter((id) => jobMatchesQuery(jobsById.get(id), q));
+  }, [jobIds, jobsById, searchQuery]);
+
+  const accentHex = kanbanStageAccentHex(stage.color);
+
+  return (
+    <div
+      className="flex min-h-[min(70vh,520px)] w-[min(100%,280px)] shrink-0 flex-col overflow-hidden rounded-ds-xl bg-[#EDE9E5] transition-[box-shadow,colors]"
+      style={
+        isOver
+          ? {
+              boxShadow: `0 0 0 2px #f5f2ef, 0 0 0 6px ${accentHex}4D`,
+            }
+          : undefined
+      }
+    >
+      <div
+        className="shrink-0 border-t-[10px] border-solid px-3 pb-2 pt-3"
+        style={{ borderTopColor: accentHex }}
+      >
+        <h2 className="text-sm font-semibold text-ds-ink">{stage.name}</h2>
+      </div>
+      {dragDisabled ? (
+        <div className="flex min-h-[120px] flex-1 flex-col gap-3 px-3 pb-3">
+          {visibleIds.map((id) => {
+            const job = jobsById.get(id);
+            if (!job) return null;
+            return (
+              <JobCardContent
+                key={id}
+                job={job}
+                stageFinal={stage.is_final}
+                accentHex={accentHex}
+                revisionInteractive
+              />
+            );
+          })}
+        </div>
+      ) : (
+        <SortableContext items={jobIds} strategy={verticalListSortingStrategy}>
+          <div ref={setNodeRef} className="flex min-h-[120px] flex-1 flex-col gap-3 px-3 pb-3">
+            {jobIds.map((id) => {
+              const job = jobsById.get(id);
+              if (!job) return null;
+              return (
+                <SortableJobCard
+                  key={id}
+                  job={job}
+                  stageFinal={stage.is_final}
+                  accentHex={accentHex}
+                  dragDisabled={false}
+                  revisionInteractive
+                />
+              );
+            })}
+          </div>
+        </SortableContext>
+      )}
+    </div>
+  );
+}
+
+export function BoardView({
+  jobs,
+  stages,
+  contacts,
+  workTypes,
+  plan,
+  senderName,
+  replyToEmail,
+  accountSubjectTemplate,
+  accountBodyTemplate,
+}: BoardViewProps) {
+  const router = useRouter();
+
+  const sortedStages = useMemo(
+    () => [...stages].sort((a, b) => a.position - b.position),
+    [stages]
+  );
+  const stageIdsOrdered = useMemo(() => sortedStages.map((s) => s.id), [sortedStages]);
+
+  const [boardMonthYm, setBoardMonthYm] = useState(currentYearMonth);
+
+  const filteredJobs = useMemo(
+    () => jobs.filter((j) => jobVisibleInBoardMonth(j, boardMonthYm)),
+    [jobs, boardMonthYm]
+  );
+
+  const jobsById = useMemo(() => {
+    const m = new Map<string, JobWithRelations>();
+    for (const j of filteredJobs) m.set(j.id, j);
+    return m;
+  }, [filteredJobs]);
+
+  const [columnItems, setColumnItems] = useState<Record<string, string[]>>({});
+  const columnItemsRef = useRef(columnItems);
+  columnItemsRef.current = columnItems;
+
+  useEffect(() => {
+    setColumnItems(buildColumnItemsFromJobs(filteredJobs, stageIdsOrdered));
+  }, [filteredJobs, stageIdsOrdered]);
+
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const dragDisabled = searchQuery.trim().length > 0;
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const [createOpen, setCreateOpen] = useState(false);
+  const [isPending, setIsPending] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [emailStub, setEmailStub] = useState<JobWithRelations | null>(null);
+
+  const stageOptions = useMemo(
+    () =>
+      sortedStages.map((s) => ({
+        value: s.id,
+        label: s.name,
+      })),
+    [sortedStages]
+  );
+
+  const workTypeOptions = useMemo(
+    () =>
+      [...workTypes]
+        .sort((a, b) => a.position - b.position || a.name.localeCompare(b.name))
+        .map((w) => ({ value: w.id, label: w.name })),
+    [workTypes]
+  );
+
+  const [deliveryType, setDeliveryType] = useState<JobRow["type"]>("foto");
+
+  useEffect(() => {
+    if (createOpen) setDeliveryType("foto");
+  }, [createOpen]);
+
+  const activeJob = activeId ? jobsById.get(activeId) ?? null : null;
+  const activeStage = useMemo(() => {
+    if (!activeId) return null;
+    const sid = findContainer(activeId, columnItems);
+    return sid ? sortedStages.find((s) => s.id === sid) ?? null : null;
+  }, [activeId, columnItems, sortedStages]);
+
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    setActiveId(String(event.active.id));
+  }, []);
+
+  const handleDragEnd = useCallback(
+    async (event: DragEndEvent) => {
+      const { active, over } = event;
+      setActiveId(null);
+      if (!over || dragDisabled) return;
+
+      const prev = columnItemsRef.current;
+      const next = applyDragEnd(prev, event, stageIdsOrdered);
+      if (!next) return;
+
+      const movedId = String(active.id);
+      const jobBefore = jobsById.get(movedId);
+      const stageBefore = jobBefore?.stage_id ?? undefined;
+      const stageAfter = findContainer(movedId, next);
+
+      const snapshot = cloneColumnIds(prev);
+      setColumnItems(next);
+
+      let res: Awaited<ReturnType<typeof syncKanbanState>>;
+      try {
+        res = await syncKanbanState(toKanbanMoves(next, stageIdsOrdered));
+      } catch {
+        setColumnItems(snapshot);
+        setErrorMessage("Falha ao comunicar com o servidor. Tente novamente.");
+        return;
+      }
+
+      if (!res || res.ok !== true) {
+        setColumnItems(snapshot);
+        setErrorMessage(res && "error" in res ? res.error : "Não foi possível salvar o quadro.");
+        return;
+      }
+
+      router.refresh();
+
+      const targetStage = stageAfter
+        ? sortedStages.find((s) => s.id === stageAfter)
+        : undefined;
+      if (
+        targetStage?.is_final &&
+        jobBefore &&
+        stageBefore !== stageAfter &&
+        stageAfter
+      ) {
+        setEmailStub(jobBefore);
+      } else {
+        toast.success("Quadro atualizado.", { duration: 2800 });
+      }
+    },
+    [
+      dragDisabled,
+      jobsById,
+      router,
+      sortedStages,
+      stageIdsOrdered,
+    ]
+  );
+
+  const handleDragCancel = useCallback(() => {
+    setActiveId(null);
+  }, []);
+
+  const noStages = sortedStages.length === 0;
+
+  async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    setErrorMessage(null);
+    setIsPending(true);
+    try {
+      const res = await createJob(fd);
+      if (!res.ok) {
+        setErrorMessage(res.error);
+        return;
+      }
+      setCreateOpen(false);
+      form.reset();
+      toast.success("Job criado.");
+      router.refresh();
+    } finally {
+      setIsPending(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
+          <h1 className="text-2xl font-bold text-ds-ink">Edições</h1>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="board-month-filter" className="text-xs font-medium text-ds-muted">
+              Mês do quadro
+            </label>
+            <input
+              id="board-month-filter"
+              type="month"
+              value={boardMonthYm}
+              onChange={(e) => setBoardMonthYm(e.target.value)}
+              title="Mostra jobs com prazo interno ou final no mês; em Entregue, também os atualizados nesse mês."
+              className="rounded-ds-xl border border-app-border bg-app-sidebar px-3 py-2 text-sm text-ds-ink shadow-sm focus:border-app-primary/50 focus:outline-none focus:ring-2 focus:ring-app-primary/20"
+            />
+          </div>
+        </div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+          <div className="relative max-w-md flex-1">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ds-subtle"
+              aria-hidden
+            />
+            <input
+              type="search"
+              placeholder="Buscar job ou contato…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full rounded-ds-xl border border-app-border bg-app-sidebar py-2.5 pl-10 pr-3 text-sm text-ds-ink shadow-sm placeholder:text-ds-subtle focus:border-app-primary/50 focus:outline-none focus:ring-2 focus:ring-app-primary/20"
+              aria-label="Buscar no quadro"
+            />
+          </div>
+          <Button
+            id="btn-novo-job"
+            type="button"
+            size="md"
+            className="w-full sm:w-auto"
+            disabled={noStages}
+            onClick={() => {
+              setErrorMessage(null);
+              setCreateOpen(true);
+            }}
+          >
+            <Plus className="h-4 w-4" aria-hidden />
+            Novo job
+          </Button>
+        </div>
+      </div>
+
+      {dragDisabled ? (
+        <p className="text-xs text-ds-muted" role="status">
+          Com busca ativa, o arraste está desligado para não desalinhar a ordem com o servidor.
+        </p>
+      ) : null}
+
+      {errorMessage ? (
+        <div
+          role="alert"
+          className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-800"
+        >
+          {errorMessage}
+        </div>
+      ) : null}
+
+      {noStages ? (
+        <p className="text-sm text-amber-800" role="status">
+          Não há etapas no kanban. Configure em Configurações quando disponível.
+        </p>
+      ) : null}
+
+      {jobs.length === 0 && !noStages ? (
+        <p className="text-sm text-ds-muted">
+          Nenhum job no quadro ainda — use &quot;Novo job&quot; para cadastrar.
+        </p>
+      ) : null}
+
+      {jobs.length > 0 && filteredJobs.length === 0 && !noStages ? (
+        <p className="text-sm text-ds-muted" role="status">
+          Nenhuma edição neste mês — prazos interno/final fora de <strong>{boardMonthYm}</strong> e
+          nenhuma entrega (etapa final) atualizada nesse período. Ajuste o mês acima.
+        </p>
+      ) : null}
+
+      {sortedStages.length > 0 ? (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCorners}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
+        >
+          <div
+            id="kanban-board"
+            className="flex gap-4 overflow-x-auto pb-4 pt-1 [scrollbar-width:thin]"
+          >
+            {sortedStages.map((stage) => (
+              <KanbanColumn
+                key={stage.id}
+                stage={stage}
+                jobIds={columnItems[stage.id] ?? []}
+                jobsById={jobsById}
+                dragDisabled={dragDisabled}
+                searchQuery={searchQuery}
+              />
+            ))}
+          </div>
+
+          <DragOverlay dropAnimation={null}>
+            {activeJob && activeStage ? (
+              <JobCardContent
+                job={activeJob}
+                stageFinal={activeStage.is_final}
+                accentHex={kanbanStageAccentHex(activeStage.color)}
+                overlay
+              />
+            ) : null}
+          </DragOverlay>
+        </DndContext>
+      ) : null}
+
+      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="Novo job" size="lg">
+        <form className="flex flex-col gap-4" onSubmit={handleCreate}>
+          <Select
+            id="board-job-create-stage"
+            name="stage_id"
+            label="Coluna inicial"
+            required
+            placeholder="Selecione a etapa"
+            options={stageOptions}
+          />
+          <Input id="board-job-create-name" name="name" label="Título do job" required />
+          <ContactSearchField
+            id="board-job-create-contact"
+            contacts={contacts}
+            resetKey={createOpen ? "1" : "0"}
+          />
+          <Select
+            id="board-job-create-work-type"
+            name="work_type_id"
+            label="Tipo de trabalho"
+            required={workTypeOptions.length > 0}
+            placeholder={workTypeOptions.length ? "Selecione" : "Cadastre tipos em Configurações"}
+            options={workTypeOptions}
+            disabled={workTypeOptions.length === 0}
+          />
+          {workTypeOptions.length === 0 ? (
+            <p className="text-xs text-amber-800">
+              Adicione tipos de trabalho em <strong>Configurações → Kanban</strong>.
+            </p>
+          ) : null}
+          <Input
+            id="board-job-create-internal"
+            name="internal_deadline"
+            type="date"
+            label="Prazo interno"
+            required
+            defaultValue={todayYmd()}
+          />
+          <Input
+            id="board-job-create-final"
+            name="deadline"
+            type="date"
+            label="Prazo final"
+            required
+            defaultValue={todayYmd()}
+          />
+          <Select
+            id="board-job-create-delivery-type"
+            name="type"
+            label="Tipo de entrega"
+            required
+            value={deliveryType}
+            onChange={(e) => setDeliveryType(e.target.value as JobRow["type"])}
+            options={JOB_DELIVERY_OPTIONS}
+          />
+          {deliveryType === "video" || deliveryType === "foto_video" ? (
+            <div className="rounded-ds-xl border border-sky-200 bg-sky-50/90 p-4">
+              <p className="text-sm font-semibold text-sky-950">Edição de vídeo</p>
+              <p className="mt-1 text-xs text-sky-900/85">
+                Será criado um card adicional no quadro só para acompanhar a edição de vídeo deste
+                job.
+              </p>
+            </div>
+          ) : null}
+          <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setCreateOpen(false)}
+              disabled={isPending}
+            >
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={isPending || workTypeOptions.length === 0}>
+              {isPending ? "Salvando…" : "Salvar"}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      <DeliveryEmailModal
+        open={Boolean(emailStub)}
+        onClose={() => setEmailStub(null)}
+        onSuccess={() => {
+          toast.success("E-mail enviado ao cliente.");
+        }}
+        jobName={emailStub?.name ?? ""}
+        contactName={emailStub?.contacts?.name ?? null}
+        contactEmail={emailStub?.contacts?.email ?? null}
+        deliveryLink={emailStub?.delivery_link ?? null}
+        plan={plan}
+        senderName={senderName}
+        replyToEmail={replyToEmail}
+        accountSubjectTemplate={accountSubjectTemplate}
+        accountBodyTemplate={accountBodyTemplate}
+      />
+    </div>
+  );
+}

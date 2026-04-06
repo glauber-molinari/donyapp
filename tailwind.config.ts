@@ -1,6 +1,14 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  /** Classes vindas do banco (`kanban_stages.color`) precisam existir no bundle */
+  safelist: [
+    "bg-ds-accent/10",
+    "bg-amber-50",
+    "bg-blue-50",
+    "bg-green-50",
+    "bg-pink-50",
+  ],
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -14,21 +22,42 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
-        /** Canvas principal (#F0F4F3) — PRODUCT */
+        /** Design system — landing / app unificado */
+        ds: {
+          cream: "#f5f2ef",
+          ink: "#0c0a09",
+          accent: "#ff5500",
+          muted: "#57534e",
+          subtle: "#78716c",
+          border: "#e8e4df",
+          "border-strong": "#ebe6e1",
+          surface: "#ffffff",
+          elevated: "#ede8e3",
+          "elevated-soft": "#e0dbd6",
+          "on-dark": "#fafaf9",
+        },
+        /** Aliases compatíveis com código que usa app-* */
         app: {
-          canvas: "#F0F4F3",
-          sidebar: "#FFFFFF",
-          /** violet-400 — primária, sem saturar */
-          primary: "#A78BFA",
-          border: "#E5E7EB",
+          canvas: "#f5f2ef",
+          sidebar: "#ffffff",
+          primary: "#ff5500",
+          border: "#e8e4df",
         },
       },
+      boxShadow: {
+        "ds-sm": "0 4px 24px rgba(12, 10, 9, 0.06)",
+        "ds-md": "0 8px 32px rgba(12, 10, 9, 0.1)",
+        "ds-card": "0 4px 40px rgba(12, 10, 9, 0.06)",
+      },
       borderRadius: {
-        xl: "0.75rem",
-        "2xl": "1rem",
+        "ds-xl": "1rem",
+        "ds-2xl": "1.25rem",
+        "ds-card": "2rem",
+      },
+      transitionDuration: {
+        ds: "150ms",
       },
       spacing: {
-        /** Gaps recomendados 16–24px */
         section: "1.25rem",
       },
     },

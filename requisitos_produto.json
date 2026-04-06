@@ -19,8 +19,7 @@
     "autenticacao": "Supabase Auth + Google OAuth 2.0",
     "kanban_drag_drop": "dnd-kit",
     "envio_email": "Resend",
-    "pagamento_pix": "AbacatePay",
-    "pagamento_cartao": "Asaas",
+    "pagamentos": "Asaas",
     "deploy": "Vercel",
     "icones": "Lucide React",
     "onboarding_tour": "driver.js"
@@ -112,7 +111,6 @@
           "current_period_ends_at",
           "extra_users",
           "asaas_subscription_id",
-          "abacatepay_subscription_id",
           "created_at",
           "updated_at"
         ],
@@ -435,13 +433,9 @@
   },
 
   "pagamento": {
-    "pix": {
-      "plataforma": "AbacatePay",
-      "integracao": "webhook para confirmação e atualização automática do plano"
-    },
-    "cartao_credito": {
+    "asaas": {
       "plataforma": "Asaas",
-      "integracao": "webhook para eventos de pagamento e cancelamento",
+      "integracao": "checkout (cartão/link), webhook para eventos de pagamento e cancelamento",
       "usuarios_adicionais": "cobrança incremental criada no Asaas ao convidar novo membro"
     }
   },
@@ -583,7 +577,7 @@
         {
           "passo": 13,
           "modulo": "Pagamento",
-          "entregavel": "AbacatePay (PIX) + Asaas (cartão) + controle de limites"
+          "entregavel": "Asaas + controle de limites"
         }
       ]
     },

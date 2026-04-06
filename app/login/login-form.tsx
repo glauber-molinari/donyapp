@@ -2,16 +2,18 @@
 
 import { createClient } from "@/lib/supabase/client";
 
-export function LoginForm() {
+export function LoginForm({ next = "/dashboard" }: { next?: string }) {
   async function signInWithGoogle() {
     const supabase = createClient();
     const base =
       process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ||
       (typeof window !== "undefined" ? window.location.origin : "");
+    const safeNext =
+      next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${base}/auth/callback`,
+        redirectTo: `${base}/auth/callback?next=${encodeURIComponent(safeNext)}`,
       },
     });
     if (error) {
@@ -23,7 +25,7 @@ export function LoginForm() {
     <button
       type="button"
       onClick={() => void signInWithGoogle()}
-      className="flex w-full items-center justify-center gap-2 rounded-xl bg-violet-400 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-2"
+      className="flex w-full items-center justify-center gap-2 rounded-ds-xl bg-app-primary px-4 py-3 text-sm font-semibold text-white shadow-sm transition duration-ds ease-out hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-app-primary/40 focus:ring-offset-2 focus:ring-offset-app-canvas"
     >
       <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden>
         <path
