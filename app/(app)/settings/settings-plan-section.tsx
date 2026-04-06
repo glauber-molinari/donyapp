@@ -186,7 +186,7 @@ export function SettingsPlanSection({
             <li>Oportunidades e contatos ilimitados</li>
             <li>Equipe e convites por e-mail</li>
             <li>E-mail automático ao mover etapa (Resend)</li>
-            <li>Pagamento via Asaas (cartão ou link de pagamento)</li>
+            <li>Pagamento via Asaas (cartão de crédito)</li>
           </ul>
         </Card>
       </div>
@@ -200,8 +200,8 @@ export function SettingsPlanSection({
       <Modal open={upgradeOpen} onClose={closeUpgrade} title="Assinar Pro" size="md">
         <div className="flex flex-col gap-4">
           <p className="text-sm text-ds-muted">
-            Escolha a forma de pagamento e o ciclo. Você será
-            redirecionado para o checkout seguro da Asaas. Após a confirmação, o plano Pro é ativado
+            Escolha o ciclo (mensal ou anual). Você será redirecionado ao checkout seguro da Asaas
+            para pagar com cartão de crédito. Após a confirmação, o plano Pro é ativado
             automaticamente.
           </p>
           {error ? (

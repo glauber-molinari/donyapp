@@ -1,6 +1,6 @@
 /**
- * Checkout Asaas (sessão hospedada): cartão + PIX, assinatura recorrente — sem boleto.
- * O link de pagamentos (`/v3/paymentLinks` + `UNDEFINED`) inclui boleto; o checkout não.
+ * Checkout Asaas (sessão hospedada): apenas cartão de crédito, assinatura recorrente.
+ * O link de pagamentos (`/v3/paymentLinks` + `UNDEFINED`) inclui boleto; o checkout com CREDIT_CARD não.
  *
  * @see https://docs.asaas.com/reference/create-new-checkout
  * @see https://docs.asaas.com/docs/link-do-checkout-e-redirecionamento-do-cliente
@@ -53,7 +53,7 @@ export async function createAsaasProPaymentLink(accountId: string): Promise<
 export type AsaasSubscriptionCycle = "MONTHLY" | "YEARLY";
 
 /**
- * Cria sessão de checkout recorrente (mensal ou anual): PIX automático + cartão.
+ * Cria sessão de checkout recorrente (mensal ou anual) só com cartão de crédito.
  * `externalReference` = `accountId` (webhooks de cobrança, assinatura e CHECKOUT_PAID).
  */
 export async function createAsaasProPaymentLinkWithCycle(
@@ -75,7 +75,7 @@ export async function createAsaasProPaymentLinkWithCycle(
   const { nextDueDate, endDate } = subscriptionDates();
 
   const { ok, json } = await asaasPostJson<CheckoutCreateResponse>("/v3/checkouts", {
-    billingTypes: ["CREDIT_CARD", "PIX"],
+    billingTypes: ["CREDIT_CARD"],
     chargeTypes: ["RECURRENT"],
     minutesToExpire: 1440,
     externalReference: accountId,

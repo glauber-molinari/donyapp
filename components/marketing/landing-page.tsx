@@ -453,7 +453,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
               </Link>
 
               <p className="relative mt-3 text-center text-xs text-white/60">
-                Aceita cartão de crédito e Pix automático.
+                Pagamento do Pro com cartão de crédito (checkout Asaas).
               </p>
 
               <div className="relative mt-7 border-t border-white/10 pt-6">

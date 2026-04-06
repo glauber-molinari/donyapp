@@ -58,7 +58,7 @@ export function shouldActivatePro(body: Record<string, unknown>, parsed: ParsedA
   const { event } = parsed;
   if (!parsed.accountId) return false;
 
-  /** Checkout Asaas pago (PIX ou cartão) — `externalReference` vem do checkout criado na API. */
+  /** Checkout Asaas pago (cartão) — `externalReference` vem do checkout criado na API. */
   if (event === "CHECKOUT_PAID") {
     return true;
   }
