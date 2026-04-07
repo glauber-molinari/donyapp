@@ -5,6 +5,13 @@ const appOrigin = (process.env.NEXT_PUBLIC_APP_URL ?? "https://donyapp.com").rep
 // Mantém o comportamento padrão do app (scripts/estilos do próprio domínio) e endurece vetores comuns.
 const csp = [
   "default-src 'self'",
+  // Next/React dependem de scripts/estilos inline em produção (ex.: __NEXT_DATA__ e style attributes).
+  // Preferível usar nonces/hashes, mas aqui mantemos compatibilidade sem complexidade extra.
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  "style-src 'self' 'unsafe-inline'",
+  // Avatar do Google (OAuth) e data URIs (ex.: placeholders, favicons embutidos).
+  "img-src 'self' data: https://lh3.googleusercontent.com https://*.googleusercontent.com",
+  "font-src 'self' data:",
   "base-uri 'self'",
   "object-src 'none'",
   "frame-ancestors 'self'",
