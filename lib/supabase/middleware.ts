@@ -52,7 +52,10 @@ export async function updateSession(request: NextRequest) {
     path === "/login" ||
     path.startsWith("/auth/") ||
     path.startsWith("/invite") ||
-    path.startsWith("/api/webhooks");
+    path.startsWith("/api/webhooks") ||
+    path.startsWith("/api/cron") ||
+    path.startsWith("/politica-de-privacidade") ||
+    path.startsWith("/termos-de-servico");
 
   if (!user && !isPublic) {
     const redirect = NextResponse.redirect(new URL("/login", request.url));

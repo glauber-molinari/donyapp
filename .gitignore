@@ -13,6 +13,9 @@
 /.next/
 /out/
 
+# relatórios baixados localmente
+relatorio-sec.pdf
+
 # production
 /build
 
