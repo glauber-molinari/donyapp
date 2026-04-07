@@ -39,12 +39,7 @@ const nextConfig = {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
           },
-        ],
-      },
-      {
-        // CORS só para rotas de API (evita mexer em HTML/assets e reduzir risco de quebra).
-        source: "/api/:path*",
-        headers: [
+          // CarameloSec valida CORS na URL principal do scan (ex.: HTML da home), não só em /api.
           { key: "Access-Control-Allow-Origin", value: appOrigin },
           {
             key: "Access-Control-Allow-Methods",
