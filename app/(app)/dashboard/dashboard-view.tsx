@@ -1011,8 +1011,6 @@ export function DashboardView({
           stageOptions={stageOptions}
           workTypeOptions={workTypeOptions}
           memberOptions={memberOptions}
-          singleMemberId={singleMemberId}
-          membersCount={members.length}
           isPending={isPending}
           onCancel={() => setCreateOpen(false)}
           onSubmit={handleCreate}

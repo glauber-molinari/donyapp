@@ -14,8 +14,6 @@ const PAYMENT_SUCCESS_EVENTS = new Set([
 /** Assinatura criada ou atualizada — liberar Pro se `status === ACTIVE` e houver `externalReference`. */
 const SUBSCRIPTION_SYNC_EVENTS = new Set(["SUBSCRIPTION_CREATED", "SUBSCRIPTION_UPDATED"]);
 
-const SUBSCRIPTION_END_EVENTS = new Set(["SUBSCRIPTION_DELETED", "SUBSCRIPTION_INACTIVATED"]);
-
 export type ParsedAsaasWebhook = {
   webhookEventId: string | null;
   event: string;
@@ -79,10 +77,12 @@ export function shouldMarkPastDue(parsed: ParsedAsaasWebhook): boolean {
   return parsed.accountId != null && parsed.event === "PAYMENT_OVERDUE";
 }
 
-export function shouldMarkCanceledSubscription(parsed: ParsedAsaasWebhook): boolean {
-  if (!parsed.accountId) return false;
-  if (SUBSCRIPTION_END_EVENTS.has(parsed.event)) return true;
-  /** Cobrança removida — mantém comportamento anterior; evite depender só disso para assinaturas. */
-  if (parsed.event === "PAYMENT_DELETED") return true;
-  return false;
+/** Assinatura inativada no Asaas — não renova; o cliente mantém Pro até o fim do período pago (cron). */
+export function shouldMarkSubscriptionInactivated(parsed: ParsedAsaasWebhook): boolean {
+  return parsed.accountId != null && parsed.event === "SUBSCRIPTION_INACTIVATED";
+}
+
+/** Assinatura removida no Asaas — encerra vínculo e volta ao Free. */
+export function shouldMarkSubscriptionDeleted(parsed: ParsedAsaasWebhook): boolean {
+  return parsed.accountId != null && parsed.event === "SUBSCRIPTION_DELETED";
 }

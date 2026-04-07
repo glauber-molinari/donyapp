@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
+import { createServiceRoleClient } from "@/lib/supabase/service-role";
+import { finalizeExpiredSubscriptionCancellations } from "@/lib/subscriptions/upgrade-account";
 
 import { SettingsPlanSection } from "../settings-plan-section";
 
@@ -39,9 +41,14 @@ export default async function SettingsPlanPage({
     );
   }
 
+  const svc = createServiceRoleClient();
+  if (svc) {
+    await finalizeExpiredSubscriptionCancellations(svc);
+  }
+
   const { data: sub, error: subErr } = await supabase
     .from("subscriptions")
-    .select("plan, status, current_period_ends_at, extra_users")
+    .select("plan, status, current_period_ends_at, extra_users, cancel_at_period_end, asaas_subscription_id")
     .eq("account_id", profile.account_id)
     .maybeSingle();
 
@@ -64,6 +71,13 @@ export default async function SettingsPlanPage({
         status={sub?.status ?? "active"}
         currentPeriodEndsAt={sub?.current_period_ends_at ?? null}
         extraUsers={sub?.extra_users ?? 0}
+        cancelAtPeriodEnd={sub?.cancel_at_period_end ?? false}
+        canCancelSubscription={
+          profile.role === "admin" &&
+          sub?.plan === "pro" &&
+          !sub?.cancel_at_period_end &&
+          Boolean(sub?.asaas_subscription_id?.trim())
+        }
         isAdmin={profile.role === "admin"}
         paymentSuccess={paymentSuccess}
       />

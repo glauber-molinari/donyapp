@@ -5,10 +5,13 @@ import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import {
   parseAsaasWebhookPayload,
   shouldActivatePro,
-  shouldMarkCanceledSubscription,
   shouldMarkPastDue,
+  shouldMarkSubscriptionDeleted,
+  shouldMarkSubscriptionInactivated,
 } from "@/lib/payments/asaas-webhook";
 import {
+  setSubscriptionCancelAtPeriodEnd,
+  setSubscriptionFreePlan,
   setSubscriptionPastDueOrCanceled,
   setSubscriptionPro,
 } from "@/lib/subscriptions/upgrade-account";
@@ -65,13 +68,20 @@ export async function POST(req: Request) {
     revalidatePath("/board");
   }
 
-  if (shouldMarkCanceledSubscription(parsed) && parsed.accountId) {
-    const { error } = await svc
-      .from("subscriptions")
-      .update({ plan: "free", status: "canceled" })
-      .eq("account_id", parsed.accountId);
-    if (error) {
-      console.error("asaas webhook cancel:", error.message);
+  if (shouldMarkSubscriptionInactivated(parsed) && parsed.accountId) {
+    const r = await setSubscriptionCancelAtPeriodEnd(svc, parsed.accountId, { strict: false });
+    if (!r.ok) {
+      console.error("asaas webhook inactivate:", r.error);
+      return NextResponse.json({ ok: false }, { status: 500 });
+    }
+    revalidatePath("/settings/plan");
+    revalidatePath("/board");
+  }
+
+  if (shouldMarkSubscriptionDeleted(parsed) && parsed.accountId) {
+    const r = await setSubscriptionFreePlan(svc, parsed.accountId);
+    if (!r.ok) {
+      console.error("asaas webhook subscription deleted:", r.error);
       return NextResponse.json({ ok: false }, { status: 500 });
     }
     revalidatePath("/settings/plan");

@@ -431,6 +431,7 @@ export interface Database {
           current_period_ends_at: string | null;
           extra_users: number;
           asaas_subscription_id: string | null;
+          cancel_at_period_end: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -443,6 +444,7 @@ export interface Database {
           current_period_ends_at?: string | null;
           extra_users?: number;
           asaas_subscription_id?: string | null;
+          cancel_at_period_end?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -455,6 +457,7 @@ export interface Database {
           current_period_ends_at?: string | null;
           extra_users?: number;
           asaas_subscription_id?: string | null;
+          cancel_at_period_end?: boolean;
           created_at?: string;
           updated_at?: string;
         };

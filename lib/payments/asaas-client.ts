@@ -94,3 +94,18 @@ export async function asaasPostJson<TResponse extends object>(
   const json = (await res.json()) as TResponse & AsaasErrorResponse;
   return { ok: res.ok, status: res.status, json };
 }
+
+export async function asaasPutJson<TResponse extends object>(
+  path: string,
+  body: unknown
+): Promise<{ ok: boolean; status: number; json: TResponse & AsaasErrorResponse }> {
+  const base = getAsaasApiBaseUrl();
+  const url = path.startsWith("http") ? path : `${base}${path.startsWith("/") ? "" : "/"}${path}`;
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: asaasHeaders(),
+    body: JSON.stringify(body),
+  });
+  const json = (await res.json()) as TResponse & AsaasErrorResponse;
+  return { ok: res.ok, status: res.status, json };
+}

@@ -38,19 +38,28 @@ function formatDatePt(iso: string | null): string {
   }
 }
 
-function statusLabel(s: SubscriptionStatus): string {
-  switch (s) {
-    case "active":
-      return "Ativo";
-    case "trialing":
-      return "Período de teste";
-    case "past_due":
-      return "Pagamento em atraso";
-    case "canceled":
-      return "Cancelado";
-    default:
-      return s;
+/** Rótulo para o cliente — não usar a palavra "cancelado" para estados de assinatura. */
+function customerPlanStatusLabel(
+  plan: Plan,
+  status: SubscriptionStatus,
+  cancelAtPeriodEnd: boolean
+): string {
+  if (status === "past_due") {
+    return "Pagamento em atraso";
   }
+  if (plan === "free") {
+    return "Ativo";
+  }
+  if (plan === "pro") {
+    if (cancelAtPeriodEnd) {
+      return "Ativo — sem renovação automática";
+    }
+    if (status === "trialing") {
+      return "Período de teste";
+    }
+    return "Ativo";
+  }
+  return "Ativo";
 }
 
 export function SettingsPlanSection({
@@ -58,6 +67,8 @@ export function SettingsPlanSection({
   status,
   currentPeriodEndsAt,
   extraUsers,
+  cancelAtPeriodEnd,
+  canCancelSubscription,
   isAdmin,
   paymentSuccess,
 }: {
@@ -65,6 +76,8 @@ export function SettingsPlanSection({
   status: SubscriptionStatus;
   currentPeriodEndsAt: string | null;
   extraUsers: number;
+  cancelAtPeriodEnd: boolean;
+  canCancelSubscription: boolean;
   isAdmin: boolean;
   paymentSuccess: boolean;
 }) {
@@ -120,6 +133,8 @@ export function SettingsPlanSection({
   }, [paymentSuccess, isPro, pathname]);
 
   const [cardBusy, setCardBusy] = useState(false);
+  const [cancelBusy, setCancelBusy] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const priceLabel = formatBrlCents(PRO_PRICE_MONTHLY_CENTS);
@@ -133,6 +148,29 @@ export function SettingsPlanSection({
   function closeUpgrade() {
     setUpgradeOpen(false);
     resetModal();
+  }
+
+  function closeCancel() {
+    setCancelOpen(false);
+    setError(null);
+  }
+
+  async function handleCancelSubscription() {
+    setError(null);
+    setCancelBusy(true);
+    try {
+      const res = await fetch("/api/subscription/cancel", { method: "POST" });
+      const data = (await res.json()) as { ok?: boolean; error?: string };
+      if (!res.ok || !data.ok) {
+        setError(data.error ?? "Não foi possível cancelar.");
+        return;
+      }
+      toast.success("Cancelamento agendado: você mantém o Pro até o fim do período já pago.");
+      closeCancel();
+      router.refresh();
+    } finally {
+      setCancelBusy(false);
+    }
   }
 
   async function handleCard(cycle: "MONTHLY" | "YEARLY") {
@@ -172,14 +210,24 @@ export function SettingsPlanSection({
               {isPro ? "Pro" : "Free"}
             </p>
             <p className="mt-2 text-sm text-ds-muted">
-              Status: <span className="text-ds-ink">{statusLabel(status)}</span>
-              {isPro && currentPeriodEndsAt ? (
+              Status:{" "}
+              <span className="text-ds-ink">
+                {customerPlanStatusLabel(plan, status, cancelAtPeriodEnd)}
+              </span>
+              {isPro && currentPeriodEndsAt && !cancelAtPeriodEnd ? (
                 <>
                   {" "}
                   · Renova em {formatDatePt(currentPeriodEndsAt)}
                 </>
               ) : null}
             </p>
+            {isPro && cancelAtPeriodEnd && currentPeriodEndsAt ? (
+              <p className="mt-2 rounded-lg border border-amber-200/80 bg-amber-50/90 px-3 py-2 text-sm text-amber-950">
+                Sua assinatura não será renovada. Você mantém o acesso Pro até{" "}
+                <span className="font-medium">{formatDatePt(currentPeriodEndsAt)}</span>
+                {`. Depois disso, a conta volta ao plano Free.`}
+              </p>
+            ) : null}
             {isPro && extraUsers > 0 ? (
               <p className="mt-2 text-sm text-ds-muted">
                 Usuários adicionais registrados na assinatura:{" "}
@@ -187,19 +235,35 @@ export function SettingsPlanSection({
               </p>
             ) : null}
           </div>
-          {!isPro && isAdmin ? (
-            <Button
-              type="button"
-              size="md"
-              className="w-full shrink-0 sm:w-auto"
-              onClick={() => {
-                resetModal();
-                setUpgradeOpen(true);
-              }}
-            >
-              Assinar Pro — {priceLabel}/mês
-            </Button>
-          ) : null}
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:items-end">
+            {!isPro && isAdmin ? (
+              <Button
+                type="button"
+                size="md"
+                className="w-full shrink-0 sm:w-auto"
+                onClick={() => {
+                  resetModal();
+                  setUpgradeOpen(true);
+                }}
+              >
+                Assinar Pro — {priceLabel}/mês
+              </Button>
+            ) : null}
+            {isPro && canCancelSubscription ? (
+              <Button
+                type="button"
+                variant="secondary"
+                size="md"
+                className="w-full border-red-200 text-red-800 hover:bg-red-50 sm:w-auto"
+                onClick={() => {
+                  setError(null);
+                  setCancelOpen(true);
+                }}
+              >
+                Cancelar assinatura
+              </Button>
+            ) : null}
+          </div>
         </div>
       </Card>
 
@@ -229,6 +293,35 @@ export function SettingsPlanSection({
           Somente administradores podem alterar o plano da conta.
         </p>
       ) : null}
+
+      <Modal open={cancelOpen} onClose={closeCancel} title="Cancelar assinatura Pro" size="md">
+        <div className="flex flex-col gap-4">
+          <p className="text-sm text-ds-muted">
+            A renovação automática será desativada. Você continua com todos os recursos Pro até o fim do
+            período já pago
+            {currentPeriodEndsAt ? ` (${formatDatePt(currentPeriodEndsAt)})` : ""}. Depois, a conta passa ao
+            plano Free, sem cobranças futuras.
+          </p>
+          {error ? (
+            <p className="text-sm text-red-700" role="alert">
+              {error}
+            </p>
+          ) : null}
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+            <Button type="button" variant="secondary" className="w-full sm:w-auto" onClick={closeCancel}>
+              Voltar
+            </Button>
+            <Button
+              type="button"
+              className="w-full bg-red-700 hover:bg-red-800 sm:w-auto"
+              disabled={cancelBusy}
+              onClick={() => void handleCancelSubscription()}
+            >
+              {cancelBusy ? "Processando…" : "Confirmar cancelamento"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       <Modal open={upgradeOpen} onClose={closeUpgrade} title="Assinar Pro" size="md">
         <div className="flex flex-col gap-4">
