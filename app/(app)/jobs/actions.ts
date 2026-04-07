@@ -197,6 +197,7 @@ type ParsedJobFields = {
   type: NonNullable<ReturnType<typeof parseJobType>>;
   internal_deadline: string;
   deadline: string;
+  job_date: string | null;
   work_type_id: string;
   contact_id: string | null;
   notes: string | null;
@@ -217,6 +218,13 @@ function parseJobForm(formData: FormData): { error: string } | ParsedJobFields {
   const type = parseJobType(formData.get("type"));
   const internal_deadline = parseDeadline(formData.get("internal_deadline"));
   const deadline = parseDeadline(formData.get("deadline"));
+  const jobDateRaw = formData.get("job_date");
+  let job_date: string | null = null;
+  if (typeof jobDateRaw === "string" && jobDateRaw.trim()) {
+    const jd = parseDeadline(jobDateRaw);
+    if (!jd) return { error: "Data do job inválida." };
+    job_date = jd;
+  }
   const contactId = parseOptionalContactId(formData.get("contact_id"));
   const notes = normalizeOptionalText(formData.get("notes"));
   const deliveryRaw = formData.get("delivery_link");
@@ -228,7 +236,7 @@ function parseJobForm(formData: FormData): { error: string } | ParsedJobFields {
   const stage_id =
     typeof stageIdRaw === "string" && stageIdRaw.trim() ? stageIdRaw.trim() : null;
 
-  const wt = parseRequiredId(formData.get("work_type_id"), "Selecione o tipo de trabalho.");
+  const wt = parseRequiredId(formData.get("work_type_id"), "Selecione o tipo do job.");
   if (typeof wt !== "string") return wt;
   const work_type_id = wt;
 
@@ -245,6 +253,7 @@ function parseJobForm(formData: FormData): { error: string } | ParsedJobFields {
     type,
     internal_deadline,
     deadline,
+    job_date,
     work_type_id,
     contact_id: contactId,
     notes,
@@ -287,7 +296,7 @@ export async function createJob(formData: FormData): Promise<ActionResult> {
   if (!contactOk) return { ok: false, error: "Contato inválido." };
 
   const workTypeOk = await verifyWorkTypeBelongs(supabase, ctx.accountId, parsed.work_type_id);
-  if (!workTypeOk) return { ok: false, error: "Tipo de trabalho inválido." };
+  if (!workTypeOk) return { ok: false, error: "Tipo do job inválido." };
 
   const stageOk = await verifyStageBelongs(supabase, ctx.accountId, parsed.stage_id);
   if (!stageOk) return { ok: false, error: "Etapa inválida." };
@@ -325,6 +334,7 @@ export async function createJob(formData: FormData): Promise<ActionResult> {
     type: parsed.type,
     internal_deadline: parsed.internal_deadline,
     deadline: parsed.deadline,
+    job_date: parsed.job_date,
     work_type_id: parsed.work_type_id,
     notes: parsed.notes,
     delivery_link: parsed.delivery_link,
@@ -360,6 +370,7 @@ export async function createJob(formData: FormData): Promise<ActionResult> {
       type: "video",
       internal_deadline: parsed.internal_deadline,
       deadline: parsed.deadline,
+      job_date: parsed.job_date,
       work_type_id: parsed.work_type_id,
       notes: null,
       delivery_link: null,
@@ -396,7 +407,7 @@ export async function updateJob(jobId: string, formData: FormData): Promise<Acti
   if (!contactOk) return { ok: false, error: "Contato inválido." };
 
   const workTypeOk = await verifyWorkTypeBelongs(supabase, ctx.accountId, parsed.work_type_id);
-  if (!workTypeOk) return { ok: false, error: "Tipo de trabalho inválido." };
+  if (!workTypeOk) return { ok: false, error: "Tipo do job inválido." };
 
   const stageOk = await verifyStageBelongs(supabase, ctx.accountId, parsed.stage_id);
   if (!stageOk) return { ok: false, error: "Etapa inválida." };
@@ -432,6 +443,7 @@ export async function updateJob(jobId: string, formData: FormData): Promise<Acti
       type: parsed.type,
       internal_deadline: parsed.internal_deadline,
       deadline: parsed.deadline,
+      job_date: parsed.job_date,
       work_type_id: parsed.work_type_id,
       notes: parsed.notes,
       delivery_link: parsed.delivery_link,

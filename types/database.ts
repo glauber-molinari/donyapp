@@ -311,6 +311,7 @@ export interface Database {
           type: JobType;
           internal_deadline: string;
           deadline: string;
+          job_date: string | null;
           work_type_id: string;
           parent_job_id: string | null;
           job_kind: JobKind;
@@ -333,6 +334,7 @@ export interface Database {
           type: JobType;
           internal_deadline: string;
           deadline: string;
+          job_date?: string | null;
           work_type_id: string;
           parent_job_id?: string | null;
           job_kind?: JobKind;
@@ -355,6 +357,7 @@ export interface Database {
           type?: JobType;
           internal_deadline?: string;
           deadline?: string;
+          job_date?: string | null;
           work_type_id?: string;
           parent_job_id?: string | null;
           job_kind?: JobKind;

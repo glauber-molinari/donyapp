@@ -20,11 +20,12 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Plus, Search } from "lucide-react";
+import { GripVertical, Plus, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
-import { ContactSearchField } from "@/components/app/contact-search-field";
+import { JobDetailModal } from "@/components/app/job-detail-modal";
+import { NewJobForm } from "@/components/app/new-job-form";
 import type { JobWithRelations } from "../dashboard/dashboard-view";
 import {
   createJob,
@@ -36,33 +37,17 @@ import { DeliveryEmailModal } from "@/components/app/delivery-email-modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
-import { Select } from "@/components/ui/select";
 import { kanbanStageAccentHex } from "@/lib/kanban-stage-accent";
+import { assigneesForJobCard } from "@/lib/job-assignees";
 import { deadlineBadge, formatDeadlinePt } from "@/lib/job-display";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import type { Database, Plan } from "@/types/database";
 
-type JobRow = Database["public"]["Tables"]["jobs"]["Row"];
 type StageRow = Database["public"]["Tables"]["kanban_stages"]["Row"];
 type WorkTypeRow = Database["public"]["Tables"]["job_work_types"]["Row"];
 type ContactPick = Pick<Database["public"]["Tables"]["contacts"]["Row"], "id" | "name" | "email">;
-
-const JOB_DELIVERY_OPTIONS: { value: JobRow["type"]; label: string }[] = [
-  { value: "foto", label: "Foto" },
-  { value: "video", label: "Vídeo" },
-  { value: "foto_video", label: "Foto e Vídeo" },
-];
-
-function todayYmd(): string {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
 
 /** YYYY-MM do mês corrente (fuso local). */
 function currentYearMonth(): string {
@@ -125,6 +110,7 @@ function ClientRevisionSelect({ job }: { job: JobWithRelations }) {
   return (
     <div
       className="mt-2"
+      onClick={(e) => e.stopPropagation()}
       onPointerDown={(e) => e.stopPropagation()}
       onKeyDown={(e) => e.stopPropagation()}
     >
@@ -136,6 +122,7 @@ function ClientRevisionSelect({ job }: { job: JobWithRelations }) {
         disabled={pending}
         value={value}
         aria-label="Número da alteração pedida pelo cliente"
+        onClick={(e) => e.stopPropagation()}
         onChange={async (e) => {
           const next = e.target.value;
           const num = Number(next);
@@ -327,6 +314,8 @@ function JobCardContent({
   overlay,
   revisionInteractive,
   assignees,
+  dragHandle,
+  onOpen,
 }: {
   job: JobWithRelations;
   stageFinal: boolean;
@@ -336,23 +325,18 @@ function JobCardContent({
   /** Quando falso (ex.: coluna só leitura com busca), não mostra o seletor de revisão. */
   revisionInteractive?: boolean;
   assignees: { id: string; name: string; avatarUrl: string | null }[];
+  /** Alça de arrastar (Kanban). */
+  dragHandle?: ReactNode;
+  /** Abre o modal de detalhes (área do card, sem a alça). */
+  onOpen?: () => void;
 }) {
   const dl = deadlineBadge(job.deadline, stageFinal);
   const rev = job.client_revision ?? 0;
+  const openEnabled = Boolean(onOpen && !overlay);
 
-  return (
-    <div
-      className={cn(
-        "rounded-ds-xl border-2 bg-ds-surface p-3 shadow-ds-sm",
-        isDragging && "opacity-50",
-        overlay && "shadow-ds-md ring-2 ring-ds-accent/20"
-      )}
-      style={{ borderColor: accentHex }}
-    >
+  const main = (
+    <>
       <p className="text-base font-semibold text-ds-ink">{job.name}</p>
-      {job.job_kind === "video_edit" ? (
-        <p className="mt-1 text-xs font-medium text-sky-800">Edição de vídeo</p>
-      ) : null}
       {job.job_work_types?.name ? (
         <p className="mt-1 text-xs text-ds-muted">{job.job_work_types.name}</p>
       ) : null}
@@ -376,8 +360,36 @@ function JobCardContent({
         <p className="mt-2 text-sm text-ds-muted">{job.contacts.name}</p>
       ) : null}
       <p className="mt-1 text-xs text-ds-subtle">
-        Interno {formatDeadlinePt(job.internal_deadline)} · Final {formatDeadlinePt(job.deadline)}
+        Interno {formatDeadlinePt(job.internal_deadline.slice(0, 10))} · Final{" "}
+        {formatDeadlinePt(job.deadline.slice(0, 10))}
       </p>
+    </>
+  );
+
+  return (
+    <div
+      className={cn(
+        "rounded-ds-xl border-2 bg-ds-surface p-3 shadow-ds-sm",
+        isDragging && "opacity-50",
+        overlay && "shadow-ds-md ring-2 ring-ds-accent/20",
+        openEnabled && !dragHandle && "cursor-pointer"
+      )}
+      style={{ borderColor: accentHex }}
+      onClick={openEnabled && !dragHandle ? onOpen : undefined}
+    >
+      {dragHandle ? (
+        <div className="flex gap-2">
+          <div className="shrink-0 pt-0.5">{dragHandle}</div>
+          <div
+            className={cn("min-w-0 flex-1", openEnabled && "cursor-pointer")}
+            onClick={openEnabled ? onOpen : undefined}
+          >
+            {main}
+          </div>
+        </div>
+      ) : (
+        main
+      )}
     </div>
   );
 }
@@ -389,6 +401,7 @@ function SortableJobCard({
   dragDisabled,
   revisionInteractive,
   assignees,
+  onOpenJob,
 }: {
   job: JobWithRelations;
   stageFinal: boolean;
@@ -396,6 +409,7 @@ function SortableJobCard({
   dragDisabled: boolean;
   revisionInteractive: boolean;
   assignees: { id: string; name: string; avatarUrl: string | null }[];
+  onOpenJob: (j: JobWithRelations) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: job.id,
@@ -407,13 +421,20 @@ function SortableJobCard({
     transition,
   };
 
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={cn("touch-none", dragDisabled && "cursor-default")}
-      {...(dragDisabled ? {} : { ...attributes, ...listeners })}
+  const dragHandle = dragDisabled ? undefined : (
+    <button
+      type="button"
+      className="flex h-8 w-7 shrink-0 items-center justify-center rounded-ds-md border border-transparent text-ds-muted hover:border-app-border hover:bg-ds-cream hover:text-ds-ink"
+      aria-label="Arrastar card"
+      {...listeners}
+      {...attributes}
     >
+      <GripVertical className="h-4 w-4" aria-hidden />
+    </button>
+  );
+
+  return (
+    <div ref={setNodeRef} style={style} className="touch-none">
       <JobCardContent
         job={job}
         stageFinal={stageFinal}
@@ -421,6 +442,8 @@ function SortableJobCard({
         isDragging={isDragging}
         revisionInteractive={revisionInteractive}
         assignees={assignees}
+        dragHandle={dragHandle}
+        onOpen={() => onOpenJob(job)}
       />
     </div>
   );
@@ -433,6 +456,7 @@ function KanbanColumn({
   dragDisabled,
   searchQuery,
   assigneesByJobId,
+  onOpenJob,
 }: {
   stage: StageRow;
   jobIds: string[];
@@ -440,6 +464,7 @@ function KanbanColumn({
   dragDisabled: boolean;
   searchQuery: string;
   assigneesByJobId: Map<string, { id: string; name: string; avatarUrl: string | null }[]>;
+  onOpenJob: (j: JobWithRelations) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: `stage-${stage.id}`,
@@ -484,6 +509,7 @@ function KanbanColumn({
                 accentHex={accentHex}
                 revisionInteractive
                 assignees={assigneesByJobId.get(id) ?? []}
+                onOpen={() => onOpenJob(job)}
               />
             );
           })}
@@ -503,6 +529,7 @@ function KanbanColumn({
                   dragDisabled={false}
                   revisionInteractive
                   assignees={assigneesByJobId.get(id) ?? []}
+                  onOpenJob={onOpenJob}
                 />
               );
             })}
@@ -554,31 +581,9 @@ export function BoardView({
   );
 
   const assigneesByJobId = useMemo(() => {
-    const get = (id: string | null | undefined) => {
-      if (!id) return null;
-      const m = membersById.get(id);
-      if (!m) return null;
-      return { id: m.id, name: m.name, avatarUrl: m.avatarUrl };
-    };
     const map = new Map<string, { id: string; name: string; avatarUrl: string | null }[]>();
     for (const j of filteredJobs) {
-      const photoId = j.photo_editor_id;
-      const videoId = j.video_editor_id;
-      let list: { id: string; name: string; avatarUrl: string | null }[] = [];
-      if (j.type === "foto_video") {
-        const a = get(photoId) ?? (singleMemberId ? get(singleMemberId) : null);
-        const b = get(videoId) ?? (singleMemberId ? get(singleMemberId) : null);
-        list = [a, b].filter(
-          (x): x is { id: string; name: string; avatarUrl: string | null } => Boolean(x)
-        );
-      } else if (j.type === "video") {
-        const a = get(videoId) ?? (singleMemberId ? get(singleMemberId) : null);
-        list = a ? [a] : [];
-      } else {
-        const a = get(photoId) ?? (singleMemberId ? get(singleMemberId) : null);
-        list = a ? [a] : [];
-      }
-      map.set(j.id, list);
+      map.set(j.id, assigneesForJobCard(j, membersById, singleMemberId));
     }
     return map;
   }, [filteredJobs, membersById, singleMemberId]);
@@ -605,6 +610,7 @@ export function BoardView({
   );
 
   const [createOpen, setCreateOpen] = useState(false);
+  const [detailJob, setDetailJob] = useState<JobWithRelations | null>(null);
   const [isPending, setIsPending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [emailStub, setEmailStub] = useState<JobWithRelations | null>(null);
@@ -625,12 +631,6 @@ export function BoardView({
         .map((w) => ({ value: w.id, label: w.name })),
     [workTypes]
   );
-
-  const [deliveryType, setDeliveryType] = useState<JobRow["type"]>("foto");
-
-  useEffect(() => {
-    if (createOpen) setDeliveryType("foto");
-  }, [createOpen]);
 
   const activeJob = activeId ? jobsById.get(activeId) ?? null : null;
   const activeStage = useMemo(() => {
@@ -833,7 +833,8 @@ export function BoardView({
                 jobsById={jobsById}
                 dragDisabled={dragDisabled}
                 searchQuery={searchQuery}
-        assigneesByJobId={assigneesByJobId}
+                assigneesByJobId={assigneesByJobId}
+                onOpenJob={setDetailJob}
               />
             ))}
           </div>
@@ -852,115 +853,27 @@ export function BoardView({
         </DndContext>
       ) : null}
 
+      <JobDetailModal
+        job={detailJob}
+        allJobs={jobs}
+        members={members}
+        open={Boolean(detailJob)}
+        onClose={() => setDetailJob(null)}
+      />
+
       <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="Novo job" size="lg">
-        <form className="flex flex-col gap-4" onSubmit={handleCreate}>
-          <Select
-            id="board-job-create-stage"
-            name="stage_id"
-            label="Coluna inicial"
-            required
-            placeholder="Selecione a etapa"
-            options={stageOptions}
-          />
-          <Input id="board-job-create-name" name="name" label="Título do job" required />
-          <ContactSearchField
-            id="board-job-create-contact"
-            contacts={contacts}
-            resetKey={createOpen ? "1" : "0"}
-          />
-          <Select
-            id="board-job-create-work-type"
-            name="work_type_id"
-            label="Tipo de trabalho"
-            required={workTypeOptions.length > 0}
-            placeholder={workTypeOptions.length ? "Selecione" : "Cadastre tipos em Configurações"}
-            options={workTypeOptions}
-            disabled={workTypeOptions.length === 0}
-          />
-          {workTypeOptions.length === 0 ? (
-            <p className="text-xs text-amber-800">
-              Adicione tipos de trabalho em <strong>Configurações → Kanban</strong>.
-            </p>
-          ) : null}
-          <Input
-            id="board-job-create-internal"
-            name="internal_deadline"
-            type="date"
-            label="Prazo interno"
-            required
-            defaultValue={todayYmd()}
-          />
-          <Input
-            id="board-job-create-final"
-            name="deadline"
-            type="date"
-            label="Prazo final"
-            required
-            defaultValue={todayYmd()}
-          />
-          <Select
-            id="board-job-create-delivery-type"
-            name="type"
-            label="Tipo de entrega"
-            required
-            value={deliveryType}
-            onChange={(e) => setDeliveryType(e.target.value as JobRow["type"])}
-            options={JOB_DELIVERY_OPTIONS}
-          />
-          {members.length <= 1 ? (
-            <>
-              <input type="hidden" name="photo_editor_id" value={singleMemberId ?? ""} />
-              <input type="hidden" name="video_editor_id" value={singleMemberId ?? ""} />
-            </>
-          ) : deliveryType === "foto_video" ? (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <Select
-                id="board-job-create-photo-editor"
-                name="photo_editor_id"
-                label="Editor (foto)"
-                placeholder="Selecione"
-                options={memberOptions}
-              />
-              <Select
-                id="board-job-create-video-editor"
-                name="video_editor_id"
-                label="Editor (vídeo)"
-                placeholder="Selecione"
-                options={memberOptions}
-              />
-            </div>
-          ) : (
-            <Select
-              id="board-job-create-editor"
-              name={deliveryType === "video" ? "video_editor_id" : "photo_editor_id"}
-              label="Editor responsável"
-              placeholder="Selecione"
-              options={memberOptions}
-            />
-          )}
-          {deliveryType === "video" || deliveryType === "foto_video" ? (
-            <div className="rounded-ds-xl border border-sky-200 bg-sky-50/90 p-4">
-              <p className="text-sm font-semibold text-sky-950">Edição de vídeo</p>
-              <p className="mt-1 text-xs text-sky-900/85">
-                Será criado um card adicional no quadro só para acompanhar a edição de vídeo deste
-                job.
-              </p>
-            </div>
-          ) : null}
-          <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => setCreateOpen(false)}
-              disabled={isPending}
-            >
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={isPending || workTypeOptions.length === 0}>
-              {isPending ? "Salvando…" : "Salvar"}
-            </Button>
-          </div>
-        </form>
+        <NewJobForm
+          fieldIdPrefix="board-job-create"
+          contacts={contacts}
+          stageOptions={stageOptions}
+          workTypeOptions={workTypeOptions}
+          memberOptions={memberOptions}
+          singleMemberId={singleMemberId}
+          membersCount={members.length}
+          isPending={isPending}
+          onCancel={() => setCreateOpen(false)}
+          onSubmit={handleCreate}
+        />
       </Modal>
 
       <DeliveryEmailModal

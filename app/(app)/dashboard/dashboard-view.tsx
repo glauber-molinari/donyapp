@@ -21,6 +21,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { ActivationChecklist } from "@/components/app/activation-checklist";
 import { ContactSearchField } from "@/components/app/contact-search-field";
+import { NewJobForm } from "@/components/app/new-job-form";
 import { KanbanMiniPreview } from "@/components/app/kanban-mini-preview";
 import { useOnboardingTour } from "@/components/app/onboarding-tour";
 import { Avatar } from "@/components/ui/avatar";
@@ -33,6 +34,7 @@ import { Modal } from "@/components/ui/modal";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { DashboardMetrics } from "@/lib/dashboard-metrics";
+import { assigneesForJobCard } from "@/lib/job-assignees";
 import { deadlineBadge, formatDeadlinePt } from "@/lib/job-display";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -58,14 +60,6 @@ const JOB_DELIVERY_OPTIONS: { value: JobRow["type"]; label: string }[] = [
   { value: "video", label: "Vídeo" },
   { value: "foto_video", label: "Foto e Vídeo" },
 ];
-
-function todayYmd(): string {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
 
 interface DashboardViewProps {
   members: { id: string; name: string; email: string | null; avatarUrl: string | null }[];
@@ -221,12 +215,6 @@ export function DashboardView({
     [workTypes]
   );
 
-  const [deliveryType, setDeliveryType] = useState<JobRow["type"]>("foto");
-
-  useEffect(() => {
-    if (createOpen) setDeliveryType("foto");
-  }, [createOpen]);
-
   const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
 
   const memberOptions = useMemo(
@@ -241,29 +229,7 @@ export function DashboardView({
   const singleMemberId = members.length === 1 ? members[0]!.id : null;
 
   function assigneesForJob(j: JobWithRelations) {
-    const get = (id: string | null | undefined) => {
-      if (!id) return null;
-      const m = membersById.get(id);
-      if (!m) return null;
-      return { id: m.id, name: m.name, avatarUrl: m.avatarUrl };
-    };
-
-    if (j.type === "foto_video") {
-      const a = get(j.photo_editor_id) ?? (singleMemberId ? get(singleMemberId) : null);
-      const b = get(j.video_editor_id) ?? (singleMemberId ? get(singleMemberId) : null);
-      const out = [a, b].filter(
-        (x): x is { id: string; name: string; avatarUrl: string | null } => Boolean(x)
-      );
-      return out.length ? out : [];
-    }
-
-    if (j.type === "video") {
-      const a = get(j.video_editor_id) ?? (singleMemberId ? get(singleMemberId) : null);
-      return a ? [a] : [];
-    }
-
-    const a = get(j.photo_editor_id) ?? (singleMemberId ? get(singleMemberId) : null);
-    return a ? [a] : [];
+    return assigneesForJobCard(j, membersById, singleMemberId);
   }
 
   const filteredJobs = useMemo(() => {
@@ -1039,114 +1005,18 @@ export function DashboardView({
         title="Novo job"
         size="lg"
       >
-        <form className="flex flex-col gap-4" onSubmit={handleCreate}>
-          <Select
-            id="job-create-stage"
-            name="stage_id"
-            label="Coluna inicial"
-            required
-            placeholder="Selecione a etapa"
-            options={stageOptions}
-          />
-          <Input id="job-create-name" name="name" label="Título do job" required />
-          <ContactSearchField
-            id="job-create-contact"
-            contacts={contacts}
-            resetKey={createOpen ? "1" : "0"}
-          />
-          <Select
-            id="job-create-work-type"
-            name="work_type_id"
-            label="Tipo de trabalho"
-            required={workTypeOptions.length > 0}
-            placeholder={workTypeOptions.length ? "Selecione" : "Cadastre tipos em Configurações"}
-            options={workTypeOptions}
-            disabled={workTypeOptions.length === 0}
-          />
-          {workTypeOptions.length === 0 ? (
-            <p className="text-xs text-amber-800">
-              Adicione tipos de trabalho em <strong>Configurações → Kanban</strong>.
-            </p>
-          ) : null}
-          <Input
-            id="job-create-internal"
-            name="internal_deadline"
-            type="date"
-            label="Prazo interno"
-            required
-            defaultValue={todayYmd()}
-          />
-          <Input
-            id="job-create-final"
-            name="deadline"
-            type="date"
-            label="Prazo final"
-            required
-            defaultValue={todayYmd()}
-          />
-          <Select
-            id="job-create-delivery-type"
-            name="type"
-            label="Tipo de entrega"
-            required
-            value={deliveryType}
-            onChange={(e) => setDeliveryType(e.target.value as JobRow["type"])}
-            options={JOB_DELIVERY_OPTIONS}
-          />
-          {members.length <= 1 ? (
-            <>
-              <input type="hidden" name="photo_editor_id" value={singleMemberId ?? ""} />
-              <input type="hidden" name="video_editor_id" value={singleMemberId ?? ""} />
-            </>
-          ) : deliveryType === "foto_video" ? (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <Select
-                id="job-create-photo-editor"
-                name="photo_editor_id"
-                label="Editor (foto)"
-                placeholder="Selecione"
-                options={memberOptions}
-              />
-              <Select
-                id="job-create-video-editor"
-                name="video_editor_id"
-                label="Editor (vídeo)"
-                placeholder="Selecione"
-                options={memberOptions}
-              />
-            </div>
-          ) : (
-            <Select
-              id="job-create-editor"
-              name={deliveryType === "video" ? "video_editor_id" : "photo_editor_id"}
-              label="Editor responsável"
-              placeholder="Selecione"
-              options={memberOptions}
-            />
-          )}
-          {deliveryType === "video" || deliveryType === "foto_video" ? (
-            <div className="rounded-ds-xl border border-sky-200 bg-sky-50/90 p-4">
-              <p className="text-sm font-semibold text-sky-950">Edição de vídeo</p>
-              <p className="mt-1 text-xs text-sky-900/85">
-                Será criado um card adicional no quadro só para acompanhar a edição de vídeo deste
-                job.
-              </p>
-            </div>
-          ) : null}
-          <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => setCreateOpen(false)}
-              disabled={isPending}
-            >
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={isPending || workTypeOptions.length === 0}>
-              {isPending ? "Salvando…" : "Salvar"}
-            </Button>
-          </div>
-        </form>
+        <NewJobForm
+          fieldIdPrefix="job-create"
+          contacts={contacts}
+          stageOptions={stageOptions}
+          workTypeOptions={workTypeOptions}
+          memberOptions={memberOptions}
+          singleMemberId={singleMemberId}
+          membersCount={members.length}
+          isPending={isPending}
+          onCancel={() => setCreateOpen(false)}
+          onSubmit={handleCreate}
+        />
       </Modal>
 
       <Modal
@@ -1164,14 +1034,21 @@ export function DashboardView({
             <Input
               id="job-edit-name"
               name="name"
-              label="Título do job"
+              label="Nome do Job"
               required
               defaultValue={editJob.name}
+            />
+            <Input
+              id="job-edit-job-date"
+              name="job_date"
+              type="date"
+              label="Data Job"
+              defaultValue={editJob.job_date ? editJob.job_date.slice(0, 10) : ""}
             />
             <Select
               id="job-edit-work-type"
               name="work_type_id"
-              label="Tipo de trabalho"
+              label="Tipo do Job"
               required
               defaultValue={editJob.work_type_id}
               options={workTypeOptions}
@@ -1194,7 +1071,7 @@ export function DashboardView({
                 <Select
                   id="job-edit-photo-editor"
                   name="photo_editor_id"
-                  label="Editor (foto)"
+                  label="Responsável pela foto"
                   placeholder="Selecione"
                   defaultValue={editJob.photo_editor_id ?? ""}
                   options={memberOptions}
@@ -1202,7 +1079,7 @@ export function DashboardView({
                 <Select
                   id="job-edit-video-editor"
                   name="video_editor_id"
-                  label="Editor (vídeo)"
+                  label="Responsável pelo vídeo"
                   placeholder="Selecione"
                   defaultValue={editJob.video_editor_id ?? ""}
                   options={memberOptions}
@@ -1212,7 +1089,7 @@ export function DashboardView({
               <Select
                 id="job-edit-editor"
                 name={editJob.type === "video" ? "video_editor_id" : "photo_editor_id"}
-                label="Editor responsável"
+                label="Responsável"
                 placeholder="Selecione"
                 defaultValue={
                   editJob.type === "video"

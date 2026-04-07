@@ -5,6 +5,7 @@ import {
   HelpCircle,
   LaptopMinimal,
   LayoutDashboard,
+  LogOut,
   Menu,
   MessageCircle,
   Settings,
@@ -143,7 +144,7 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
         </nav>
 
         <div className="border-t border-app-border px-3 pb-2 pt-1">
-          <p className="px-3 pb-1 text-[0.65rem] font-semibold uppercase tracking-wide text-ds-subtle">
+          <p className="px-3 pb-1 text-sm font-medium uppercase tracking-wide text-ds-subtle">
             Ajuda
           </p>
           <div className="flex flex-col gap-0.5">
@@ -169,12 +170,12 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
         </div>
 
         <div className="border-t border-app-border p-3">
-          <div className="mb-3 flex items-center gap-3 rounded-ds-xl px-2 py-2">
-            <Avatar src={avatarUrl} name={userName} size="md" />
-            <div className="min-w-0 flex-1">
+          <div className="mb-1 flex min-h-[2.5rem] items-center gap-3 rounded-ds-xl px-3 py-2.5">
+            <Avatar src={avatarUrl} name={userName} size="xs" />
+            <div className="min-w-0 flex-1 leading-snug">
               <p className="truncate text-sm font-medium text-ds-ink">{userName}</p>
               {userEmail ? (
-                <p className="truncate text-xs text-ds-muted">{userEmail}</p>
+                <p className="truncate text-sm font-medium text-ds-muted">{userEmail}</p>
               ) : null}
             </div>
           </div>
@@ -182,11 +183,12 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
             <Settings className="h-5 w-5 shrink-0 opacity-80" aria-hidden />
             Configurações
           </Link>
-          <form action="/auth/signout" method="post" className="mt-2 px-1">
+          <form action="/auth/signout" method="post" className="mt-1">
             <button
               type="submit"
-              className="w-full rounded-ds-xl px-3 py-2 text-left text-sm font-medium text-ds-subtle transition-colors duration-ds ease-out hover:bg-ds-cream hover:text-ds-ink"
+              className="flex w-full items-center gap-3 rounded-ds-xl px-3 py-2.5 text-left text-sm font-medium text-ds-muted transition-colors duration-ds ease-out hover:bg-ds-cream/80 hover:text-ds-ink"
             >
+              <LogOut className="h-5 w-5 shrink-0 opacity-80" aria-hidden />
               Sair
             </button>
           </form>
