@@ -7,36 +7,21 @@
  * @see https://docs.asaas.com/docs/checkout-com-assinatura-recorrente
  */
 
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-
 import { asaasPostJson, validateAsaasApiEnvMatch } from "@/lib/payments/asaas-client";
 import { PRO_PRICE_MONTHLY_CENTS, PRO_PRICE_YEARLY_CENTS } from "@/lib/plan-limits";
 
-/** PNG 1×1 só se `app/icon.svg` não puder ser lido no runtime. */
-const CHECKOUT_IMAGE_FALLBACK_BASE64 =
+/**
+ * PNG 1×1 (transparente). O Asaas não aceita SVG em `imageBase64` do checkout
+ * (“extensão não suportada”); só formatos raster (ex.: PNG/JPEG).
+ */
+const CHECKOUT_ITEM_IMAGE_PNG_BASE64 =
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
 
-let checkoutItemImageBase64Cache: string | null = null;
-
-/**
- * Mesmo gráfico do favicon (`app/icon.svg`), em base64, para o item do checkout Asaas.
- */
-function checkoutItemImageBase64(): string {
-  if (checkoutItemImageBase64Cache) return checkoutItemImageBase64Cache;
-  try {
-    const svgPath = join(process.cwd(), "app", "icon.svg");
-    const raw = readFileSync(svgPath, "utf8");
-    const compact = raw
-      .replace(/<\?xml[^>]*>\s*/i, "")
-      .replace(/<!--[\s\S]*?-->/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
-    checkoutItemImageBase64Cache = Buffer.from(compact, "utf8").toString("base64");
-  } catch {
-    checkoutItemImageBase64Cache = CHECKOUT_IMAGE_FALLBACK_BASE64;
-  }
-  return checkoutItemImageBase64Cache;
+function shouldAppendAsaasConfigHint(msg: string): boolean {
+  const low = msg.toLowerCase();
+  if (low.includes("extensão") || low.includes("extension")) return false;
+  if (low.includes("imagem") || low.includes("image") || low.includes("arquivo")) return false;
+  return low.includes("inválid") || low.includes("invalid");
 }
 
 /** Valor mensal em reais (API Asaas usa decimal). */
@@ -113,7 +98,7 @@ export async function createAsaasProPaymentLinkWithCycle(
       {
         name: "Dony — Plano Pro",
         description: `Assinatura ${cycleLabel} — gestão de pós-produção`,
-        imageBase64: checkoutItemImageBase64(),
+        imageBase64: CHECKOUT_ITEM_IMAGE_PNG_BASE64,
         quantity: 1,
         value,
       },
@@ -127,8 +112,7 @@ export async function createAsaasProPaymentLinkWithCycle(
 
   if (!ok) {
     let msg = json.errors?.[0]?.description ?? "Falha ao criar checkout Asaas.";
-    const low = msg.toLowerCase();
-    if (low.includes("inválid") || low.includes("invalid")) {
+    if (shouldAppendAsaasConfigHint(msg)) {
       msg +=
         " Confira na Vercel: cole a chave completa (começa com $), sem \\ antes do $; ASAAS_API_URL=https://api.asaas.com para chave de produção; permissão CHECKOUT:WRITE na chave; marque as vars para Production e faça redeploy.";
     }

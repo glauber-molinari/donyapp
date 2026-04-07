@@ -179,7 +179,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                 <HeroFloatingNav />
               </div>
 
-              <div className="flex shrink-0 items-center justify-end gap-2 lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2">
+              <div className="flex shrink-0 items-center justify-end gap-4 lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2">
                 <Link
                   href="/login"
                   className="text-[0.9rem] font-medium text-ds-ink transition duration-ds ease-out hover:opacity-80"
@@ -225,7 +225,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
             </h1>
 
             <p className="mx-auto mt-8 max-w-[55ch] text-pretty text-center text-lg leading-relaxed text-ds-muted sm:text-xl">
-              <span className="font-medium text-ds-ink">Cada entrega atrasada custa confiança — e tempo.</span> Um
+              <span className="font-medium text-ds-ink">Cada entrega atrasada custa confiança e tempo.</span> <br /> Um
               kanban feito para fotógrafos e videomakers: prazos claros, clientes organizados e a equipe alinhada,
               sem planilhas nem ferramentas genéricas.
             </p>
@@ -352,7 +352,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                     <Columns3 className="h-5 w-5" aria-hidden />
                   </span>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-ds-ink">Tudo centralizado em um quadro</p>
+                    <p className="text-sm font-semibold text-ds-ink">Tudo centralizado em um Kanban</p>
                     <p className="mt-1 text-sm leading-relaxed text-ds-muted">
                       Prazos, etapas e responsáveis no mesmo lugar. Todo mundo enxerga a mesma realidade — sem
                       versões divergentes de planilhas.
@@ -404,7 +404,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                 <p className="text-xs font-semibold uppercase tracking-wide text-ds-subtle">Inclui</p>
                 <ul className="mt-4 space-y-3 text-sm text-ds-muted">
                   {[
-                    `Até ${FREE_MAX_ACTIVE_JOBS} jobs ativos no quadro`,
+                    `Até ${FREE_MAX_ACTIVE_JOBS} jobs ativos no Kanban`,
                     `Até ${FREE_MAX_CONTACTS} contatos`,
                     "Kanban com até 4 etapas (Backup → Em Edição → Em Aprovação → Entregue)",
                     "1 usuário por conta",
@@ -567,6 +567,18 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                   q: "Preciso instalar algo?",
                   a: "Não. Tudo roda no navegador; entre com sua conta Google e monte seu board em minutos.",
                 },
+                {
+                  q: "Posso personalizar as colunas do kanban?",
+                  a: "Sim. Em Configurações você renomeia, cria e reordena as etapas e define qual é a etapa final. No plano gratuito há até 4 colunas; no avançado, etapas ilimitadas.",
+                },
+                {
+                  q: "Dá para trabalhar em equipe no mesmo estúdio?",
+                  a: "Sim, no plano avançado: você convida por e-mail e todos enxergam os mesmos jobs, contatos e board — os dados ficam na conta do estúdio, não presos a um único login.",
+                },
+                {
+                  q: "O Donyapp guarda meus arquivos de foto e vídeo?",
+                  a: "Não armazenamos seus arquivos. Você usa o serviço que já utiliza (Drive, Dropbox, WeTransfer etc.) e cola o link de entrega no job. No plano avançado, ao mover o job para a etapa final, você pode enviar um e-mail ao cliente com modelo editável — o envio é opcional e você confirma antes.",
+                },
               ].map(({ q, a }) => (
                 <details
                   key={q}
@@ -592,8 +604,8 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
       </main>
 
       <footer className="border-t border-ds-border bg-ds-cream py-8">
-        <div className="mx-auto flex max-w-[1200px] flex-col items-center gap-4 px-4 text-center text-xs text-ds-subtle sm:flex-row sm:justify-between sm:text-left sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center sm:justify-start">
+        <div className="mx-auto flex max-w-[1200px] flex-col items-center gap-5 px-4 text-center text-xs text-ds-subtle sm:flex-row sm:justify-between sm:gap-4 sm:text-left sm:px-6 lg:px-8">
+          <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:gap-5">
             <Image
               src="/brand/logo-dony-png.png"
               alt="Donyapp"
@@ -601,6 +613,32 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
               height={28}
               className="h-6 w-auto max-w-[8rem] object-contain opacity-90"
             />
+            <a
+              href="https://www.instagram.com/dony__app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full border border-ds-border-strong bg-ds-surface px-3.5 py-2 text-[0.8125rem] font-semibold text-ds-ink shadow-[0_1px_0_rgba(0,0,0,0.03)] transition duration-ds ease-out hover:border-ds-accent/45 hover:bg-white hover:text-ds-accent"
+            >
+              <svg
+                className="h-4 w-4 shrink-0"
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+              </svg>
+              <span>@dony__app</span>
+              <span className="sr-only"> (abre em nova aba)</span>
+            </a>
           </div>
           <div className="flex flex-col items-center gap-2 sm:items-end sm:text-right">
             <p className="text-ds-muted">Donyapp — gestão de pós-produção para fotógrafos e videomakers.</p>

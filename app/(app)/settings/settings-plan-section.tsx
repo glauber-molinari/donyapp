@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -67,18 +68,57 @@ export function SettingsPlanSection({
   isAdmin: boolean;
   paymentSuccess: boolean;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const isPro = plan === "pro";
   const [upgradeOpen, setUpgradeOpen] = useState(false);
-  const paymentToastShown = useRef(false);
+  const waitingToastShown = useRef(false);
+  const activationToastShown = useRef(false);
+
+  /** Volta do checkout Asaas: webhook ativa o Pro; atualizamos a página até refletir no banco. */
+  useEffect(() => {
+    if (!paymentSuccess || isPro) return;
+    const interval = setInterval(() => {
+      router.refresh();
+    }, 2500);
+    const stop = setTimeout(() => clearInterval(interval), 90_000);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(stop);
+    };
+  }, [paymentSuccess, isPro, router]);
 
   useEffect(() => {
-    if (!paymentSuccess || paymentToastShown.current) return;
-    paymentToastShown.current = true;
-    toast.success(
-      "Pagamento recebido. Se o plano ainda não aparecer como Pro, aguarde alguns segundos e atualize a página.",
-      { duration: 9000 }
-    );
-  }, [paymentSuccess]);
+    if (!paymentSuccess) return;
+
+    if (!isPro) {
+      if (!waitingToastShown.current) {
+        waitingToastShown.current = true;
+        toast.message("Pagamento recebido. Ativando o Pro… aguarde alguns segundos.", { duration: 6000 });
+      }
+      return;
+    }
+
+    if (!activationToastShown.current) {
+      activationToastShown.current = true;
+      toast.success("Plano Pro ativo. Os recursos já estão liberados.");
+      window.history.replaceState(null, "", pathname || "/settings/plan");
+    }
+  }, [paymentSuccess, isPro, pathname]);
+
+  useEffect(() => {
+    if (!paymentSuccess || isPro) return;
+    const t = setTimeout(() => {
+      if (activationToastShown.current) return;
+      toast.error(
+        "Ainda não detectamos o Pro. Se o pagamento foi aprovado, aguarde alguns minutos ou fale com o suporte.",
+        { duration: 10_000 }
+      );
+      window.history.replaceState(null, "", pathname || "/settings/plan");
+    }, 90_000);
+    return () => clearTimeout(t);
+  }, [paymentSuccess, isPro, pathname]);
+
   const [cardBusy, setCardBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -93,13 +133,6 @@ export function SettingsPlanSection({
   function closeUpgrade() {
     setUpgradeOpen(false);
     resetModal();
-  }
-
-  /** Fecha o modal e recarrega a página para buscar plano atualizado (router.refresh() sozinho não fecha o modal nem garante dados novos). */
-  function handlePaidRefresh() {
-    closeUpgrade();
-    const url = `${window.location.pathname}${window.location.search}`;
-    window.location.assign(url);
   }
 
   async function handleCard(cycle: "MONTHLY" | "YEARLY") {
@@ -226,11 +259,6 @@ export function SettingsPlanSection({
               onClick={() => void handleCard("YEARLY")}
             >
               {cardBusy ? "Abrindo…" : `Anual — ${yearlyLabel}/ano`}
-            </Button>
-          </div>
-          <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-            <Button type="button" variant="secondary" onClick={() => handlePaidRefresh()}>
-              Já paguei — atualizar
             </Button>
           </div>
         </div>
