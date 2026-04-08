@@ -22,7 +22,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Plus, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import { JobDetailModal } from "@/components/app/job-detail-modal";
 import { NewJobForm } from "@/components/app/new-job-form";
@@ -98,7 +98,7 @@ const CLIENT_REVISION_OPTIONS = [0, 1, 2, 3, 4, 5].map((n) => ({
   label: n === 0 ? "0 — sem alteração" : `${n}ª alteração`,
 }));
 
-function ClientRevisionSelect({ job }: { job: JobWithRelations }) {
+const ClientRevisionSelect = memo(function ClientRevisionSelect({ job }: { job: JobWithRelations }) {
   const router = useRouter();
   const [value, setValue] = useState(String(job.client_revision ?? 0));
   const [pending, setPending] = useState(false);
@@ -147,7 +147,7 @@ function ClientRevisionSelect({ job }: { job: JobWithRelations }) {
       </select>
     </div>
   );
-}
+});
 
 function buildColumnItemsFromJobs(
   jobList: JobWithRelations[],
@@ -173,13 +173,6 @@ function buildColumnItemsFromJobs(
   return out;
 }
 
-function findContainer(jobId: string, columns: Record<string, string[]>): string | undefined {
-  for (const [stageId, ids] of Object.entries(columns)) {
-    if (ids.includes(jobId)) return stageId;
-  }
-  return undefined;
-}
-
 function applyDragEnd(
   prev: Record<string, string[]>,
   event: DragEndEvent,
@@ -191,29 +184,38 @@ function applyDragEnd(
   const activeId = String(active.id);
   const overId = String(over.id);
 
-  const activeContainer = findContainer(activeId, prev);
-  let overContainer = findContainer(overId, prev);
+  // Mapa local para evitar varreduras repetidas em colunas grandes
+  const jobIdToStageId = new Map<string, string>();
+  for (const [sid, ids] of Object.entries(prev)) {
+    for (const id of ids) jobIdToStageId.set(id, sid);
+  }
+
+  const activeContainer = jobIdToStageId.get(activeId);
+  let overContainer = jobIdToStageId.get(overId);
   if (!overContainer && overId.startsWith("stage-")) {
     overContainer = overId.slice("stage-".length);
   }
   if (!activeContainer || !overContainer) return null;
 
-  const next: Record<string, string[]> = {};
+  // Mantém referência das colunas não afetadas para reduzir re-renders
+  const next: Record<string, string[]> = { ...prev };
   for (const sid of stageIdsOrdered) {
-    next[sid] = [...(prev[sid] ?? [])];
+    if (!next[sid]) next[sid] = [];
   }
 
   if (activeContainer === overContainer) {
-    const items = next[activeContainer];
-    const oldIndex = items.indexOf(activeId);
-    const newIndex = items.indexOf(overId);
+    const itemsPrev = prev[activeContainer] ?? [];
+    const oldIndex = itemsPrev.indexOf(activeId);
+    const newIndex = itemsPrev.indexOf(overId);
     if (oldIndex === -1 || newIndex === -1) return null;
-    next[activeContainer] = arrayMove(items, oldIndex, newIndex);
+    next[activeContainer] = arrayMove(itemsPrev, oldIndex, newIndex);
     return next;
   }
 
-  const source = [...next[activeContainer]];
-  const dest = [...next[overContainer]];
+  const sourcePrev = prev[activeContainer] ?? [];
+  const destPrev = prev[overContainer] ?? [];
+  const source = [...sourcePrev];
+  const dest = [...destPrev];
   const fromIndex = source.indexOf(activeId);
   if (fromIndex === -1) return null;
   source.splice(fromIndex, 1);
@@ -274,7 +276,7 @@ interface BoardViewProps {
   accountBodyTemplate: string | null;
 }
 
-function AvatarStack({
+const AvatarStack = memo(function AvatarStack({
   people,
   max = 2,
 }: {
@@ -304,9 +306,9 @@ function AvatarStack({
       </div>
     </div>
   );
-}
+});
 
-function JobCardContent({
+const JobCardContent = memo(function JobCardContent({
   job,
   stageFinal,
   accentHex,
@@ -392,9 +394,9 @@ function JobCardContent({
       )}
     </div>
   );
-}
+});
 
-function SortableJobCard({
+const SortableJobCard = memo(function SortableJobCard({
   job,
   stageFinal,
   accentHex,
@@ -447,9 +449,9 @@ function SortableJobCard({
       />
     </div>
   );
-}
+});
 
-function KanbanColumn({
+const KanbanColumn = memo(function KanbanColumn({
   stage,
   jobIds,
   jobsById,
@@ -538,7 +540,7 @@ function KanbanColumn({
       )}
     </div>
   );
-}
+});
 
 export function BoardView({
   jobs,
@@ -592,6 +594,14 @@ export function BoardView({
   const columnItemsRef = useRef(columnItems);
   columnItemsRef.current = columnItems;
 
+  const jobIdToStageId = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const [sid, ids] of Object.entries(columnItems)) {
+      for (const id of ids) m.set(id, sid);
+    }
+    return m;
+  }, [columnItems]);
+
   useEffect(() => {
     setColumnItems(buildColumnItemsFromJobs(filteredJobs, stageIdsOrdered));
   }, [filteredJobs, stageIdsOrdered]);
@@ -635,9 +645,9 @@ export function BoardView({
   const activeJob = activeId ? jobsById.get(activeId) ?? null : null;
   const activeStage = useMemo(() => {
     if (!activeId) return null;
-    const sid = findContainer(activeId, columnItems);
+    const sid = jobIdToStageId.get(activeId);
     return sid ? sortedStages.find((s) => s.id === sid) ?? null : null;
-  }, [activeId, columnItems, sortedStages]);
+  }, [activeId, jobIdToStageId, sortedStages]);
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
     setActiveId(String(event.active.id));
@@ -656,7 +666,12 @@ export function BoardView({
       const movedId = String(active.id);
       const jobBefore = jobsById.get(movedId);
       const stageBefore = jobBefore?.stage_id ?? undefined;
-      const stageAfter = findContainer(movedId, next);
+      const stageAfter = (() => {
+        for (const [sid, ids] of Object.entries(next)) {
+          if (ids.includes(movedId)) return sid;
+        }
+        return undefined;
+      })();
 
       const snapshot = cloneColumnIds(prev);
       setColumnItems(next);
