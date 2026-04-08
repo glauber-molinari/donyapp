@@ -10,10 +10,10 @@ export async function POST(request: NextRequest) {
   const appBase = publicAppOrigin(request);
 
   if (!url || !key) {
-    return NextResponse.redirect(`${appBase}/login`);
+    return NextResponse.redirect(`${appBase}/login`, { status: 303 });
   }
 
-  let response = NextResponse.redirect(`${appBase}/login`);
+  let response = NextResponse.redirect(`${appBase}/login`, { status: 303 });
 
   const supabase = createServerClient<Database>(url, key, {
     cookies: {
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
         return request.cookies.getAll();
       },
       setAll(cookiesToSet) {
-        response = NextResponse.redirect(`${appBase}/login`);
+        response = NextResponse.redirect(`${appBase}/login`, { status: 303 });
         cookiesToSet.forEach(({ name, value, options }) => {
           response.cookies.set(name, value, options);
         });

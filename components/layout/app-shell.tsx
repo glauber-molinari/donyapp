@@ -14,12 +14,13 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 
 import { OnboardingTourProvider } from "@/components/app/onboarding-tour";
 import { AppToaster } from "@/components/ui/app-toaster";
 import { Avatar } from "@/components/ui/avatar";
+import { createClient } from "@/lib/supabase/client";
 import { getSupportEmail, supportMailtoLink, supportWhatsAppLink } from "@/lib/support";
 import { cn } from "@/lib/utils";
 
@@ -60,6 +61,7 @@ export interface AppShellProps {
 
 export function AppShell({ children, userName, userEmail, avatarUrl, tourCompleted }: AppShellProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const supportEmail = getSupportEmail();
   const helpBody = `Olá, equipe Donyapp.\n\nEstou na tela: ${pathname}\nPreciso de ajuda com: `;
@@ -90,6 +92,22 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
         ? "bg-ds-cream text-ds-ink font-semibold"
         : "text-ds-muted hover:bg-ds-cream/80 hover:text-ds-ink"
     );
+
+  const handleSignOut = async () => {
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    } catch {
+      // Se falhar no client, ainda tentamos limpar cookies no servidor.
+    }
+
+    try {
+      await fetch("/auth/signout", { method: "POST" });
+    } finally {
+      router.replace("/login");
+      router.refresh();
+    }
+  };
 
   return (
     <OnboardingTourProvider tourCompleted={tourCompleted}>
@@ -183,15 +201,14 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
             <Settings className="h-5 w-5 shrink-0 opacity-80" aria-hidden />
             Configurações
           </Link>
-          <form action="/auth/signout" method="post" className="mt-1">
-            <button
-              type="submit"
-              className="flex w-full items-center gap-3 rounded-ds-xl px-3 py-2.5 text-left text-sm font-medium text-ds-muted transition-colors duration-ds ease-out hover:bg-ds-cream/80 hover:text-ds-ink"
-            >
-              <LogOut className="h-5 w-5 shrink-0 opacity-80" aria-hidden />
-              Sair
-            </button>
-          </form>
+          <button
+            type="button"
+            onClick={handleSignOut}
+            className="mt-1 flex w-full items-center gap-3 rounded-ds-xl px-3 py-2.5 text-left text-sm font-medium text-ds-muted transition-colors duration-ds ease-out hover:bg-ds-cream/80 hover:text-ds-ink"
+          >
+            <LogOut className="h-5 w-5 shrink-0 opacity-80" aria-hidden />
+            Sair
+          </button>
         </div>
 
       </aside>
