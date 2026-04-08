@@ -221,7 +221,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
               Seu fluxo de edição,
               <br className="hidden sm:block" />
               <span className="sm:hidden"> </span>
-              <span className="bg-ds-accent">do backup ao entregue</span>.
+              <span className="text-[#ff5500]">do backup ao entregue</span>.
             </h1>
 
             <p className="mx-auto mt-8 max-w-[55ch] text-pretty text-center text-lg leading-relaxed text-ds-muted sm:text-xl">
