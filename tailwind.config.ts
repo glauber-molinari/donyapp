@@ -27,8 +27,11 @@ const config: Config = {
           cream: "#f5f2ef",
           ink: "#0c0a09",
           accent: "#ff5500",
+          /** Laranja mais escuro para texto sobre fundo claro (WCAG AA com #f5f2ef). Mantém #accent em botões. */
+          "accent-ink": "#b45309",
           muted: "#57534e",
-          subtle: "#78716c",
+          /** Antes #78716c; escurecido para texto secundário pequeno no cream passar 4.5:1 */
+          subtle: "#5c534d",
           border: "#e8e4df",
           "border-strong": "#ebe6e1",
           surface: "#ffffff",

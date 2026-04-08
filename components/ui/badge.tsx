@@ -20,7 +20,7 @@ type BadgeDeadlineProps = {
 export type BadgeProps = BadgeJobTypeProps | BadgeDeadlineProps;
 
 const jobTypeClass: Record<JobTypeBadgeValue, string> = {
-  foto: "bg-ds-accent/15 text-ds-accent",
+  foto: "bg-ds-accent/15 text-ds-accent-ink",
   video: "bg-sky-100 text-sky-800",
   foto_video: "bg-amber-100 text-amber-900",
 };

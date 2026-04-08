@@ -221,7 +221,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
               Seu fluxo de edição,
               <br className="hidden sm:block" />
               <span className="sm:hidden"> </span>
-              <span className="text-ds-accent">do backup ao entregue</span>.
+              <span className="text-ds-accent-ink">do backup ao entregue</span>.
             </h1>
 
             <p className="mx-auto mt-8 max-w-[55ch] text-pretty text-center text-lg leading-relaxed text-ds-muted sm:text-xl">
@@ -336,7 +336,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
               </figure>
               <ul className="flex h-full flex-col justify-center gap-4 rounded-ds-card border border-ds-border-strong bg-white p-8 shadow-ds-sm">
                 <li className="flex items-start gap-4">
-                  <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-ds-2xl border border-ds-border bg-ds-cream text-ds-accent">
+                  <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-ds-2xl border border-ds-border bg-ds-cream text-ds-accent-ink">
                     <UsersRound className="h-5 w-5" aria-hidden />
                   </span>
                   <div className="min-w-0">
@@ -348,7 +348,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                   </div>
                 </li>
                 <li className="flex items-start gap-4">
-                  <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-ds-2xl border border-ds-border bg-ds-cream text-ds-accent">
+                  <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-ds-2xl border border-ds-border bg-ds-cream text-ds-accent-ink">
                     <Columns3 className="h-5 w-5" aria-hidden />
                   </span>
                   <div className="min-w-0">
@@ -617,7 +617,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
               href="https://www.instagram.com/dony__app/"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-ds-border-strong bg-ds-surface px-3.5 py-2 text-[0.8125rem] font-semibold text-ds-ink shadow-[0_1px_0_rgba(0,0,0,0.03)] transition duration-ds ease-out hover:border-ds-accent/45 hover:bg-white hover:text-ds-accent"
+              className="inline-flex items-center gap-2 rounded-full border border-ds-border-strong bg-ds-surface px-3.5 py-2 text-[0.8125rem] font-semibold text-ds-ink shadow-[0_1px_0_rgba(0,0,0,0.03)] transition duration-ds ease-out hover:border-ds-accent/45 hover:bg-white hover:text-ds-accent-ink"
             >
               <svg
                 className="h-4 w-4 shrink-0"
