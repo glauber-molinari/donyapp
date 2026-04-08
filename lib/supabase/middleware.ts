@@ -50,6 +50,8 @@ export async function updateSession(request: NextRequest) {
   const isPublic =
     path === "/" ||
     path === "/login" ||
+    path === "/sitemap.xml" ||
+    path === "/robots.txt" ||
     path.startsWith("/auth/") ||
     path.startsWith("/invite") ||
     path.startsWith("/api/webhooks") ||
