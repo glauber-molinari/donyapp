@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import type { JobWithRelations } from "@/app/(app)/dashboard/dashboard-view";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
 import { formatDeadlinePt } from "@/lib/job-display";
+import { cn } from "@/lib/utils";
 
 function formatOptionalDate(ymd: string | null | undefined): string {
   if (!ymd) return "—";
@@ -30,6 +31,15 @@ function DetailRow({ label, children }: { label: string; children: React.ReactNo
 
 type MemberLite = { id: string; name: string; email: string | null; avatarUrl: string | null };
 
+const DETAIL_TABS = [
+  { id: "geral" as const, label: "Informações gerais" },
+  { id: "prazos" as const, label: "Prazos" },
+  { id: "equipe" as const, label: "Equipe" },
+  { id: "extras" as const, label: "Extras" },
+];
+
+type DetailTabId = (typeof DETAIL_TABS)[number]["id"];
+
 export function JobDetailModal({
   job,
   allJobs,
@@ -43,7 +53,12 @@ export function JobDetailModal({
   open: boolean;
   onClose: () => void;
 }) {
+  const [tab, setTab] = useState<DetailTabId>("geral");
   const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
+
+  useEffect(() => {
+    if (job?.id) setTab("geral");
+  }, [job?.id]);
 
   if (!open || !job) return null;
 
@@ -72,70 +87,123 @@ export function JobDetailModal({
         : (videoMember?.name ?? single?.name ?? "—");
 
   return (
-    <Modal open={open} onClose={onClose} title="Detalhes do job" size="lg" className="max-h-[85vh]">
-      <div className="max-h-[min(70vh,560px)] overflow-y-auto pr-1">
-        <dl>
-          <DetailRow label="Nome">{job.name}</DetailRow>
-          <DetailRow label="Coluna">{job.kanban_stages?.name ?? "—"}</DetailRow>
-          <DetailRow label="Data job">{formatOptionalDate(job.job_date)}</DetailRow>
-          <DetailRow label="Cliente">
-            {job.contacts ? (
-              <>
-                {job.contacts.name}
-                {job.contacts.email ? (
-                  <span className="mt-0.5 block text-xs text-ds-muted">{job.contacts.email}</span>
-                ) : null}
-              </>
-            ) : (
-              "—"
-            )}
-          </DetailRow>
-          <DetailRow label="Tipo do job">{job.job_work_types?.name ?? "—"}</DetailRow>
-          <DetailRow label="Tipo de entrega">
-            <Badge kind="job-type" value={job.type} />
-          </DetailRow>
-          <DetailRow label="Prazo interno">{formatOptionalDate(job.internal_deadline)}</DetailRow>
-          <DetailRow label="Prazo final">{formatOptionalDate(job.deadline)}</DetailRow>
-          <DetailRow label="Responsável (foto)">{photoLine}</DetailRow>
-          <DetailRow label="Responsável (vídeo)">{videoLine}</DetailRow>
-          <DetailRow label="Alteração cliente">{job.client_revision ?? 0}</DetailRow>
-          <DetailRow label="Observações">
-            {job.notes?.trim() ? (
-              <span className="whitespace-pre-wrap">{job.notes}</span>
-            ) : (
-              <span className="text-ds-muted">—</span>
-            )}
-          </DetailRow>
-          <DetailRow label="Link entrega">
-            {job.delivery_link ? (
-              <a
-                href={job.delivery_link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-ds-accent hover:underline"
-              >
-                Abrir link
-                <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-              </a>
-            ) : (
-              <span className="text-ds-muted">—</span>
-            )}
-          </DetailRow>
-          {job.job_kind === "video_edit" && parentJob ? (
-            <DetailRow label="Job principal">{parentJob.name}</DetailRow>
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Detalhes do job"
+      size="lg"
+      className="max-h-[min(92vh,720px)] overflow-hidden"
+    >
+      <div className="flex min-h-0 flex-1 flex-col gap-3">
+        <div
+          role="tablist"
+          aria-label="Seções dos detalhes"
+          className="-mx-1 flex shrink-0 flex-wrap gap-1 px-1"
+        >
+          {DETAIL_TABS.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              role="tab"
+              aria-selected={tab === t.id}
+              onClick={() => setTab(t.id)}
+              className={cn(
+                "rounded-ds-lg px-2.5 py-1.5 text-left text-xs font-medium transition sm:text-sm",
+                tab === t.id
+                  ? "bg-ds-cream text-ds-ink shadow-sm"
+                  : "text-ds-subtle hover:bg-ds-cream/60 hover:text-ds-ink"
+              )}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        <div
+          role="tabpanel"
+          className="min-h-0 max-h-[min(42vh,320px)] overflow-y-auto overscroll-contain pr-1 sm:max-h-[min(50vh,380px)]"
+        >
+          {tab === "geral" ? (
+            <dl>
+              <DetailRow label="Nome">{job.name}</DetailRow>
+              <DetailRow label="Coluna">{job.kanban_stages?.name ?? "—"}</DetailRow>
+              <DetailRow label="Data job">{formatOptionalDate(job.job_date)}</DetailRow>
+              <DetailRow label="Cliente">
+                {job.contacts ? (
+                  <>
+                    {job.contacts.name}
+                    {job.contacts.email ? (
+                      <span className="mt-0.5 block text-xs text-ds-muted">{job.contacts.email}</span>
+                    ) : null}
+                  </>
+                ) : (
+                  "—"
+                )}
+              </DetailRow>
+              <DetailRow label="Tipo do job">{job.job_work_types?.name ?? "—"}</DetailRow>
+              <DetailRow label="Tipo de entrega">
+                <Badge kind="job-type" value={job.type} />
+              </DetailRow>
+              {job.job_kind === "video_edit" && parentJob ? (
+                <DetailRow label="Job principal">{parentJob.name}</DetailRow>
+              ) : null}
+              {job.job_kind === "standard" && videoSidecar ? (
+                <DetailRow label="Card de vídeo">{videoSidecar.name}</DetailRow>
+              ) : null}
+            </dl>
           ) : null}
-          {job.job_kind === "standard" && videoSidecar ? (
-            <DetailRow label="Card de vídeo">{videoSidecar.name}</DetailRow>
+
+          {tab === "prazos" ? (
+            <dl>
+              <DetailRow label="Prazo interno">{formatOptionalDate(job.internal_deadline)}</DetailRow>
+              <DetailRow label="Prazo final">{formatOptionalDate(job.deadline)}</DetailRow>
+            </dl>
           ) : null}
-        </dl>
+
+          {tab === "equipe" ? (
+            <dl>
+              <DetailRow label="Responsável (foto)">{photoLine}</DetailRow>
+              <DetailRow label="Responsável (vídeo)">{videoLine}</DetailRow>
+            </dl>
+          ) : null}
+
+          {tab === "extras" ? (
+            <dl>
+              <DetailRow label="Alteração cliente">{job.client_revision ?? 0}</DetailRow>
+              <DetailRow label="Observações">
+                {job.notes?.trim() ? (
+                  <span className="whitespace-pre-wrap">{job.notes}</span>
+                ) : (
+                  <span className="text-ds-muted">—</span>
+                )}
+              </DetailRow>
+              <DetailRow label="Link entrega">
+                {job.delivery_link ? (
+                  <a
+                    href={job.delivery_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-ds-accent hover:underline"
+                  >
+                    Abrir link
+                    <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+                  </a>
+                ) : (
+                  <span className="text-ds-muted">—</span>
+                )}
+              </DetailRow>
+            </dl>
+          ) : null}
+        </div>
+
+        <p className="shrink-0 border-t border-app-border pt-3 text-xs text-ds-muted">
+          Para editar dados ou mover etapa, use o{" "}
+          <Link href="/dashboard" className="font-medium text-ds-accent hover:underline">
+            Dashboard
+          </Link>
+          .
+        </p>
       </div>
-      <p className="mt-4 border-t border-app-border pt-4 text-xs text-ds-muted">
-        Para editar dados ou mover etapa, use o{" "}
-        <Link href="/dashboard" className="font-medium text-ds-accent hover:underline">
-          Dashboard
-        </Link>
-        .
-      </p>
     </Modal>
   );
 }

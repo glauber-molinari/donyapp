@@ -21,11 +21,10 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Plus, Search } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
-import { JobDetailModal } from "@/components/app/job-detail-modal";
-import { NewJobForm } from "@/components/app/new-job-form";
 import type { JobWithRelations } from "../dashboard/dashboard-view";
 import {
   createJob,
@@ -33,7 +32,6 @@ import {
   updateJobClientRevision,
   type KanbanColumnSync,
 } from "../jobs/actions";
-import { DeliveryEmailModal } from "@/components/app/delivery-email-modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
@@ -48,6 +46,21 @@ import type { Database, Plan } from "@/types/database";
 type StageRow = Database["public"]["Tables"]["kanban_stages"]["Row"];
 type WorkTypeRow = Database["public"]["Tables"]["job_work_types"]["Row"];
 type ContactPick = Pick<Database["public"]["Tables"]["contacts"]["Row"], "id" | "name" | "email">;
+
+const JobDetailModal = dynamic(
+  () => import("@/components/app/job-detail-modal").then((m) => ({ default: m.JobDetailModal })),
+  { ssr: false, loading: () => null }
+);
+
+const NewJobForm = dynamic(
+  () => import("@/components/app/new-job-form").then((m) => ({ default: m.NewJobForm })),
+  { ssr: false, loading: () => null }
+);
+
+const DeliveryEmailModal = dynamic(
+  () => import("@/components/app/delivery-email-modal").then((m) => ({ default: m.DeliveryEmailModal })),
+  { ssr: false, loading: () => null }
+);
 
 /** YYYY-MM do mês corrente (fuso local). */
 function currentYearMonth(): string {

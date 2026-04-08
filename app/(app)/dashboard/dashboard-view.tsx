@@ -61,6 +61,15 @@ const JOB_DELIVERY_OPTIONS: { value: JobRow["type"]; label: string }[] = [
   { value: "foto_video", label: "Foto e Vídeo" },
 ];
 
+const EDIT_JOB_TABS = [
+  { id: "geral" as const, label: "Informações gerais" },
+  { id: "prazos" as const, label: "Prazos" },
+  { id: "equipe" as const, label: "Equipe" },
+  { id: "etapa" as const, label: "Etapa e entrega" },
+];
+
+type EditJobTabId = (typeof EDIT_JOB_TABS)[number]["id"];
+
 interface DashboardViewProps {
   members: { id: string; name: string; email: string | null; avatarUrl: string | null }[];
   jobs: JobWithRelations[];
@@ -188,6 +197,7 @@ export function DashboardView({
   const [query, setQuery] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
   const [editJob, setEditJob] = useState<JobWithRelations | null>(null);
+  const [editJobTab, setEditJobTab] = useState<EditJobTabId>("geral");
   const [deleteJobRow, setDeleteJobRow] = useState<JobWithRelations | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
@@ -302,6 +312,16 @@ export function DashboardView({
       document.getElementById("btn-novo-job")?.scrollIntoView({ block: "center", behavior: "smooth" });
     });
   }, [pathname]);
+
+  useEffect(() => {
+    if (editJob?.id) setEditJobTab("geral");
+  }, [editJob?.id]);
+
+  const editJobTabsVisible = useMemo(
+    () =>
+      members.length <= 1 ? EDIT_JOB_TABS.filter((t) => t.id !== "equipe") : EDIT_JOB_TABS,
+    [members.length]
+  );
 
   function refresh() {
     router.refresh();
@@ -1022,128 +1042,172 @@ export function DashboardView({
         onClose={() => setEditJob(null)}
         title="Editar job"
         size="lg"
+        className="max-h-[min(92vh,720px)] overflow-hidden"
       >
         {editJob ? (
           <form
             key={editJob.id}
-            className="flex flex-col gap-4"
+            className="flex min-h-0 flex-1 flex-col gap-3"
             onSubmit={handleEdit}
           >
-            <Input
-              id="job-edit-name"
-              name="name"
-              label="Nome do Job"
-              required
-              defaultValue={editJob.name}
-            />
-            <Input
-              id="job-edit-job-date"
-              name="job_date"
-              type="date"
-              label="Data Job"
-              defaultValue={editJob.job_date ? editJob.job_date.slice(0, 10) : ""}
-            />
-            <Select
-              id="job-edit-work-type"
-              name="work_type_id"
-              label="Tipo do Job"
-              required
-              defaultValue={editJob.work_type_id}
-              options={workTypeOptions}
-            />
-            <Select
-              id="job-edit-type"
-              name="type"
-              label="Tipo de entrega"
-              required
-              defaultValue={editJob.type}
-              options={JOB_DELIVERY_OPTIONS}
-            />
             {members.length <= 1 ? (
               <>
                 <input type="hidden" name="photo_editor_id" value={singleMemberId ?? ""} />
                 <input type="hidden" name="video_editor_id" value={singleMemberId ?? ""} />
               </>
-            ) : editJob.type === "foto_video" ? (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <Select
-                  id="job-edit-photo-editor"
-                  name="photo_editor_id"
-                  label="Responsável pela foto"
-                  placeholder="Selecione"
-                  defaultValue={editJob.photo_editor_id ?? ""}
-                  options={memberOptions}
+            ) : null}
+
+            <div
+              role="tablist"
+              aria-label="Seções da edição"
+              className="-mx-1 flex shrink-0 flex-wrap gap-1 px-1"
+            >
+              {editJobTabsVisible.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={editJobTab === t.id}
+                  onClick={() => setEditJobTab(t.id)}
+                  className={cn(
+                    "rounded-ds-lg px-2.5 py-1.5 text-left text-xs font-medium transition sm:text-sm",
+                    editJobTab === t.id
+                      ? "bg-ds-cream text-ds-ink shadow-sm"
+                      : "text-ds-subtle hover:bg-ds-cream/60 hover:text-ds-ink"
+                  )}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="min-h-0 max-h-[min(42vh,320px)] flex-1 overflow-y-auto overscroll-contain pr-1 sm:max-h-[min(46vh,360px)]">
+              {/* Todas as seções permanecem no DOM para FormData e validação HTML5 ao salvar. */}
+              <div role="tabpanel" hidden={editJobTab !== "geral"} className="space-y-4">
+                <Input
+                  id="job-edit-name"
+                  name="name"
+                  label="Nome do Job"
+                  required
+                  defaultValue={editJob.name}
+                />
+                <Input
+                  id="job-edit-job-date"
+                  name="job_date"
+                  type="date"
+                  label="Data Job"
+                  defaultValue={editJob.job_date ? editJob.job_date.slice(0, 10) : ""}
                 />
                 <Select
-                  id="job-edit-video-editor"
-                  name="video_editor_id"
-                  label="Responsável pelo vídeo"
-                  placeholder="Selecione"
-                  defaultValue={editJob.video_editor_id ?? ""}
-                  options={memberOptions}
+                  id="job-edit-work-type"
+                  name="work_type_id"
+                  label="Tipo do Job"
+                  required
+                  defaultValue={editJob.work_type_id}
+                  options={workTypeOptions}
+                />
+                <Select
+                  id="job-edit-type"
+                  name="type"
+                  label="Tipo de entrega"
+                  required
+                  defaultValue={editJob.type}
+                  options={JOB_DELIVERY_OPTIONS}
+                />
+                <ContactSearchField
+                  id="job-edit-contact"
+                  contacts={contacts}
+                  defaultContactId={editJob.contact_id}
+                  resetKey={editJob.id}
                 />
               </div>
-            ) : (
-              <Select
-                id="job-edit-editor"
-                name={editJob.type === "video" ? "video_editor_id" : "photo_editor_id"}
-                label="Responsável"
-                placeholder="Selecione"
-                defaultValue={
-                  editJob.type === "video"
-                    ? (editJob.video_editor_id ?? "")
-                    : (editJob.photo_editor_id ?? "")
-                }
-                options={memberOptions}
-              />
-            )}
-            <Input
-              id="job-edit-internal"
-              name="internal_deadline"
-              type="date"
-              label="Prazo interno"
-              required
-              defaultValue={editJob.internal_deadline.slice(0, 10)}
-            />
-            <Input
-              id="job-edit-deadline"
-              name="deadline"
-              type="date"
-              label="Prazo final"
-              required
-              defaultValue={editJob.deadline.slice(0, 10)}
-            />
-            <ContactSearchField
-              id="job-edit-contact"
-              contacts={contacts}
-              defaultContactId={editJob.contact_id}
-              resetKey={editJob.id}
-            />
-            <Select
-              id="job-edit-stage"
-              name="stage_id"
-              label="Etapa no kanban"
-              required
-              defaultValue={editJob.stage_id ?? ""}
-              options={stageOptions}
-            />
-            <Textarea
-              id="job-edit-notes"
-              name="notes"
-              label="Observações"
-              placeholder="Opcional"
-              rows={3}
-              defaultValue={editJob.notes ?? ""}
-            />
-            <Input
-              id="job-edit-delivery"
-              name="delivery_link"
-              type="url"
-              label="Link do material final"
-              placeholder="https://…"
-              defaultValue={editJob.delivery_link ?? ""}
-            />
-            <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
+
+              <div role="tabpanel" hidden={editJobTab !== "prazos"} className="space-y-4">
+                <Input
+                  id="job-edit-internal"
+                  name="internal_deadline"
+                  type="date"
+                  label="Prazo interno"
+                  required
+                  defaultValue={editJob.internal_deadline.slice(0, 10)}
+                />
+                <Input
+                  id="job-edit-deadline"
+                  name="deadline"
+                  type="date"
+                  label="Prazo final"
+                  required
+                  defaultValue={editJob.deadline.slice(0, 10)}
+                />
+              </div>
+
+              {members.length > 1 ? (
+                <div role="tabpanel" hidden={editJobTab !== "equipe"} className="space-y-4">
+                  {editJob.type === "foto_video" ? (
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <Select
+                        id="job-edit-photo-editor"
+                        name="photo_editor_id"
+                        label="Responsável pela foto"
+                        placeholder="Selecione"
+                        defaultValue={editJob.photo_editor_id ?? ""}
+                        options={memberOptions}
+                      />
+                      <Select
+                        id="job-edit-video-editor"
+                        name="video_editor_id"
+                        label="Responsável pelo vídeo"
+                        placeholder="Selecione"
+                        defaultValue={editJob.video_editor_id ?? ""}
+                        options={memberOptions}
+                      />
+                    </div>
+                  ) : (
+                    <Select
+                      id="job-edit-editor"
+                      name={editJob.type === "video" ? "video_editor_id" : "photo_editor_id"}
+                      label="Responsável"
+                      placeholder="Selecione"
+                      defaultValue={
+                        editJob.type === "video"
+                          ? (editJob.video_editor_id ?? "")
+                          : (editJob.photo_editor_id ?? "")
+                      }
+                      options={memberOptions}
+                    />
+                  )}
+                </div>
+              ) : null}
+
+              <div role="tabpanel" hidden={editJobTab !== "etapa"} className="space-y-4">
+                <Select
+                  id="job-edit-stage"
+                  name="stage_id"
+                  label="Etapa no kanban"
+                  required
+                  defaultValue={editJob.stage_id ?? ""}
+                  options={stageOptions}
+                />
+                <Textarea
+                  id="job-edit-notes"
+                  name="notes"
+                  label="Observações"
+                  placeholder="Opcional"
+                  rows={3}
+                  defaultValue={editJob.notes ?? ""}
+                />
+                <Input
+                  id="job-edit-delivery"
+                  name="delivery_link"
+                  type="url"
+                  label="Link do material final"
+                  placeholder="https://…"
+                  defaultValue={editJob.delivery_link ?? ""}
+                />
+              </div>
+            </div>
+
+            <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-app-border pt-3 sm:flex-row sm:justify-end">
               <Button
                 type="button"
                 variant="secondary"

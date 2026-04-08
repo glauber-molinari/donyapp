@@ -48,7 +48,7 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:items-center"
       role="presentation"
     >
       <button
@@ -62,13 +62,13 @@ export function Modal({
         aria-modal="true"
         aria-labelledby={titleId}
         className={cn(
-          "relative z-10 w-full rounded-ds-xl border border-app-border bg-app-sidebar p-6 shadow-ds-md",
+          "relative z-10 flex min-h-0 w-full min-w-0 flex-col rounded-ds-xl border border-app-border bg-app-sidebar p-6 shadow-ds-md",
           widthClass[size],
           className
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-4 flex items-start justify-between gap-4">
+        <div className="mb-4 flex shrink-0 items-start justify-between gap-4">
           <h2 id={titleId} className="text-lg font-semibold text-ds-ink">
             {title}
           </h2>
@@ -83,7 +83,7 @@ export function Modal({
             <X className="h-4 w-4" />
           </Button>
         </div>
-        {children}
+        <div className="min-h-0 flex-1">{children}</div>
       </div>
     </div>
   );
