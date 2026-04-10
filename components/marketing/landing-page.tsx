@@ -43,95 +43,19 @@ function HeroFloatingNav({ className }: { className?: string }) {
 function ProductPreviewMock() {
   return (
     <div
-      className="mx-auto w-full max-w-5xl rounded-t-ds-card border border-ds-border bg-ds-surface shadow-ds-card"
+      className="mx-auto w-full max-w-5xl overflow-hidden rounded-t-ds-xl border border-ds-border bg-ds-surface shadow-ds-card sm:rounded-t-ds-card"
       aria-hidden
     >
-      <div className="flex min-h-[340px] sm:min-h-[400px]">
-        <aside className="hidden w-48 shrink-0 border-r border-ds-border-strong bg-gradient-to-b from-ds-elevated to-ds-cream/70 p-3 sm:block">
-          <div className="mb-5 flex justify-start px-2 pt-1">
-            <Image
-              src="/brand/logo-dony-png.png"
-              alt=""
-              width={88}
-              height={24}
-              className="h-5 w-auto max-w-[5.5rem] object-contain opacity-90"
-            />
-          </div>
-          <div className="space-y-1.5 px-1">
-            {["Dashboard", "Contatos", "Edições", "Agenda", "Configurações"].map((label) => (
-              <div
-                key={label}
-                className={cn(
-                  "rounded-ds-2xl px-3 py-2.5 text-xs font-medium transition",
-                  label === "Edições"
-                    ? "bg-ds-ink text-white shadow-sm"
-                    : "text-ds-muted hover:bg-white/40 hover:text-ds-ink",
-                )}
-              >
-                {label}
-              </div>
-            ))}
-          </div>
-        </aside>
-        <div className="min-w-0 flex-1 overflow-x-auto p-4 sm:p-5">
-          <div className="mb-5 flex items-center justify-between gap-3">
-            <div className="h-7 w-44 rounded-ds-2xl bg-ds-cream sm:w-56" />
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-40 rounded-ds-2xl border border-ds-border bg-white/70 sm:w-48" />
-              <div className="h-8 w-8 rounded-full border border-ds-border bg-ds-surface" />
-            </div>
-          </div>
-          <div className="flex gap-4 pb-2">
-            {[
-              { title: "Backup", cards: [{ t: "Casamento A", tags: ["accent"] }] },
-              {
-                title: "Em Edição",
-                cards: [
-                  { t: "Ensaio B", tags: ["ring"] },
-                  { t: "Vídeo C", tags: [] },
-                ],
-              },
-              { title: "Em Aprovação", cards: [{ t: "Corporativo", tags: [] }] },
-              { title: "Entregue", cards: [{ t: "Evento X", tags: ["muted"] }] },
-            ].map((col) => (
-              <div
-                key={col.title}
-                className="w-[150px] shrink-0 rounded-ds-2xl border border-ds-border-strong bg-ds-cream/85 p-2.5 sm:w-[175px]"
-              >
-                <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-wide text-ds-subtle">
-                  {col.title}
-                </p>
-                <div className="space-y-2">
-                  {col.cards.map((c) => (
-                    <div
-                      key={c.t}
-                      className={cn(
-                        "rounded-ds-xl border bg-ds-surface p-2.5 text-xs font-medium text-ds-ink shadow-[0_1px_0_rgba(0,0,0,0.02)]",
-                        c.tags.includes("ring")
-                          ? "border-ds-accent ring-1 ring-ds-accent/25"
-                          : "border-ds-border-strong",
-                      )}
-                    >
-                      <p className="truncate">{c.t}</p>
-                      <div className="mt-1.5 flex flex-wrap gap-1">
-                        {c.tags.includes("muted") && (
-                          <span className="rounded-full bg-ds-border px-2 py-0.5 text-[9px] font-semibold text-ds-muted">
-                            Entregue
-                          </span>
-                        )}
-                        {c.tags.includes("accent") && (
-                          <span className="rounded-full bg-ds-accent px-2 py-0.5 text-[9px] font-semibold text-white">
-                            Novo
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+      <div className="relative h-[min(260px,38vh)] w-full sm:h-[min(400px,55vh)]">
+        <Image
+          src="/marketing/kanban-hero.png"
+          alt=""
+          fill
+          unoptimized
+          priority
+          sizes="(max-width: 1024px) 100vw, 1024px"
+          className="object-cover object-top"
+        />
       </div>
     </div>
   );
@@ -250,7 +174,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
 
           <div className="relative mx-auto mt-14 max-w-[1200px] sm:mt-20">
             <div className="relative -mb-px overflow-hidden px-0 sm:px-4 lg:px-8">
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-24 bg-gradient-to-t from-ds-cream from-10% to-transparent sm:h-32" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-ds-cream to-transparent max-sm:h-[min(58%,12rem)] sm:h-32 max-sm:from-[40%] sm:from-10%" />
               <ProductPreviewMock />
             </div>
           </div>
