@@ -10,6 +10,22 @@ function copyCookies(from: NextResponse, to: NextResponse) {
 }
 
 export async function updateSession(request: NextRequest) {
+  const path = request.nextUrl.pathname;
+  const oauthCode = request.nextUrl.searchParams.get("code");
+
+  /**
+   * OAuth PKCE: se o redirect permitido no Supabase não incluir `/auth/callback`,
+   * o retorno pode cair na Site URL (`/`) ou em `/login` com `?code=…` sem trocar sessão.
+   * Encaminha para o route handler que faz `exchangeCodeForSession`.
+   */
+  if (oauthCode && (path === "/" || path === "/login")) {
+    const target = new URL("/auth/callback", request.url);
+    request.nextUrl.searchParams.forEach((value, key) => {
+      target.searchParams.set(key, value);
+    });
+    return NextResponse.redirect(target);
+  }
+
   let response = NextResponse.next({
     request,
   });
@@ -44,8 +60,6 @@ export async function updateSession(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const path = request.nextUrl.pathname;
 
   const isPublic =
     path === "/" ||
