@@ -40,21 +40,30 @@ export default async function AdminDashboardPage() {
       <section>
         <h3 className="mb-3 text-sm font-semibold text-ds-ink">Contas e usuários</h3>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <AdminMetricCard label="Contas (estúdios)" value={intPt(m.accountsTotal)} />
+          <AdminMetricCard
+            label="Contas (estúdios)"
+            value={intPt(m.accountsTotal)}
+            hint="E-mails únicos de admins com conta ativa. Deduplica contas de teste do mesmo e-mail."
+          />
+          <AdminMetricCard
+            label="Contas ativas"
+            value={intPt(m.accountsWithMembers)}
+            hint="Studios com ao menos 1 usuário provisionado em public.users"
+          />
           <AdminMetricCard
             label="Novas contas (7 dias)"
             value={intPt(m.accountsNew7d)}
-            hint="Cadastro na plataforma"
+            hint="Registros na tabela accounts nos últimos 7 dias (inclui duplicatas)"
           />
           <AdminMetricCard
             label="Novas contas (30 dias)"
             value={intPt(m.accountsNew30d)}
-            hint="Cadastro na plataforma"
+            hint="Registros na tabela accounts nos últimos 30 dias (inclui duplicatas)"
           />
           <AdminMetricCard
-            label="Usuários totais"
+            label="Usuários (auth)"
             value={intPt(m.usersTotal)}
-            hint="Perfis com conta (inclui convidados)"
+            hint="Logins cadastrados em auth.users (fonte: Supabase Auth)"
           />
           <AdminMetricCard
             label="Média de usuários / conta"

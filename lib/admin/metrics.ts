@@ -6,6 +6,7 @@ import type { Database } from "@/types/database";
 
 export type AdminDashboardMetrics = {
   accountsTotal: number;
+  accountsWithMembers: number;
   accountsNew7d: number;
   accountsNew30d: number;
   usersTotal: number;
@@ -46,7 +47,6 @@ export async function fetchAdminDashboardMetrics(
   const yearlyMonthlyEquivalent = PRO_PRICE_YEARLY_CENTS / 100 / 12;
 
   const [
-    accountsRes,
     accounts7Res,
     usersRes,
     proPayingRes,
@@ -61,10 +61,10 @@ export async function fetchAdminDashboardMetrics(
     jobsRes,
     jobs30Res,
     jobs30RowsRes,
+    publicUsersRes,
   ] = await Promise.all([
-    db.from("accounts").select("*", { count: "exact", head: true }),
     db.from("accounts").select("*", { count: "exact", head: true }).gte("created_at", t7),
-    db.from("users").select("*", { count: "exact", head: true }).not("account_id", "is", null),
+    db.rpc("admin_count_auth_users"),
     db
       .from("subscriptions")
       .select("*", { count: "exact", head: true })
@@ -91,12 +91,29 @@ export async function fetchAdminDashboardMetrics(
     db.from("jobs").select("*", { count: "exact", head: true }),
     db.from("jobs").select("*", { count: "exact", head: true }).gte("created_at", t30),
     db.from("jobs").select("account_id").gte("created_at", t30).limit(50000),
+    db.from("users").select("account_id, email, role").not("account_id", "is", null),
   ]);
 
   const { data: newAccRows } = await db.from("accounts").select("id").gte("created_at", t30);
 
-  const accountsTotal = accountsRes.count ?? 0;
-  const usersTotal = usersRes.count ?? 0;
+  // RPC retorna bigint que o PostgREST pode serializar como string ou number
+  const usersTotal = usersRes.data != null ? Number(usersRes.data) : 0;
+  const publicUsers = publicUsersRes.data ?? [];
+
+  // "Contas (estúdios)": conta por e-mail único do dono (admin).
+  // Se a mesma pessoa criou 3 contas de teste com o mesmo e-mail, conta como 1.
+  const uniqueOwnerEmails = new Set(
+    publicUsers
+      .filter((r) => r.role === "admin" && r.email)
+      .map((r) => r.email as string)
+  );
+  const accountsTotal = uniqueOwnerEmails.size;
+
+  // "Contas ativas": studios com ≥1 usuário provisionado (sem deduplicar por e-mail).
+  const accountsWithMembersSet = new Set(
+    publicUsers.map((r) => r.account_id).filter(Boolean)
+  );
+  const accountsWithMembers = accountsWithMembersSet.size;
   const proPayingCount = proPayingRes.count ?? 0;
   const proCompedCount = proCompedRes.count ?? 0;
   const proActiveTotal = proAllActiveRes.count ?? 0;
@@ -124,6 +141,7 @@ export async function fetchAdminDashboardMetrics(
 
   return {
     accountsTotal,
+    accountsWithMembers,
     accountsNew7d: accounts7Res.count ?? 0,
     accountsNew30d,
     usersTotal,

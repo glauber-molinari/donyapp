@@ -19,6 +19,7 @@ const csp = [
 ].join("; ");
 
 const nextConfig = {
+  transpilePackages: ["react-big-calendar"],
   async redirects() {
     return [
       { source: "/v2", destination: "/", permanent: true },

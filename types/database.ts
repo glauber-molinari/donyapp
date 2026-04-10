@@ -12,9 +12,83 @@ export type JobKind = "standard" | "video_edit";
 export type Plan = "free" | "pro";
 export type SubscriptionStatus = "active" | "trialing" | "past_due" | "canceled";
 
+export type FeedbackStatus = "pending" | "approved" | "rejected";
+export type FeedbackStage = "em_estudo" | "faremos" | "produzindo" | "pronto";
+
 export interface Database {
   public: {
     Tables: {
+      feedback_suggestions: {
+        Row: {
+          id: string;
+          title: string;
+          description: string | null;
+          user_id: string;
+          status: FeedbackStatus;
+          stage: FeedbackStage | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          description?: string | null;
+          user_id: string;
+          status?: FeedbackStatus;
+          stage?: FeedbackStage | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          description?: string | null;
+          user_id?: string;
+          status?: FeedbackStatus;
+          stage?: FeedbackStage | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "feedback_suggestions_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      feedback_votes: {
+        Row: {
+          id: string;
+          suggestion_id: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          suggestion_id: string;
+          user_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          suggestion_id?: string;
+          user_id?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "feedback_votes_suggestion_id_fkey";
+            columns: ["suggestion_id"];
+            referencedRelation: "feedback_suggestions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "feedback_votes_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       accounts: {
         Row: {
           id: string;
@@ -228,6 +302,73 @@ export interface Database {
             foreignKeyName: "contacts_account_id_fkey";
             columns: ["account_id"];
             referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      contact_notes: {
+        Row: {
+          id: string;
+          account_id: string;
+          contact_id: string;
+          job_id: string | null;
+          title: string | null;
+          content: string;
+          categories: string[];
+          priority: string;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          contact_id: string;
+          job_id?: string | null;
+          title?: string | null;
+          content: string;
+          categories?: string[];
+          priority?: string;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          contact_id?: string;
+          job_id?: string | null;
+          title?: string | null;
+          content?: string;
+          categories?: string[];
+          priority?: string;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "contact_notes_account_id_fkey";
+            columns: ["account_id"];
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "contact_notes_contact_id_fkey";
+            columns: ["contact_id"];
+            referencedRelation: "contacts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "contact_notes_job_id_fkey";
+            columns: ["job_id"];
+            referencedRelation: "jobs";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "contact_notes_created_by_fkey";
+            columns: ["created_by"];
+            referencedRelation: "users";
             referencedColumns: ["id"];
           },
         ];
@@ -475,6 +616,7 @@ export interface Database {
     Functions: {
       current_account_id: { Args: Record<string, never>; Returns: string | null };
       is_account_admin: { Args: Record<string, never>; Returns: boolean };
+      admin_count_auth_users: { Args: Record<string, never>; Returns: number };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

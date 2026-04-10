@@ -5,6 +5,8 @@ import {
   HelpCircle,
   LaptopMinimal,
   LayoutDashboard,
+  Lightbulb,
+  NotebookPen,
   LogOut,
   Menu,
   MessageCircle,
@@ -42,6 +44,12 @@ const navItems = [
     label: "Edições",
     id: "menu-edicoes",
     icon: LaptopMinimal,
+  },
+  {
+    href: "/notes",
+    label: "Anotações",
+    id: "menu-anotacoes",
+    icon: NotebookPen,
   },
   {
     href: "/agenda",
@@ -184,6 +192,14 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
                 WhatsApp
               </a>
             ) : null}
+            <Link
+              href="/feedback"
+              id="menu-feedback"
+              className={linkClass("/feedback")}
+            >
+              <Lightbulb className="h-5 w-5 shrink-0 opacity-80" aria-hidden />
+              Feedback
+            </Link>
           </div>
         </div>
 

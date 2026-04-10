@@ -249,7 +249,6 @@ export function DashboardView({
 
     return jobs
       .filter((j) => j.kanban_stages)
-      .filter((j) => j.job_kind !== "video_edit")
       .filter((j) => (tab === "done" ? Boolean(j.kanban_stages?.is_final) : !j.kanban_stages?.is_final))
       .filter((j) => {
         if (!q) return true;
@@ -465,8 +464,8 @@ export function DashboardView({
       {metrics.activeJobs > 0 ? (
         <p className="text-sm text-ds-muted">
           <span className="font-medium text-ds-ink">Neste mês:</span>{" "}
-          {metrics.deliveredThisMonth} entrega(s) registrada(s) e {metrics.toEditThisMonth} job(s) com
-          edição prevista — ajuste no quadro para não perder o ritmo.
+          {metrics.deliveredThisMonth} entrega(s) registrada(s) e {metrics.toEditThisMonth} item(ns) com
+          prazo no mês — ajuste no quadro para não perder o ritmo.
         </p>
       ) : null}
 

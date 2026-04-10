@@ -85,8 +85,13 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccountRow[] }
               <tr key={a.id} className="border-b border-app-border/80 hover:bg-ds-cream/40">
                 <td className="px-3 py-2 align-top">
                   <div className="font-medium text-ds-ink">{a.name}</div>
-                  <div className="mt-0.5 font-mono text-xs text-ds-muted">{a.id}</div>
-                  <div className="text-xs text-ds-muted">Criada {formatDatePtBr(a.created_at)}</div>
+                  {a.ownerEmail ? (
+                    <div className="text-xs text-ds-muted">{a.ownerEmail}</div>
+                  ) : (
+                    <div className="text-xs text-red-500">Sem membros</div>
+                  )}
+                  <div className="mt-0.5 font-mono text-xs text-ds-subtle">{a.id}</div>
+                  <div className="text-xs text-ds-subtle">Criada {formatDatePtBr(a.created_at)}</div>
                 </td>
                 <td className="px-3 py-2 align-top tabular-nums">{a.memberCount}</td>
                 <td className="px-3 py-2 align-top">{planLabel(sub?.plan)}</td>

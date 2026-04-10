@@ -10,18 +10,28 @@ export function ContactSearchField({
   id,
   contacts,
   name = "contact_id",
+  hiddenInputId,
+  searchInputName,
   defaultContactId,
   disabled,
   resetKey,
+  onChangeSelectedId,
 }: {
   id: string;
   contacts: ContactSearchOption[];
   name?: string;
+  /** id do input hidden (envia contact_id); padrão: `${id}-contact-id` */
+  hiddenInputId?: string;
+  /** name do campo de texto de busca (não é usado no submit do servidor; só evita aviso de acessibilidade) */
+  searchInputName?: string;
   defaultContactId?: string | null;
   disabled?: boolean;
   /** Incrementar ao abrir o modal para limpar o campo */
   resetKey?: number | string;
+  onChangeSelectedId?: (contactId: string | null) => void;
 }) {
+  const resolvedHiddenId = hiddenInputId ?? `${id}-contact-id`;
+  const resolvedSearchName = searchInputName ?? `${id}-search`;
   const [selectedId, setSelectedId] = useState<string | null>(defaultContactId ?? null);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -31,6 +41,10 @@ export function ContactSearchField({
     const c = contacts.find((x) => x.id === defaultContactId);
     setQuery(c ? `${c.name} (${c.email})` : "");
   }, [defaultContactId, contacts, resetKey]);
+
+  useEffect(() => {
+    onChangeSelectedId?.(selectedId);
+  }, [onChangeSelectedId, selectedId]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -49,10 +63,11 @@ export function ContactSearchField({
       <label htmlFor={id} className="text-sm font-medium text-ds-ink">
         Cliente
       </label>
-      <input type="hidden" name={name} value={selectedId ?? ""} />
+      <input type="hidden" id={resolvedHiddenId} name={name} value={selectedId ?? ""} />
       <div className="relative">
         <input
           id={id}
+          name={resolvedSearchName}
           type="text"
           autoComplete="off"
           disabled={disabled}

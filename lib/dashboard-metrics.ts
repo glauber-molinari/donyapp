@@ -56,7 +56,8 @@ export async function fetchDashboardMetrics(
   }
 
   const base = () =>
-    supabase.from("jobs").select("*", { count: "exact", head: true }).neq("job_kind", "video_edit");
+    // Conta por card (inclui `video_edit`) para refletir foto/vídeo separadamente.
+    supabase.from("jobs").select("*", { count: "exact", head: true });
 
   let activeJobs = 0;
   let overdue = 0;

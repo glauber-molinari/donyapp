@@ -6,8 +6,9 @@ export function LoginForm({ next = "/dashboard" }: { next?: string }) {
   async function signInWithGoogle() {
     const supabase = createClient();
     const base =
-      process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ||
-      (typeof window !== "undefined" ? window.location.origin : "");
+      typeof window !== "undefined"
+        ? window.location.origin
+        : process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "";
     const safeNext =
       next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
     const { error } = await supabase.auth.signInWithOAuth({

@@ -10,6 +10,7 @@ export type AdminAccountRow = {
   created_at: string;
   subscription: SubscriptionRow | null;
   memberCount: number;
+  ownerEmail: string | null;
 };
 
 function firstSubscription(
@@ -58,21 +59,34 @@ export async function fetchAdminAccountsWithSubscriptions(
   }
 
   const ids = accounts.map((a) => a.id);
-  const { data: usersRows } = await db.from("users").select("account_id").in("account_id", ids);
+  const { data: usersRows } = await db
+    .from("users")
+    .select("account_id, email, role")
+    .in("account_id", ids);
 
   const countByAccount = new Map<string, number>();
+  const adminEmailByAccount = new Map<string, string>();
+
   for (const row of usersRows ?? []) {
     if (!row.account_id) continue;
     countByAccount.set(row.account_id, (countByAccount.get(row.account_id) ?? 0) + 1);
+    // Pega o e-mail do primeiro admin encontrado (ou qualquer membro se não houver admin)
+    if (row.role === "admin" || !adminEmailByAccount.has(row.account_id)) {
+      if (row.email) adminEmailByAccount.set(row.account_id, row.email);
+    }
   }
 
-  return accounts.map((a) => ({
-    id: a.id,
-    name: a.name,
-    created_at: a.created_at,
-    subscription: firstSubscription(
-      a.subscriptions as unknown as SubscriptionRow | SubscriptionRow[] | null
-    ),
-    memberCount: countByAccount.get(a.id) ?? 0,
-  }));
+  return accounts
+    .map((a) => ({
+      id: a.id,
+      name: a.name,
+      created_at: a.created_at,
+      subscription: firstSubscription(
+        a.subscriptions as unknown as SubscriptionRow | SubscriptionRow[] | null
+      ),
+      memberCount: countByAccount.get(a.id) ?? 0,
+      ownerEmail: adminEmailByAccount.get(a.id) ?? null,
+    }))
+    // Exclui contas sem nenhum usuário em public.users — não existem mais no Supabase Auth
+    .filter((a) => a.memberCount > 0);
 }

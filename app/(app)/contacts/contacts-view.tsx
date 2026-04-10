@@ -105,19 +105,30 @@ export function ContactsView({ contacts }: ContactsViewProps) {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-ds-ink">Contatos</h1>
-        <Button
-          id="btn-novo-contato"
-          type="button"
-          size="md"
-          className="w-full sm:w-auto"
-          onClick={() => {
-            setErrorMessage(null);
-            setCreateOpen(true);
-          }}
-        >
-          <Plus className="h-4 w-4" aria-hidden />
-          Novo contato
-        </Button>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+          <Button
+            type="button"
+            variant="secondary"
+            size="md"
+            className="w-full sm:w-auto"
+            onClick={() => router.push("/notes")}
+          >
+            Anotações
+          </Button>
+          <Button
+            id="btn-novo-contato"
+            type="button"
+            size="md"
+            className="w-full sm:w-auto"
+            onClick={() => {
+              setErrorMessage(null);
+              setCreateOpen(true);
+            }}
+          >
+            <Plus className="h-4 w-4" aria-hidden />
+            Novo contato
+          </Button>
+        </div>
       </div>
 
       {errorMessage ? (

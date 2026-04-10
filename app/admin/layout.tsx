@@ -29,6 +29,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const nav = [
     { href: "/admin", label: "Visão geral" },
     { href: "/admin/planos", label: "Planos e contas" },
+    { href: "/admin/feedback", label: "Feedback" },
   ] as const;
 
   return (

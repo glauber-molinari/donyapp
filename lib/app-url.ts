@@ -12,6 +12,19 @@ export function appOrigin(): string {
  * recebe Location: http://localhost:3001/...
  */
 export function publicAppOrigin(request: NextRequest): string {
+  // Em desenvolvimento, a origem deve seguir o host atual (localhost),
+  // mesmo que NEXT_PUBLIC_APP_URL esteja apontando para produção.
+  if (process.env.NODE_ENV === "development") {
+    const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+    const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+    const host = forwardedHost ?? request.headers.get("host");
+    if (host) {
+      const proto = forwardedProto ?? "http";
+      return `${proto}://${host}`;
+    }
+    return new URL(request.url).origin;
+  }
+
   const fromEnv = appOrigin();
   if (fromEnv) return fromEnv;
 
