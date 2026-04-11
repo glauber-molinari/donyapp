@@ -1,6 +1,6 @@
 "use client";
 
-import { Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { Eye, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
@@ -25,6 +25,7 @@ export function ContactsView({ contacts }: ContactsViewProps) {
 
   const [query, setQuery] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
+  const [viewContact, setViewContact] = useState<Contact | null>(null);
   const [editContact, setEditContact] = useState<Contact | null>(null);
   const [deleteContactRow, setDeleteContactRow] = useState<Contact | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -184,7 +185,7 @@ export function ContactsView({ contacts }: ContactsViewProps) {
                   <th className="px-4 py-3 font-medium text-ds-muted">Nome</th>
                   <th className="px-4 py-3 font-medium text-ds-muted">E-mail</th>
                   <th className="px-4 py-3 font-medium text-ds-muted">Telefone</th>
-                  <th className="w-28 px-4 py-3 text-right font-medium text-ds-muted">
+                  <th className="w-36 px-4 py-3 text-right font-medium text-ds-muted">
                     Ações
                   </th>
                 </tr>
@@ -200,6 +201,19 @@ export function ContactsView({ contacts }: ContactsViewProps) {
                     <td className="px-4 py-3 text-ds-subtle">{c.phone ?? "—"}</td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex justify-end gap-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          aria-label={`Visualizar ${c.name}`}
+                          onClick={() => {
+                            setErrorMessage(null);
+                            setViewContact(c);
+                          }}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
                         <Button
                           type="button"
                           variant="ghost"
@@ -246,6 +260,19 @@ export function ContactsView({ contacts }: ContactsViewProps) {
                     ) : null}
                   </div>
                   <div className="flex shrink-0 gap-1">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      aria-label={`Visualizar ${c.name}`}
+                      onClick={() => {
+                        setErrorMessage(null);
+                        setViewContact(c);
+                      }}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
                     <Button
                       type="button"
                       variant="ghost"
@@ -323,6 +350,57 @@ export function ContactsView({ contacts }: ContactsViewProps) {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      <Modal
+        open={Boolean(viewContact)}
+        onClose={() => setViewContact(null)}
+        title="Visualizar contato"
+        size="lg"
+      >
+        {viewContact ? (
+          <div className="flex flex-col gap-4">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-ds-muted">
+                Nome completo
+              </p>
+              <p className="mt-1 text-sm text-ds-ink">{viewContact.name}</p>
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-ds-muted">
+                E-mail
+              </p>
+              <p className="mt-1 text-sm text-ds-ink break-all">{viewContact.email}</p>
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-ds-muted">
+                Telefone / WhatsApp
+              </p>
+              <p className="mt-1 text-sm text-ds-ink">
+                {viewContact.phone?.trim() ? viewContact.phone : "—"}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-ds-muted">
+                Observações
+              </p>
+              {viewContact.notes?.trim() ? (
+                <p className="mt-1 whitespace-pre-wrap text-sm text-ds-ink">
+                  {viewContact.notes}
+                </p>
+              ) : (
+                <p className="mt-1 text-sm text-ds-muted">
+                  Nenhuma observação adicionada.
+                </p>
+              )}
+            </div>
+            <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
+              <Button type="button" variant="secondary" onClick={() => setViewContact(null)}>
+                Fechar
+              </Button>
+            </div>
+          </div>
+        ) : null}
       </Modal>
 
       <Modal

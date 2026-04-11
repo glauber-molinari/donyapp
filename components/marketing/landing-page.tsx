@@ -4,41 +4,13 @@ import Link from "next/link";
 
 import { cn } from "@/lib/utils";
 import { LegalLinks } from "@/components/legal/legal-links";
+import { MarketingSiteHeader, marketingLandingNavItems } from "@/components/marketing/marketing-site-header";
 import {
   FREE_MAX_ACTIVE_JOBS,
   FREE_MAX_CONTACTS,
   PRO_PRICE_MONTHLY_CENTS,
   PRO_PRICE_YEARLY_CENTS,
 } from "@/lib/plan-limits";
-
-const heroNavItems = [
-  { href: "#sobre", label: "Sobre" },
-  { href: "#prova", label: "Resultados" },
-  { href: "#planos", label: "Planos" },
-  { href: "#faq", label: "FAQ" },
-] as const;
-
-function HeroFloatingNav({ className }: { className?: string }) {
-  return (
-    <nav
-      aria-label="Seções da página"
-      className={cn(
-        "flex items-center gap-0.5 rounded-full border border-ds-border bg-white/95 px-1 py-1 shadow-ds-md backdrop-blur-md",
-        className,
-      )}
-    >
-      {heroNavItems.map(({ href, label }) => (
-        <Link
-          key={href}
-          href={href}
-          className="rounded-full px-3.5 py-2 text-[0.9rem] font-medium text-ds-ink transition duration-ds ease-out hover:bg-ds-cream sm:px-4"
-        >
-          {label}
-        </Link>
-      ))}
-    </nav>
-  );
-}
 
 function ProductPreviewMock() {
   return (
@@ -79,52 +51,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
   );
   return (
     <div className={cn(bodyClassName, "min-h-screen bg-ds-cream text-ds-ink antialiased")}>
-      <header className="fixed top-0 z-50 w-full bg-ds-cream/70 transition-colors supports-[backdrop-filter]:backdrop-blur-md">
-        <div className="mx-auto max-w-[1200px] px-4 pb-3 pt-3 sm:px-6 lg:px-8">
-          <div className="relative flex min-h-[3rem] flex-col gap-3 lg:block lg:min-h-[3.25rem]">
-            <div className="flex items-center justify-between gap-3 lg:contents">
-              <div className="flex shrink-0 items-center lg:absolute lg:left-0 lg:top-1/2 lg:z-[1] lg:-translate-y-1/2">
-                <Link
-                  href="/"
-                  className="flex items-center justify-center font-semibold tracking-tight text-ds-ink"
-                >
-                  <Image
-                    src="/brand/logo-dony-png.png"
-                    alt="Donyapp"
-                    width={120}
-                    height={32}
-                    className="h-7 w-auto max-w-[9.5rem] object-contain sm:h-8 sm:max-w-[10.5rem]"
-                    priority
-                  />
-                </Link>
-              </div>
-
-              <div className="hidden justify-center lg:absolute lg:left-1/2 lg:top-1/2 lg:flex lg:-translate-x-1/2 lg:-translate-y-1/2">
-                <HeroFloatingNav />
-              </div>
-
-              <div className="flex shrink-0 items-center justify-end gap-4 lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2">
-                <Link
-                  href="/login"
-                  className="text-[0.9rem] font-medium text-ds-ink transition duration-ds ease-out hover:opacity-80"
-                >
-                  Entrar
-                </Link>
-                <Link
-                  href="/login"
-                  className="rounded-full bg-ds-accent px-4 py-2 text-[0.85rem] font-semibold text-white transition duration-ds ease-out hover:brightness-95 sm:px-5 sm:text-[0.9rem]"
-                >
-                  Começar grátis
-                </Link>
-              </div>
-            </div>
-
-            <div className="flex justify-center lg:hidden">
-              <HeroFloatingNav />
-            </div>
-          </div>
-        </div>
-      </header>
+      <MarketingSiteHeader navItems={marketingLandingNavItems} />
 
       <main>
         <section className="bg-ds-cream px-4 pb-0 pt-[9.5rem] sm:pt-[10rem] lg:pt-[11.25rem]">
@@ -133,8 +60,8 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
               href="/login"
               className="group mb-8 inline-flex items-center gap-2 rounded-full bg-ds-accent px-1 py-1 pl-1.5 pr-3 text-[0.75rem] font-semibold text-white transition duration-ds ease-out hover:brightness-110 sm:mb-10"
             >
-                          <span className="pr-0.6">Pós-produção, sem caos</span>
-                          </Link>
+              <span className="pr-0.6">Pós-produção, sem caos</span>
+            </Link>
 
             <h1
               className={cn(
@@ -154,7 +81,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
               sem planilhas nem ferramentas genéricas.
             </p>
 
-            <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+            <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
               <Link
                 href="/login"
                 className="inline-flex w-full items-center justify-center gap-2 rounded-ds-2xl bg-ds-accent px-7 py-3.5 text-sm font-semibold text-white shadow-sm transition duration-ds ease-out hover:brightness-95 hover:shadow-md sm:w-auto"
@@ -163,10 +90,10 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
-                href="/login"
-                className="inline-flex w-full items-center justify-center rounded-ds-2xl border-[1.5px] border-ds-border bg-ds-surface px-7 py-3.5 text-sm font-semibold text-ds-ink transition duration-ds ease-out hover:border-stone-300 sm:w-auto"
+                href="/por-que-usar"
+                className="inline-flex w-full items-center justify-center text-sm font-semibold text-ds-ink underline decoration-ds-border underline-offset-[0.35em] transition duration-ds ease-out hover:decoration-ds-ink sm:w-auto sm:justify-center sm:px-2 sm:py-3.5"
               >
-                Entrar
+                Por que usar?
               </Link>
             </div>
             <p className="mt-5 text-sm text-ds-subtle">Plano gratuito para começar. Sem cartão.</p>
@@ -191,7 +118,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                 "mx-auto max-w-3xl text-center text-balance text-3xl font-extrabold tracking-tight text-ds-ink sm:text-4xl lg:text-[2.75rem]",
               )}
             >
-              Tudo o que você precisa em um só lugar
+              Kanban, clientes e prazo no mesmo lugar
             </h2>
             <p className="mx-auto mt-5 max-w-xl text-center text-lg text-ds-muted">
               Pensado para quem vive de prazo, revisão e cliente no WhatsApp.
@@ -206,7 +133,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                 {
                   icon: UsersRound,
                   title: "Contatos centralizados",
-                  text: "Clientes vinculados aos jobs — busca rápida e histórico organizado.",
+                  text: "Clientes vinculados aos jobs, com busca rápida e histórico organizado.",
                 },
                 {
                   icon: Camera,
@@ -240,7 +167,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                 "mx-auto max-w-3xl text-center text-balance text-2xl font-extrabold tracking-tight text-ds-ink sm:text-3xl",
               )}
             >
-              Projetado para quem não pode falhar com prazo
+              Para quem não pode errar o prazo
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-center text-base text-ds-muted sm:text-lg">
               Menos “Quando eu recebo o material?” no WhatsApp. Mais previsibilidade com prazos,
@@ -266,8 +193,8 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-ds-ink">Cresce com seu estúdio</p>
                     <p className="mt-1 text-sm leading-relaxed text-ds-muted">
-                      Comece no essencial e aumente o volume sem virar bagunça: mais jobs, mais contatos e (no
-                      Pro) mais pessoas no fluxo.
+                      Comece pequeno e aumente o volume sem virar bagunça: mais jobs, mais contatos e (no Pro) mais
+                      pessoas no fluxo.
                     </p>
                   </div>
                 </li>
@@ -278,8 +205,8 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-ds-ink">Tudo centralizado em um Kanban</p>
                     <p className="mt-1 text-sm leading-relaxed text-ds-muted">
-                      Prazos, etapas e responsáveis no mesmo lugar. Todo mundo enxerga a mesma realidade — sem
-                      versões divergentes de planilhas.
+                      Prazos, etapas e responsáveis no mesmo lugar. Todo mundo enxerga a mesma realidade, sem planilhas
+                      em versões diferentes.
                     </p>
                   </div>
                 </li>
@@ -297,7 +224,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
               Planos para o seu ritmo de entrega
             </h2>
             <p className="mx-auto mt-5 max-w-[70ch] text-pretty text-base leading-relaxed text-ds-muted sm:text-lg">
-              O Free resolve o essencial. O Pro desbloqueia equipe, e-mail automático e remove limites.
+              O Free cobre o básico. No Pro entram equipe, e-mail automático na entrega e limites maiores.
             </p>
 
             <p className="mt-8 text-sm text-ds-subtle">
@@ -481,7 +408,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
               {[
                 {
                   q: "O Donyapp é gratuito?",
-                  a: "Sim. Você pode começar no plano gratuito e evoluir quando o estúdio crescer — sem cartão para testar.",
+                  a: "Sim. Você pode começar no plano gratuito e mudar quando o estúdio crescer. Não pedimos cartão para testar.",
                 },
                 {
                   q: "Serve para vídeo e foto?",
@@ -497,11 +424,11 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                 },
                 {
                   q: "Dá para trabalhar em equipe no mesmo estúdio?",
-                  a: "Sim, no plano avançado: você convida por e-mail e todos enxergam os mesmos jobs, contatos e board — os dados ficam na conta do estúdio, não presos a um único login.",
+                  a: "Sim, no plano avançado: você convida por e-mail e todos enxergam os mesmos jobs, contatos e board. Os dados ficam na conta do estúdio, não presos a um único login.",
                 },
                 {
                   q: "O Donyapp guarda meus arquivos de foto e vídeo?",
-                  a: "Não armazenamos seus arquivos. Você usa o serviço que já utiliza (Drive, Dropbox, WeTransfer etc.) e cola o link de entrega no job. No plano avançado, ao mover o job para a etapa final, você pode enviar um e-mail ao cliente com modelo editável — o envio é opcional e você confirma antes.",
+                  a: "Não armazenamos seus arquivos. Você usa o serviço que já utiliza (Drive, Dropbox, WeTransfer etc.) e cola o link de entrega no job. No plano avançado, ao mover o job para a etapa final, você pode enviar um e-mail ao cliente com modelo editável. O envio é opcional e você confirma antes.",
                 },
               ].map(({ q, a }) => (
                 <details
@@ -565,7 +492,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
             </a>
           </div>
           <div className="flex flex-col items-center gap-2 sm:items-end sm:text-right">
-            <p className="text-ds-muted">Donyapp — gestão de pós-produção para fotógrafos e videomakers.</p>
+            <p className="text-ds-muted">Donyapp, gestão de pós-produção para fotógrafos e videomakers.</p>
             <LegalLinks className="text-xs" linkClassName="text-ds-subtle hover:text-ds-ink" />
           </div>
         </div>

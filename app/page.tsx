@@ -10,9 +10,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Donyapp — Kanban de pós-produção para fotógrafos e videomakers",
+  title: "Donyapp | Kanban de pós-produção para fotógrafos e videomakers",
   description:
-    "Organize edições, prazos e clientes em um fluxo feito para estúdios e freelancers. Comece grátis.",
+    "Organize edições, prazos e clientes num fluxo pensado para estúdios e freelancers. Comece grátis.",
 };
 
 function homeJsonLd() {

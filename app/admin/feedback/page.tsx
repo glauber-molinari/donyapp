@@ -10,7 +10,7 @@ import {
 } from "./feedback-admin-view";
 
 export const metadata: Metadata = {
-  title: "Feedback — Admin",
+  title: "Feedback | Admin",
   robots: { index: false, follow: false },
 };
 

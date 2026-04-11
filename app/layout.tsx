@@ -13,11 +13,11 @@ const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
   title: {
-    default: "Donyapp — Gestão de pós-produção",
+    default: "Donyapp | Gestão de pós-produção",
     template: "%s | Donyapp",
   },
   description:
-    "Kanban de edição, prazos e clientes para fotógrafos e videomakers. Organize sua pós-produção em um fluxo feito para o estúdio.",
+    "Kanban de edição, prazos e clientes para fotógrafos e videomakers. Organize a pós-produção num fluxo pensado para o estúdio.",
   keywords: [
     "pós-produção",
     "kanban",
@@ -33,13 +33,13 @@ export const metadata: Metadata = {
     type: "website",
     locale: "pt_BR",
     siteName: "Donyapp",
-    title: "Donyapp — Gestão de pós-produção",
+    title: "Donyapp | Gestão de pós-produção",
     description:
-      "Organize edições, prazos e clientes em um fluxo feito para estúdios e freelancers.",
+      "Organize edições, prazos e clientes num fluxo pensado para estúdios e freelancers.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Donyapp — Gestão de pós-produção",
+    title: "Donyapp | Gestão de pós-produção",
     description:
       "Kanban de pós-produção para fotógrafos e videomakers.",
   },

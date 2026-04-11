@@ -93,7 +93,7 @@ export function NoteCategoryInput({
           ))}
         </ul>
       ) : (
-        <p className="text-xs text-ds-subtle">Nenhuma categoria — opcional.</p>
+        <p className="text-xs text-ds-subtle">Nenhuma categoria (opcional).</p>
       )}
     </div>
   );

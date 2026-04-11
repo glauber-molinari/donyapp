@@ -41,7 +41,7 @@ function buildSteps(router: ReturnType<typeof useRouter>): DriveStep[] {
       popover: {
         title: "Contatos",
         description:
-          "Comece por aqui! Cadastre seus clientes para vincular aos seus trabalhos.",
+          "Cadastre clientes aqui para vincular aos trabalhos. Nome e e-mail já bastam para começar.",
         side: "right",
         align: "start",
         onNextClick: (_el, _step, { driver: d }) => {
@@ -66,7 +66,7 @@ function buildSteps(router: ReturnType<typeof useRouter>): DriveStep[] {
       element: "#menu-edicoes",
       popover: {
         title: "Edições",
-        description: "Aqui mora o coração do sistema: seu Kanban de pós-produção.",
+        description: "É aqui que fica o kanban: arraste os cards conforme o trabalho avança.",
         side: "right",
         align: "start",
         onNextClick: (_el, _step, { driver: d }) => {
@@ -108,7 +108,7 @@ function buildSteps(router: ReturnType<typeof useRouter>): DriveStep[] {
       popover: {
         title: "Abrir configurações",
         description:
-          "É por aqui que você acessa as configurações da conta. No próximo passo, um resumo do que dá para fazer em cada seção.",
+          "Configurações da conta ficam por aqui. No próximo passo, um resumo rápido de cada seção.",
         side: "right",
         align: "start",
         onNextClick: (_el, _step, { driver: d }) => {
@@ -132,7 +132,7 @@ function buildSteps(router: ReturnType<typeof useRouter>): DriveStep[] {
       popover: {
         title: "Dentro de Configurações",
         description:
-          "Perfil: seu nome e opção de refazer este tour. Kanban: etapas do quadro e tipos de trabalho ao criar jobs (só admin altera tipos). Equipe: convidar ou remover membros (quem é admin gerencia acesso). E-mail: mensagens enviadas ao cliente na entrega. Plano: trial, assinatura e limites do seu plano.",
+          "Em Perfil você ajusta o nome e pode refazer este tour. Em Kanban ficam as etapas do quadro e os tipos de trabalho ao criar jobs (só admin mexe nos tipos). Em Equipe você convida ou remove pessoas; quem é admin cuida do acesso. Em E-mail ficam as mensagens para o cliente na entrega. Em Plano você vê trial, assinatura e limites.",
         side: "right",
         align: "start",
       },

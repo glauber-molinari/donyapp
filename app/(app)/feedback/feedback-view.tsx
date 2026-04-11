@@ -74,7 +74,7 @@ export function FeedbackView({ suggestions }: FeedbackViewProps) {
       {/* Header */}
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-ds-ink">Roadmap de Sugestões</h1>
+          <h1 className="text-2xl font-bold text-ds-ink">Quadro de Sugestões</h1>
           <p className="mt-0.5 text-sm text-ds-muted">
             Veja o que estamos construindo e vote nas ideias que mais importam para você.
           </p>

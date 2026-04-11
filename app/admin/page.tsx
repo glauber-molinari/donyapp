@@ -136,7 +136,7 @@ export default async function AdminDashboardPage() {
           <AdminMetricCard
             label="Jobs criados (30 dias)"
             value={intPt(m.jobsCreated30d)}
-            hint="Volume recente no funil"
+            hint="Volume recente de jobs criados"
           />
           <AdminMetricCard
             label="Convites pendentes"

@@ -404,6 +404,43 @@ export interface Database {
           },
         ];
       };
+      manual_job_assignees: {
+        Row: {
+          id: string;
+          account_id: string;
+          name: string;
+          email: string;
+          photo_url: string | null;
+          position: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          name: string;
+          email: string;
+          photo_url?: string | null;
+          position?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          name?: string;
+          email?: string;
+          photo_url?: string | null;
+          position?: number;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "manual_job_assignees_account_id_fkey";
+            columns: ["account_id"];
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       kanban_stages: {
         Row: {
           id: string;
@@ -461,6 +498,8 @@ export interface Database {
           client_revision: number;
           photo_editor_id: string | null;
           video_editor_id: string | null;
+          photo_manual_assignee_id: string | null;
+          video_manual_assignee_id: string | null;
           created_by: string | null;
           created_at: string;
           updated_at: string;
@@ -484,6 +523,8 @@ export interface Database {
           client_revision?: number;
           photo_editor_id?: string | null;
           video_editor_id?: string | null;
+          photo_manual_assignee_id?: string | null;
+          video_manual_assignee_id?: string | null;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -507,6 +548,8 @@ export interface Database {
           client_revision?: number;
           photo_editor_id?: string | null;
           video_editor_id?: string | null;
+          photo_manual_assignee_id?: string | null;
+          video_manual_assignee_id?: string | null;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -558,6 +601,18 @@ export interface Database {
             foreignKeyName: "jobs_video_editor_id_fkey";
             columns: ["video_editor_id"];
             referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "jobs_photo_manual_assignee_id_fkey";
+            columns: ["photo_manual_assignee_id"];
+            referencedRelation: "manual_job_assignees";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "jobs_video_manual_assignee_id_fkey";
+            columns: ["video_manual_assignee_id"];
+            referencedRelation: "manual_job_assignees";
             referencedColumns: ["id"];
           },
         ];

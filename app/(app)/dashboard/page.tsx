@@ -49,7 +49,7 @@ export default async function DashboardPage() {
     );
   }
 
-  const [jobsRes, contactsRes, stagesRes, workTypesRes, membersRes, metrics, subRes, agendaMeta] =
+  const [jobsRes, contactsRes, stagesRes, workTypesRes, membersRes, manualRes, metrics, subRes, agendaMeta] =
     await Promise.all([
     supabase
       .from("jobs")
@@ -77,6 +77,11 @@ export default async function DashboardPage() {
       .select("id, name, email, avatar_url")
       .eq("account_id", profile.account_id)
       .order("created_at", { ascending: true }),
+    supabase
+      .from("manual_job_assignees")
+      .select("id, name, email, photo_url")
+      .eq("account_id", profile.account_id)
+      .order("position", { ascending: true }),
     fetchDashboardMetrics(supabase),
     supabase
       .from("subscriptions")
@@ -94,6 +99,7 @@ export default async function DashboardPage() {
     stagesRes.error ||
     workTypesRes.error ||
     membersRes.error ||
+    manualRes.error ||
     subRes.error
   ) {
     return (
@@ -117,6 +123,7 @@ export default async function DashboardPage() {
           email: m.email ?? null,
           avatarUrl: m.avatar_url ?? null,
         }))}
+        manualAssignees={manualRes.data ?? []}
         jobs={(jobsRes.data ?? []) as JobWithRelations[]}
         contacts={contactsRes.data ?? []}
         stages={stagesRes.data ?? []}

@@ -104,6 +104,48 @@ async function verifyWorkTypeBelongs(
   return Boolean(data);
 }
 
+async function countUsersForAccount(
+  supabase: ReturnType<typeof createClient>,
+  accountId: string
+): Promise<number> {
+  const { count, error } = await supabase
+    .from("users")
+    .select("*", { count: "exact", head: true })
+    .eq("account_id", accountId);
+  if (error) return 0;
+  return count ?? 0;
+}
+
+async function verifyManualAssigneeBelongs(
+  supabase: ReturnType<typeof createClient>,
+  accountId: string,
+  assigneeId: string | null
+): Promise<boolean> {
+  if (!assigneeId) return true;
+  const { data } = await supabase
+    .from("manual_job_assignees")
+    .select("id")
+    .eq("id", assigneeId)
+    .eq("account_id", accountId)
+    .maybeSingle();
+  return Boolean(data);
+}
+
+/** Pro + no máximo um usuário: responsáveis cadastrados manualmente em Configurações. */
+async function canUseManualAssigneeMode(
+  supabase: ReturnType<typeof createClient>,
+  accountId: string
+): Promise<boolean> {
+  const { data: sub } = await supabase
+    .from("subscriptions")
+    .select("plan")
+    .eq("account_id", accountId)
+    .maybeSingle();
+  if ((sub?.plan ?? "free") !== "pro") return false;
+  const n = await countUsersForAccount(supabase, accountId);
+  return n <= 1;
+}
+
 /** Próximo índice no fim da coluna (ex.: novo job ou mover sem lista completa). */
 async function nextPositionAtEndOfStage(
   supabase: ReturnType<typeof createClient>,
@@ -205,6 +247,8 @@ type ParsedJobFields = {
   stage_id: string | null;
   photo_editor_id: string | null;
   video_editor_id: string | null;
+  photo_manual_assignee_id: string | null;
+  video_manual_assignee_id: string | null;
 };
 
 function parseOptionalUserId(v: FormDataEntryValue | null): string | null {
@@ -247,6 +291,8 @@ function parseJobForm(formData: FormData): { error: string } | ParsedJobFields {
 
   const photo_editor_id = parseOptionalUserId(formData.get("photo_editor_id"));
   const video_editor_id = parseOptionalUserId(formData.get("video_editor_id"));
+  const photo_manual_assignee_id = parseOptionalUserId(formData.get("photo_manual_assignee_id"));
+  const video_manual_assignee_id = parseOptionalUserId(formData.get("video_manual_assignee_id"));
 
   return {
     name,
@@ -261,6 +307,8 @@ function parseJobForm(formData: FormData): { error: string } | ParsedJobFields {
     stage_id,
     photo_editor_id,
     video_editor_id,
+    photo_manual_assignee_id,
+    video_manual_assignee_id,
   };
 }
 
@@ -301,10 +349,46 @@ export async function createJob(formData: FormData): Promise<ActionResult> {
   const stageOk = await verifyStageBelongs(supabase, ctx.accountId, parsed.stage_id);
   if (!stageOk) return { ok: false, error: "Etapa inválida." };
 
-  const photoEditorOk = await verifyUserBelongs(supabase, ctx.accountId, parsed.photo_editor_id);
-  if (!photoEditorOk) return { ok: false, error: "Editor de foto inválido." };
-  const videoEditorOk = await verifyUserBelongs(supabase, ctx.accountId, parsed.video_editor_id);
-  if (!videoEditorOk) return { ok: false, error: "Editor de vídeo inválido." };
+  const useManualMode = await canUseManualAssigneeMode(supabase, ctx.accountId);
+
+  let photo_editor_id = parsed.photo_editor_id;
+  let video_editor_id = parsed.video_editor_id;
+  let photo_manual_assignee_id = parsed.photo_manual_assignee_id;
+  let video_manual_assignee_id = parsed.video_manual_assignee_id;
+
+  if (!useManualMode) {
+    photo_manual_assignee_id = null;
+    video_manual_assignee_id = null;
+    const photoEditorOk = await verifyUserBelongs(supabase, ctx.accountId, photo_editor_id);
+    if (!photoEditorOk) return { ok: false, error: "Editor de foto inválido." };
+    const videoEditorOk = await verifyUserBelongs(supabase, ctx.accountId, video_editor_id);
+    if (!videoEditorOk) return { ok: false, error: "Editor de vídeo inválido." };
+  } else {
+    if (photo_manual_assignee_id) {
+      const ok = await verifyManualAssigneeBelongs(
+        supabase,
+        ctx.accountId,
+        photo_manual_assignee_id
+      );
+      if (!ok) return { ok: false, error: "Responsável (foto) inválido." };
+      photo_editor_id = null;
+    } else {
+      const photoEditorOk = await verifyUserBelongs(supabase, ctx.accountId, photo_editor_id);
+      if (!photoEditorOk) return { ok: false, error: "Editor de foto inválido." };
+    }
+    if (video_manual_assignee_id) {
+      const ok = await verifyManualAssigneeBelongs(
+        supabase,
+        ctx.accountId,
+        video_manual_assignee_id
+      );
+      if (!ok) return { ok: false, error: "Responsável (vídeo) inválido." };
+      video_editor_id = null;
+    } else {
+      const videoEditorOk = await verifyUserBelongs(supabase, ctx.accountId, video_editor_id);
+      if (!videoEditorOk) return { ok: false, error: "Editor de vídeo inválido." };
+    }
+  }
 
   const { data: sub } = await supabase
     .from("subscriptions")
@@ -339,8 +423,10 @@ export async function createJob(formData: FormData): Promise<ActionResult> {
     notes: parsed.notes,
     delivery_link: parsed.delivery_link,
     created_by: ctx.userId,
-    photo_editor_id: parsed.photo_editor_id,
-    video_editor_id: parsed.video_editor_id,
+    photo_editor_id,
+    video_editor_id,
+    photo_manual_assignee_id,
+    video_manual_assignee_id,
     job_kind: "standard" as const,
     parent_job_id: null as string | null,
   };
@@ -376,7 +462,9 @@ export async function createJob(formData: FormData): Promise<ActionResult> {
       delivery_link: null,
       created_by: ctx.userId,
       photo_editor_id: null,
-      video_editor_id: parsed.video_editor_id,
+      video_editor_id,
+      photo_manual_assignee_id: null,
+      video_manual_assignee_id,
       job_kind: "video_edit",
       parent_job_id: inserted.id,
     });
@@ -412,10 +500,46 @@ export async function updateJob(jobId: string, formData: FormData): Promise<Acti
   const stageOk = await verifyStageBelongs(supabase, ctx.accountId, parsed.stage_id);
   if (!stageOk) return { ok: false, error: "Etapa inválida." };
 
-  const photoEditorOk = await verifyUserBelongs(supabase, ctx.accountId, parsed.photo_editor_id);
-  if (!photoEditorOk) return { ok: false, error: "Editor de foto inválido." };
-  const videoEditorOk = await verifyUserBelongs(supabase, ctx.accountId, parsed.video_editor_id);
-  if (!videoEditorOk) return { ok: false, error: "Editor de vídeo inválido." };
+  const useManualMode = await canUseManualAssigneeMode(supabase, ctx.accountId);
+
+  let photo_editor_id = parsed.photo_editor_id;
+  let video_editor_id = parsed.video_editor_id;
+  let photo_manual_assignee_id = parsed.photo_manual_assignee_id;
+  let video_manual_assignee_id = parsed.video_manual_assignee_id;
+
+  if (!useManualMode) {
+    photo_manual_assignee_id = null;
+    video_manual_assignee_id = null;
+    const photoEditorOk = await verifyUserBelongs(supabase, ctx.accountId, photo_editor_id);
+    if (!photoEditorOk) return { ok: false, error: "Editor de foto inválido." };
+    const videoEditorOk = await verifyUserBelongs(supabase, ctx.accountId, video_editor_id);
+    if (!videoEditorOk) return { ok: false, error: "Editor de vídeo inválido." };
+  } else {
+    if (photo_manual_assignee_id) {
+      const ok = await verifyManualAssigneeBelongs(
+        supabase,
+        ctx.accountId,
+        photo_manual_assignee_id
+      );
+      if (!ok) return { ok: false, error: "Responsável (foto) inválido." };
+      photo_editor_id = null;
+    } else {
+      const photoEditorOk = await verifyUserBelongs(supabase, ctx.accountId, photo_editor_id);
+      if (!photoEditorOk) return { ok: false, error: "Editor de foto inválido." };
+    }
+    if (video_manual_assignee_id) {
+      const ok = await verifyManualAssigneeBelongs(
+        supabase,
+        ctx.accountId,
+        video_manual_assignee_id
+      );
+      if (!ok) return { ok: false, error: "Responsável (vídeo) inválido." };
+      video_editor_id = null;
+    } else {
+      const videoEditorOk = await verifyUserBelongs(supabase, ctx.accountId, video_editor_id);
+      if (!videoEditorOk) return { ok: false, error: "Editor de vídeo inválido." };
+    }
+  }
 
   const { data: existing } = await supabase
     .from("jobs")
@@ -447,8 +571,10 @@ export async function updateJob(jobId: string, formData: FormData): Promise<Acti
       work_type_id: parsed.work_type_id,
       notes: parsed.notes,
       delivery_link: parsed.delivery_link,
-      photo_editor_id: parsed.photo_editor_id,
-      video_editor_id: parsed.video_editor_id,
+      photo_editor_id,
+      video_editor_id,
+      photo_manual_assignee_id,
+      video_manual_assignee_id,
     })
     .eq("id", jobId)
     .eq("account_id", ctx.accountId);
@@ -468,7 +594,11 @@ export async function updateJob(jobId: string, formData: FormData): Promise<Acti
     if (child?.id) {
       await supabase
         .from("jobs")
-        .update({ video_editor_id: parsed.video_editor_id })
+        .update({
+          video_editor_id,
+          video_manual_assignee_id,
+          photo_manual_assignee_id: null,
+        })
         .eq("id", child.id)
         .eq("account_id", ctx.accountId);
     }

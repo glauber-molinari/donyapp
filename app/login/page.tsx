@@ -38,7 +38,7 @@ export default function LoginPage({
             priority
           />
         </div>
-        <h1 className="sr-only">Donyapp — Entrar</h1>
+        <h1 className="sr-only">Donyapp | Entrar</h1>
         <p className="text-center text-sm text-ds-muted">
           Gestão de pós-produção para fotógrafos e videomakers.
         </p>

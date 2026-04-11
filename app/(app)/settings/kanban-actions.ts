@@ -2,6 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 
+import {
+  isValidKanbanStageColor,
+  pickNextKanbanStageColor,
+} from "@/lib/kanban-stage-colors";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
 
@@ -9,15 +13,6 @@ type ActionResult = { ok: true } | { ok: false; error: string };
 
 /** Plano Free: no máximo 4 etapas (igual ao kanban padrão no provisionamento). Pro: ilimitado. */
 const FREE_MAX_STAGES = 4;
-
-/** Mesma rotação visual do provisionamento inicial */
-const STAGE_COLORS: string[] = [
-  "bg-ds-accent/10",
-  "bg-amber-50",
-  "bg-blue-50",
-  "bg-green-50",
-  "bg-pink-50",
-];
 
 type AdminContext =
   | { error: string }
@@ -106,9 +101,21 @@ export async function reorderKanbanStages(stageIdsOrdered: string[]): Promise<Ac
   return { ok: true };
 }
 
-export async function updateKanbanStageName(stageId: string, name: string): Promise<ActionResult> {
+export async function updateKanbanStageDetails(
+  stageId: string,
+  name: string,
+  color: string
+): Promise<ActionResult> {
   const trimmed = name.trim();
   if (!trimmed) return { ok: false, error: "Nome da etapa é obrigatório." };
+
+  const trimmedColor = color.trim();
+  if (!isValidKanbanStageColor(trimmedColor)) {
+    return {
+      ok: false,
+      error: "Cor inválida. Use um dos tons sugeridos ou um hexadecimal no formato #RRGGBB.",
+    };
+  }
 
   const ctx = await getAdminContext();
   const admin = requireAdmin(ctx);
@@ -117,7 +124,7 @@ export async function updateKanbanStageName(stageId: string, name: string): Prom
   const supabase = createClient();
   const { error } = await supabase
     .from("kanban_stages")
-    .update({ name: trimmed })
+    .update({ name: trimmed, color: trimmedColor })
     .eq("id", stageId)
     .eq("account_id", admin.accountId);
 
@@ -164,7 +171,15 @@ export async function addKanbanStage(name: string): Promise<ActionResult> {
     .maybeSingle();
 
   const nextPosition = (maxRow?.position ?? 0) + 1;
-  const color = STAGE_COLORS[(nextPosition - 1) % STAGE_COLORS.length];
+
+  const { data: colorRows, error: colorFetchErr } = await supabase
+    .from("kanban_stages")
+    .select("color")
+    .eq("account_id", admin.accountId);
+
+  if (colorFetchErr) return { ok: false, error: colorFetchErr.message };
+
+  const color = pickNextKanbanStageColor((colorRows ?? []).map((r) => r.color));
 
   const { error } = await supabase.from("kanban_stages").insert({
     account_id: admin.accountId,

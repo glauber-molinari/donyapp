@@ -13,6 +13,7 @@ import {
   Sparkles,
   Trash2,
   UsersRound,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -72,6 +73,7 @@ type EditJobTabId = (typeof EDIT_JOB_TABS)[number]["id"];
 
 interface DashboardViewProps {
   members: { id: string; name: string; email: string | null; avatarUrl: string | null }[];
+  manualAssignees: { id: string; name: string; email: string | null; photo_url: string | null }[];
   jobs: JobWithRelations[];
   contacts: ContactPick[];
   stages: Pick<Database["public"]["Tables"]["kanban_stages"]["Row"], "id" | "name" | "position">[];
@@ -84,6 +86,9 @@ interface DashboardViewProps {
 
 type DateBase = "deadline" | "internal_deadline";
 type DashboardTab = "active" | "done";
+
+const TEAM_PRO_INVITE_BANNER_STORAGE_KEY = "dony:dashboard:team-pro-invite-banner-dismissed";
+const ATTENTION_BANNER_STORAGE_KEY = "dony:dashboard:attention-banner-dismissed";
 
 function clampPage(page: number, maxPage: number) {
   if (maxPage <= 1) return 1;
@@ -176,6 +181,7 @@ function AvatarStack({
 
 export function DashboardView({
   members,
+  manualAssignees,
   jobs,
   contacts,
   stages,
@@ -209,6 +215,11 @@ export function DashboardView({
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(1);
 
+  const [teamProInviteBannerDismissed, setTeamProInviteBannerDismissed] = useState<boolean | null>(
+    null,
+  );
+  const [attentionBannerDismissed, setAttentionBannerDismissed] = useState<boolean | null>(null);
+
   const stageOptions = useMemo(
     () =>
       [...stages]
@@ -238,8 +249,24 @@ export function DashboardView({
 
   const singleMemberId = members.length === 1 ? members[0]!.id : null;
 
+  const manualAssigneeOptions = useMemo(
+    () => manualAssignees.map((m) => ({ value: m.id, label: m.name })),
+    [manualAssignees]
+  );
+
+  const manualById = useMemo(() => {
+    const map = new Map<string, { id: string; name: string; avatarUrl: string | null }>();
+    for (const a of manualAssignees) {
+      map.set(a.id, { id: a.id, name: a.name, avatarUrl: a.photo_url ?? null });
+    }
+    return map;
+  }, [manualAssignees]);
+
+  const useManualDirectory =
+    plan === "pro" && members.length === 1 && manualAssignees.length > 0;
+
   function assigneesForJob(j: JobWithRelations) {
-    return assigneesForJobCard(j, membersById, singleMemberId);
+    return assigneesForJobCard(j, membersById, singleMemberId, manualById);
   }
 
   const filteredJobs = useMemo(() => {
@@ -300,6 +327,18 @@ export function DashboardView({
   }, [pageSize, totalPages]);
 
   useEffect(() => {
+    try {
+      setTeamProInviteBannerDismissed(
+        localStorage.getItem(TEAM_PRO_INVITE_BANNER_STORAGE_KEY) === "1",
+      );
+      setAttentionBannerDismissed(localStorage.getItem(ATTENTION_BANNER_STORAGE_KEY) === "1");
+    } catch {
+      setTeamProInviteBannerDismissed(false);
+      setAttentionBannerDismissed(false);
+    }
+  }, []);
+
+  useEffect(() => {
     setPage(1);
   }, [query, tab, dateBase, dateFrom, dateTo, pageSize, attentionFilter]);
 
@@ -316,11 +355,10 @@ export function DashboardView({
     if (editJob?.id) setEditJobTab("geral");
   }, [editJob?.id]);
 
-  const editJobTabsVisible = useMemo(
-    () =>
-      members.length <= 1 ? EDIT_JOB_TABS.filter((t) => t.id !== "equipe") : EDIT_JOB_TABS,
-    [members.length]
-  );
+  const editJobTabsVisible = useMemo(() => {
+    const showEquipe = members.length > 1 || useManualDirectory;
+    return showEquipe ? EDIT_JOB_TABS : EDIT_JOB_TABS.filter((t) => t.id !== "equipe");
+  }, [members.length, useManualDirectory]);
 
   function refresh() {
     router.refresh();
@@ -431,8 +469,23 @@ export function DashboardView({
         tourCompleted={tourCompleted}
       />
 
-      {plan === "pro" && members.length === 1 ? (
-        <Card className="border border-ds-accent/25 bg-ds-cream/40 p-4 shadow-sm">
+      {plan === "pro" && members.length === 1 && teamProInviteBannerDismissed === false ? (
+        <Card className="relative border border-ds-accent/25 bg-ds-cream/40 p-4 pr-12 shadow-sm sm:pr-14">
+          <button
+            type="button"
+            className="absolute right-2 top-2 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-ds-lg text-ds-muted transition-colors hover:bg-black/5 hover:text-ds-ink"
+            aria-label="Fechar aviso"
+            onClick={() => {
+              setTeamProInviteBannerDismissed(true);
+              try {
+                localStorage.setItem(TEAM_PRO_INVITE_BANNER_STORAGE_KEY, "1");
+              } catch {
+                /* ignore */
+              }
+            }}
+          >
+            <X className="h-4 w-4" aria-hidden />
+          </button>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-ds-xl bg-white/80 text-ds-accent shadow-sm">
@@ -441,7 +494,7 @@ export function DashboardView({
               <div className="min-w-0">
                 <p className="font-semibold text-ds-ink">Trabalhe em equipe no Pro</p>
                 <p className="mt-1 text-sm text-ds-muted">
-                  Convide editores ou produção — menos gargalo, mais entregas no prazo.
+                  Convide editores ou produção. Menos gargalo, mais ritmo de entrega.
                 </p>
               </div>
             </div>
@@ -465,20 +518,35 @@ export function DashboardView({
         <p className="text-sm text-ds-muted">
           <span className="font-medium text-ds-ink">Neste mês:</span>{" "}
           {metrics.deliveredThisMonth} entrega(s) registrada(s) e {metrics.toEditThisMonth} item(ns) com
-          prazo no mês — ajuste no quadro para não perder o ritmo.
+          prazo no mês. Vale conferir o quadro para não perder o ritmo.
         </p>
       ) : null}
 
-      {needsAttention ? (
+      {needsAttention && attentionBannerDismissed === false ? (
         <div
-          className="rounded-ds-xl border border-amber-200/80 bg-amber-50/90 px-4 py-4 sm:px-5"
+          className="relative rounded-ds-xl border border-amber-200/80 bg-amber-50/90 px-4 py-4 pr-12 sm:px-5 sm:pr-14"
           role="status"
         >
+          <button
+            type="button"
+            className="absolute right-2 top-2 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-ds-lg text-amber-900/60 transition-colors hover:bg-amber-100/80 hover:text-amber-950"
+            aria-label="Fechar aviso de prazos"
+            onClick={() => {
+              setAttentionBannerDismissed(true);
+              try {
+                localStorage.setItem(ATTENTION_BANNER_STORAGE_KEY, "1");
+              } catch {
+                /* ignore */
+              }
+            }}
+          >
+            <X className="h-4 w-4" aria-hidden />
+          </button>
           <p className="text-sm font-semibold text-amber-950">
             {metrics.overdue > 0 && metrics.dueSoon > 0
               ? `${metrics.overdue} atrasado(s) e ${metrics.dueSoon} com prazo em até 3 dias.`
               : metrics.overdue > 0
-                ? `${metrics.overdue} job(s) atrasado(s) — vale priorizar hoje.`
+                ? `${metrics.overdue} job(s) atrasado(s). Vale encarar hoje.`
                 : `${metrics.dueSoon} job(s) com prazo apertado nos próximos dias.`}
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -508,7 +576,7 @@ export function DashboardView({
               href="/board"
               className="inline-flex h-8 items-center gap-1 rounded-ds-xl px-3 text-sm font-medium text-amber-950 underline-offset-4 hover:underline"
             >
-              Abrir quadro
+              Abrir Edições
               <ExternalLink className="h-3.5 w-3.5" aria-hidden />
             </Link>
             {attentionFilter ? (
@@ -629,7 +697,7 @@ export function DashboardView({
           <KanbanMiniPreview />
           <EmptyState
             title="Nenhum job ainda"
-            description="Em poucos cliques você vê o quadro como na prévia acima: prazos claros e etapas alinhadas."
+            description="Em poucos cliques o quadro fica parecido com a prévia: prazos claros e etapas alinhadas."
             className="w-full max-w-lg"
           >
             <Button
@@ -654,8 +722,8 @@ export function DashboardView({
               </h2>
               <p className="text-xs text-ds-subtle">
                 {tab === "done"
-                  ? "Entregues/concluídos — ficam aqui para não poluir sua fila."
-                  : "Ativos — ordenados pelo prazo final mais próximo."}
+                  ? "Entregues ou concluídos ficam aqui para não poluir a fila."
+                  : "Ativos, ordenados pelo prazo final mais próximo."}
               </p>
             </div>
 
@@ -766,7 +834,7 @@ export function DashboardView({
                           ? "Nenhum job ativo com prazo nos próximos 3 dias."
                           : tab === "done"
                             ? "Nenhuma edição concluída ainda."
-                            : "Nenhum job ativo na fila — todos podem estar na etapa final."}
+                            : "Nenhum job ativo na fila. Pode ser que todos estejam na etapa final."}
                   </p>
                   {attentionFilter ? (
                     <Button type="button" variant="secondary" size="sm" onClick={() => router.push("/dashboard")}>
@@ -1030,6 +1098,8 @@ export function DashboardView({
           stageOptions={stageOptions}
           workTypeOptions={workTypeOptions}
           memberOptions={memberOptions}
+          manualAssigneeOptions={manualAssigneeOptions}
+          useManualAssigneeDirectory={plan === "pro" && members.length === 1}
           isPending={isPending}
           onCancel={() => setCreateOpen(false)}
           onSubmit={handleCreate}
@@ -1051,8 +1121,17 @@ export function DashboardView({
           >
             {members.length <= 1 ? (
               <>
-                <input type="hidden" name="photo_editor_id" value={singleMemberId ?? ""} />
-                <input type="hidden" name="video_editor_id" value={singleMemberId ?? ""} />
+                {useManualDirectory ? (
+                  <>
+                    <input type="hidden" name="photo_editor_id" value="" />
+                    <input type="hidden" name="video_editor_id" value="" />
+                  </>
+                ) : (
+                  <>
+                    <input type="hidden" name="photo_editor_id" value={singleMemberId ?? ""} />
+                    <input type="hidden" name="video_editor_id" value={singleMemberId ?? ""} />
+                  </>
+                )}
               </>
             ) : null}
 
@@ -1140,7 +1219,64 @@ export function DashboardView({
                 />
               </div>
 
-              {members.length > 1 ? (
+              {useManualDirectory ? (
+                <div role="tabpanel" hidden={editJobTab !== "equipe"} className="space-y-4">
+                  {editJob.job_kind === "video_edit" ? (
+                    <>
+                      <input type="hidden" name="photo_manual_assignee_id" value="" />
+                      <Select
+                        id="job-edit-video-manual"
+                        name="video_manual_assignee_id"
+                        label="Responsável pelo vídeo"
+                        placeholder="Selecione"
+                        defaultValue={editJob.video_manual_assignee_id ?? ""}
+                        options={manualAssigneeOptions}
+                      />
+                    </>
+                  ) : editJob.type === "foto_video" ? (
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <Select
+                        id="job-edit-photo-manual"
+                        name="photo_manual_assignee_id"
+                        label="Responsável pela foto"
+                        placeholder="Selecione"
+                        defaultValue={editJob.photo_manual_assignee_id ?? ""}
+                        options={manualAssigneeOptions}
+                      />
+                      <Select
+                        id="job-edit-video-manual"
+                        name="video_manual_assignee_id"
+                        label="Responsável pelo vídeo"
+                        placeholder="Selecione"
+                        defaultValue={editJob.video_manual_assignee_id ?? ""}
+                        options={manualAssigneeOptions}
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      <input
+                        type="hidden"
+                        name={editJob.type === "video" ? "photo_manual_assignee_id" : "video_manual_assignee_id"}
+                        value=""
+                      />
+                      <Select
+                        id="job-edit-manual-single"
+                        name={
+                          editJob.type === "video" ? "video_manual_assignee_id" : "photo_manual_assignee_id"
+                        }
+                        label="Responsável"
+                        placeholder="Selecione"
+                        defaultValue={
+                          editJob.type === "video"
+                            ? (editJob.video_manual_assignee_id ?? "")
+                            : (editJob.photo_manual_assignee_id ?? "")
+                        }
+                        options={manualAssigneeOptions}
+                      />
+                    </>
+                  )}
+                </div>
+              ) : members.length > 1 ? (
                 <div role="tabpanel" hidden={editJobTab !== "equipe"} className="space-y-4">
                   {editJob.type === "foto_video" ? (
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

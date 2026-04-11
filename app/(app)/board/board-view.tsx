@@ -38,7 +38,11 @@ import { Avatar } from "@/components/ui/avatar";
 import { Modal } from "@/components/ui/modal";
 import { kanbanStageAccentHex } from "@/lib/kanban-stage-accent";
 import { assigneesForJobCard } from "@/lib/job-assignees";
-import { deadlineBadge, formatDeadlinePt } from "@/lib/job-display";
+import {
+  deadlineTimelineAriaText,
+  deadlineTimelineVisual,
+  formatDeadlinePt,
+} from "@/lib/job-display";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import type { Database, Plan } from "@/types/database";
@@ -108,7 +112,7 @@ function jobVisibleInBoardMonth(job: JobWithRelations, ym: string): boolean {
 
 const CLIENT_REVISION_OPTIONS = [0, 1, 2, 3, 4, 5].map((n) => ({
   value: String(n),
-  label: n === 0 ? "0 — sem alteração" : `${n}ª alteração`,
+  label: n === 0 ? "0 (sem alteração)" : `${n}ª alteração`,
 }));
 
 const ClientRevisionSelect = memo(function ClientRevisionSelect({ job }: { job: JobWithRelations }) {
@@ -122,7 +126,7 @@ const ClientRevisionSelect = memo(function ClientRevisionSelect({ job }: { job: 
 
   return (
     <div
-      className="mt-2"
+      className="mt-1.5"
       onClick={(e) => e.stopPropagation()}
       onPointerDown={(e) => e.stopPropagation()}
       onKeyDown={(e) => e.stopPropagation()}
@@ -150,7 +154,7 @@ const ClientRevisionSelect = memo(function ClientRevisionSelect({ job }: { job: 
           }
           router.refresh();
         }}
-        className="w-full rounded-lg border border-app-border bg-app-sidebar px-2 py-1.5 text-xs text-ds-ink shadow-sm focus:border-app-primary/50 focus:outline-none focus:ring-2 focus:ring-app-primary/20 disabled:opacity-60"
+        className="w-full rounded-md border border-app-border bg-app-sidebar px-2 py-1 text-[11px] text-ds-ink shadow-sm focus:border-app-primary/50 focus:outline-none focus:ring-2 focus:ring-app-primary/20 disabled:opacity-60"
       >
         {CLIENT_REVISION_OPTIONS.map((o) => (
           <option key={o.value} value={o.value}>
@@ -283,6 +287,7 @@ interface BoardViewProps {
   workTypes: WorkTypeRow[];
   plan: Plan;
   members: { id: string; name: string; email: string | null; avatarUrl: string | null }[];
+  manualAssignees: { id: string; name: string; email: string | null; photo_url: string | null }[];
   senderName: string | null;
   replyToEmail: string | null;
   accountSubjectTemplate: string | null;
@@ -301,22 +306,59 @@ const AvatarStack = memo(function AvatarStack({
   const rest = people.length - shown.length;
   return (
     <div className="flex items-center">
-      <div className="flex -space-x-2">
+      <div className="flex -space-x-1.5">
         {shown.map((p) => (
           <Avatar
             key={p.id}
             src={p.avatarUrl}
             name={p.name}
-            size="sm"
-            className="ring-2 ring-ds-surface"
+            size="xs"
+            className="ring-2 ring-white"
           />
         ))}
         {rest > 0 ? (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-ds-cream text-[0.7rem] font-semibold text-ds-muted ring-2 ring-ds-surface">
+          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-stone-100 text-[9px] font-semibold text-ds-muted ring-2 ring-white">
             +{rest}
           </div>
         ) : null}
       </div>
+    </div>
+  );
+});
+
+const DeadlineTimelineBar = memo(function DeadlineTimelineBar({
+  job,
+  stageFinal,
+}: {
+  job: JobWithRelations;
+  stageFinal: boolean;
+}) {
+  const { fillPct, tone } = deadlineTimelineVisual(job.deadline, stageFinal);
+  const barClass =
+    tone === "danger"
+      ? "bg-red-500"
+      : tone === "warn"
+        ? "bg-amber-500"
+        : tone === "ok"
+          ? "bg-emerald-500"
+          : tone === "done"
+            ? "bg-emerald-600/45"
+            : "bg-stone-400/60";
+
+  return (
+    <div
+      className="mt-2 h-1 w-full overflow-hidden rounded-full bg-stone-200/90"
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={fillPct}
+      aria-valuetext={deadlineTimelineAriaText(tone)}
+      aria-label="Proximidade do prazo final"
+    >
+      <span
+        className={cn("block h-full max-w-full rounded-full transition-[width]", barClass)}
+        style={{ width: `${fillPct}%` }}
+      />
     </div>
   );
 });
@@ -345,51 +387,53 @@ const JobCardContent = memo(function JobCardContent({
   /** Abre o modal de detalhes (área do card, sem a alça). */
   onOpen?: () => void;
 }) {
-  const dl = deadlineBadge(job.deadline, stageFinal);
   const rev = job.client_revision ?? 0;
   const openEnabled = Boolean(onOpen && !overlay);
+  const cardShadow = `inset 3px 0 0 0 ${accentHex}, 0 1px 2px rgb(12 10 9 / 0.05)`;
 
   const main = (
     <>
-      <p className="text-base font-semibold text-ds-ink">{job.name}</p>
+      <p className="text-sm font-semibold leading-snug text-ds-ink">{job.name}</p>
       {job.job_work_types?.name ? (
-        <p className="mt-1 text-xs text-ds-muted">{job.job_work_types.name}</p>
+        <p className="mt-0.5 text-[11px] text-ds-muted">{job.job_work_types.name}</p>
       ) : null}
-      <div className="mt-2 flex flex-wrap gap-2">
-        <Badge kind="job-type" value={job.type} />
-        {dl ? <Badge kind="deadline" value={dl} /> : null}
+      <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+        <Badge kind="job-type" value={job.type} className="text-[10px] font-medium" />
         {overlay || !revisionInteractive ? (
-          <span className="inline-flex items-center rounded-full border border-ds-subtle/25 bg-ds-cream px-2 py-0.5 text-[11px] font-medium text-ds-muted">
-            Alt. cliente: {rev}
+          <span className="inline-flex items-center rounded-full border border-ds-border/60 bg-stone-50 px-1.5 py-px text-[10px] font-medium text-ds-muted">
+            Alt. {rev}
           </span>
         ) : null}
       </div>
       {assignees.length ? (
-        <div className="mt-2 flex items-center justify-between gap-2">
-          <span className="text-xs font-medium text-ds-subtle">Responsável</span>
+        <div className="mt-1.5 flex items-center justify-between gap-2">
+          <span className="text-[10px] font-medium uppercase tracking-wide text-ds-subtle">
+            Equipe
+          </span>
           <AvatarStack people={assignees} />
         </div>
       ) : null}
       {revisionInteractive && !overlay ? <ClientRevisionSelect job={job} /> : null}
       {job.contacts?.name ? (
-        <p className="mt-2 text-sm text-ds-muted">{job.contacts.name}</p>
+        <p className="mt-1.5 text-[11px] text-ds-muted">{job.contacts.name}</p>
       ) : null}
-      <p className="mt-1 text-xs text-ds-subtle">
-        Interno {formatDeadlinePt(job.internal_deadline.slice(0, 10))} · Final{" "}
+      <p className="mt-1 text-[10px] leading-tight text-ds-subtle">
+        Int. {formatDeadlinePt(job.internal_deadline.slice(0, 10))} · Final{" "}
         {formatDeadlinePt(job.deadline.slice(0, 10))}
       </p>
+      <DeadlineTimelineBar job={job} stageFinal={stageFinal} />
     </>
   );
 
   return (
     <div
       className={cn(
-        "rounded-ds-xl border-2 bg-ds-surface p-3 shadow-ds-sm",
-        isDragging && "opacity-50",
-        overlay && "shadow-ds-md ring-2 ring-ds-accent/20",
+        "rounded-lg border border-ds-border/70 bg-white p-2 shadow-sm",
+        isDragging && "opacity-60",
+        overlay && "shadow-md ring-2 ring-ds-accent/15",
         openEnabled && !dragHandle && "cursor-pointer"
       )}
-      style={{ borderColor: accentHex }}
+      style={{ boxShadow: cardShadow }}
       onClick={openEnabled && !dragHandle ? onOpen : undefined}
     >
       {dragHandle ? (
@@ -439,12 +483,12 @@ const SortableJobCard = memo(function SortableJobCard({
   const dragHandle = dragDisabled ? undefined : (
     <button
       type="button"
-      className="flex h-8 w-7 shrink-0 items-center justify-center rounded-ds-md border border-transparent text-ds-muted hover:border-app-border hover:bg-ds-cream hover:text-ds-ink"
+      className="flex h-7 w-6 shrink-0 items-center justify-center rounded-md border border-transparent text-ds-muted hover:border-ds-border/80 hover:bg-stone-50 hover:text-ds-ink"
       aria-label="Arrastar card"
       {...listeners}
       {...attributes}
     >
-      <GripVertical className="h-4 w-4" aria-hidden />
+      <GripVertical className="h-3.5 w-3.5" aria-hidden />
     </button>
   );
 
@@ -494,25 +538,37 @@ const KanbanColumn = memo(function KanbanColumn({
 
   const accentHex = kanbanStageAccentHex(stage.color);
 
+  const columnTint = `color-mix(in srgb, ${accentHex} 13%, rgb(250 249 247))`;
+
   return (
     <div
-      className="flex min-h-[min(70vh,520px)] w-[min(100%,280px)] shrink-0 flex-col overflow-hidden rounded-ds-xl bg-[#EDE9E5] transition-[box-shadow,colors]"
-      style={
-        isOver
+      className="flex min-h-0 min-w-[128px] max-w-[260px] flex-1 basis-0 flex-col overflow-hidden rounded-xl border border-ds-border/60 shadow-sm transition-[box-shadow,colors]"
+      style={{
+        backgroundColor: columnTint,
+        ...(isOver
           ? {
-              boxShadow: `0 0 0 2px #f5f2ef, 0 0 0 6px ${accentHex}4D`,
+              boxShadow: `0 0 0 2px rgb(250 249 247), 0 0 0 5px ${accentHex}55`,
             }
-          : undefined
-      }
+          : {}),
+      }}
     >
       <div
-        className="shrink-0 border-t-[10px] border-solid px-3 pb-2 pt-3"
-        style={{ borderTopColor: accentHex }}
+        className="shrink-0 border-b border-ds-border/35 px-2.5 py-2"
+        style={{
+          backgroundColor: `color-mix(in srgb, ${accentHex} 22%, white)`,
+        }}
       >
-        <h2 className="text-sm font-semibold text-ds-ink">{stage.name}</h2>
+        <h2 className="text-[11px] font-semibold uppercase tracking-wide text-ds-muted">
+          {stage.name}
+        </h2>
       </div>
       {dragDisabled ? (
-        <div className="flex min-h-[120px] flex-1 flex-col gap-3 px-3 pb-3">
+        <div
+          className={cn(
+            "flex flex-col gap-2 px-2 pb-2 pt-1.5",
+            visibleIds.length === 0 && "min-h-[72px]"
+          )}
+        >
           {visibleIds.map((id) => {
             const job = jobsById.get(id);
             if (!job) return null;
@@ -531,7 +587,10 @@ const KanbanColumn = memo(function KanbanColumn({
         </div>
       ) : (
         <SortableContext items={jobIds} strategy={verticalListSortingStrategy}>
-          <div ref={setNodeRef} className="flex min-h-[120px] flex-1 flex-col gap-3 px-3 pb-3">
+          <div
+            ref={setNodeRef}
+            className={cn("flex flex-col gap-2 px-2 pb-2 pt-1.5", jobIds.length === 0 && "min-h-[72px]")}
+          >
             {jobIds.map((id) => {
               const job = jobsById.get(id);
               if (!job) return null;
@@ -562,6 +621,7 @@ export function BoardView({
   workTypes,
   plan,
   members,
+  manualAssignees,
   senderName,
   replyToEmail,
   accountSubjectTemplate,
@@ -595,13 +655,28 @@ export function BoardView({
     [members]
   );
 
+  const manualAssigneeOptions = useMemo(
+    () => manualAssignees.map((m) => ({ value: m.id, label: m.name })),
+    [manualAssignees]
+  );
+
+  const manualById = useMemo(() => {
+    const map = new Map<string, { id: string; name: string; avatarUrl: string | null }>();
+    for (const a of manualAssignees) {
+      map.set(a.id, { id: a.id, name: a.name, avatarUrl: a.photo_url ?? null });
+    }
+    return map;
+  }, [manualAssignees]);
+
+  const useManualAssigneeDirectory = plan === "pro" && members.length === 1;
+
   const assigneesByJobId = useMemo(() => {
     const map = new Map<string, { id: string; name: string; avatarUrl: string | null }[]>();
     for (const j of filteredJobs) {
-      map.set(j.id, assigneesForJobCard(j, membersById, singleMemberId));
+      map.set(j.id, assigneesForJobCard(j, membersById, singleMemberId, manualById));
     }
     return map;
-  }, [filteredJobs, membersById, singleMemberId]);
+  }, [filteredJobs, membersById, singleMemberId, manualById]);
 
   const [columnItems, setColumnItems] = useState<Record<string, string[]>>({});
   const columnItemsRef = useRef(columnItems);
@@ -757,10 +832,10 @@ export function BoardView({
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex min-w-0 flex-col gap-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
-          <h1 className="text-2xl font-bold text-ds-ink">Edições</h1>
+          <h1 className="text-xl font-bold tracking-tight text-ds-ink">Edições</h1>
           <div className="flex flex-col gap-1">
             <label htmlFor="board-month-filter" className="text-xs font-medium text-ds-muted">
               Mês do quadro
@@ -830,13 +905,13 @@ export function BoardView({
 
       {jobs.length === 0 && !noStages ? (
         <p className="text-sm text-ds-muted">
-          Nenhum job no quadro ainda — use &quot;Novo job&quot; para cadastrar.
+          Nenhum job no quadro ainda. Use &quot;Novo job&quot; para cadastrar.
         </p>
       ) : null}
 
       {jobs.length > 0 && filteredJobs.length === 0 && !noStages ? (
         <p className="text-sm text-ds-muted" role="status">
-          Nenhuma edição neste mês — prazos interno/final fora de <strong>{boardMonthYm}</strong> e
+          Nenhuma edição neste mês: prazos interno/final fora de <strong>{boardMonthYm}</strong> e
           nenhuma entrega (etapa final) atualizada nesse período. Ajuste o mês acima.
         </p>
       ) : null}
@@ -849,22 +924,24 @@ export function BoardView({
           onDragEnd={handleDragEnd}
           onDragCancel={handleDragCancel}
         >
-          <div
-            id="kanban-board"
-            className="flex gap-4 overflow-x-auto pb-4 pt-1 [scrollbar-width:thin]"
-          >
-            {sortedStages.map((stage) => (
-              <KanbanColumn
-                key={stage.id}
-                stage={stage}
-                jobIds={columnItems[stage.id] ?? []}
-                jobsById={jobsById}
-                dragDisabled={dragDisabled}
-                searchQuery={searchQuery}
-                assigneesByJobId={assigneesByJobId}
-                onOpenJob={setDetailJob}
-              />
-            ))}
+          <div className="w-full min-w-0 max-w-full overflow-x-auto pb-4 pt-1 overscroll-x-contain [scrollbar-width:thin]">
+            <div
+              id="kanban-board"
+              className="flex w-full min-w-0 gap-3"
+            >
+              {sortedStages.map((stage) => (
+                <KanbanColumn
+                  key={stage.id}
+                  stage={stage}
+                  jobIds={columnItems[stage.id] ?? []}
+                  jobsById={jobsById}
+                  dragDisabled={dragDisabled}
+                  searchQuery={searchQuery}
+                  assigneesByJobId={assigneesByJobId}
+                  onOpenJob={setDetailJob}
+                />
+              ))}
+            </div>
           </div>
 
           <DragOverlay dropAnimation={null}>
@@ -885,6 +962,7 @@ export function BoardView({
         job={detailJob}
         allJobs={jobs}
         members={members}
+        manualAssignees={manualAssignees}
         open={Boolean(detailJob)}
         onClose={() => setDetailJob(null)}
       />
@@ -896,6 +974,8 @@ export function BoardView({
           stageOptions={stageOptions}
           workTypeOptions={workTypeOptions}
           memberOptions={memberOptions}
+          manualAssigneeOptions={manualAssigneeOptions}
+          useManualAssigneeDirectory={useManualAssigneeDirectory}
           isPending={isPending}
           onCancel={() => setCreateOpen(false)}
           onSubmit={handleCreate}

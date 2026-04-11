@@ -14,6 +14,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
+      url: new URL("/por-que-usar", base).toString(),
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
       url: new URL("/termos-de-servico", base).toString(),
       lastModified: now,
       changeFrequency: "yearly",

@@ -39,7 +39,7 @@ export default async function BoardPage() {
     );
   }
 
-  const [jobsRes, stagesRes, contactsRes, workTypesRes, subRes, accountRes, membersRes] =
+  const [jobsRes, stagesRes, contactsRes, workTypesRes, subRes, accountRes, membersRes, manualRes] =
     await Promise.all([
     supabase
       .from("jobs")
@@ -73,6 +73,11 @@ export default async function BoardPage() {
       .select("id, name, email, avatar_url")
       .eq("account_id", profile.account_id)
       .order("created_at", { ascending: true }),
+    supabase
+      .from("manual_job_assignees")
+      .select("id, name, email, photo_url")
+      .eq("account_id", profile.account_id)
+      .order("position", { ascending: true }),
   ]);
 
   const fetchError =
@@ -82,7 +87,8 @@ export default async function BoardPage() {
     workTypesRes.error ??
     subRes.error ??
     accountRes.error ??
-    membersRes.error;
+    membersRes.error ??
+    manualRes.error;
 
   if (fetchError) {
     if (process.env.NODE_ENV === "development") {
@@ -115,6 +121,7 @@ export default async function BoardPage() {
       replyToEmail={profile.email}
       accountSubjectTemplate={accountRes.data?.delivery_email_subject_template ?? null}
       accountBodyTemplate={accountRes.data?.delivery_email_body_template ?? null}
+      manualAssignees={manualRes.data ?? []}
     />
   );
 }

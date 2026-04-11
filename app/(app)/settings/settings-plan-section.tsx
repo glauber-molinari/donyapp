@@ -52,7 +52,7 @@ function customerPlanStatusLabel(
   }
   if (plan === "pro") {
     if (cancelAtPeriodEnd) {
-      return "Ativo — sem renovação automática";
+      return "Ativo, sem renovação automática";
     }
     if (status === "trialing") {
       return "Período de teste";
@@ -198,7 +198,7 @@ export function SettingsPlanSection({
       <div>
         <h2 className="text-lg font-semibold text-ds-ink">Plano e limites</h2>
         <p className="mt-1 text-sm text-ds-muted">
-          Free para começar; Pro desbloqueia equipe, e-mail automático e limites maiores.
+          Free para começar. No Pro entram equipe, e-mail automático e limites maiores.
         </p>
       </div>
 
@@ -246,7 +246,7 @@ export function SettingsPlanSection({
                   setUpgradeOpen(true);
                 }}
               >
-                Assinar Pro — {priceLabel}/mês
+                Assinar Pro ({priceLabel}/mês)
               </Button>
             ) : null}
             {isPro && canCancelSubscription ? (
@@ -271,7 +271,7 @@ export function SettingsPlanSection({
         <Card className="p-5">
           <h3 className="font-medium text-ds-ink">Free</h3>
           <ul className="mt-3 list-inside list-disc space-y-1.5 text-sm text-ds-muted">
-            <li>Até {FREE_MAX_ACTIVE_JOBS} oportunidades ativas no funil</li>
+            <li>Até {FREE_MAX_ACTIVE_JOBS} jobs ativos no kanban</li>
             <li>Até {FREE_MAX_CONTACTS} contatos</li>
             <li>Um usuário por conta</li>
           </ul>
@@ -280,7 +280,7 @@ export function SettingsPlanSection({
           <h3 className="font-medium text-ds-ink">Pro</h3>
           <p className="mt-1 text-sm text-ds-muted">{priceLabel} por mês</p>
           <ul className="mt-3 list-inside list-disc space-y-1.5 text-sm text-ds-muted">
-            <li>Oportunidades e contatos ilimitados</li>
+            <li>Jobs e contatos ilimitados</li>
             <li>Equipe e convites por e-mail</li>
             <li>E-mail automático ao mover etapa (Resend)</li>
             <li>Pagamento via Asaas (cartão de crédito)</li>
@@ -342,7 +342,7 @@ export function SettingsPlanSection({
               disabled={cardBusy}
               onClick={() => void handleCard("MONTHLY")}
             >
-              {cardBusy ? "Abrindo…" : `Mensal — ${priceLabel}/mês`}
+              {cardBusy ? "Abrindo…" : `Mensal (${priceLabel}/mês)`}
             </Button>
             <Button
               type="button"
@@ -351,7 +351,7 @@ export function SettingsPlanSection({
               disabled={cardBusy}
               onClick={() => void handleCard("YEARLY")}
             >
-              {cardBusy ? "Abrindo…" : `Anual — ${yearlyLabel}/ano`}
+              {cardBusy ? "Abrindo…" : `Anual (${yearlyLabel}/ano)`}
             </Button>
           </div>
         </div>

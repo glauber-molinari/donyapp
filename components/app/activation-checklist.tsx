@@ -118,7 +118,7 @@ export function ActivationChecklist({
             Primeiros passos
           </h2>
           <p className="mt-1 text-xs text-ds-muted">
-            {doneCount}/{steps.length} concluídos — em poucos minutos seu fluxo fica vivo no sistema.
+            {doneCount}/{steps.length} concluídos. Em poucos minutos o fluxo aparece de verdade no app.
           </p>
         </div>
         <button

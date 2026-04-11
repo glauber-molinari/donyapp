@@ -3,8 +3,7 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 
-import { SettingsKanbanSection } from "../settings-kanban-section";
-import { SettingsWorkTypesSection } from "../settings-work-types-section";
+import { SettingsKanbanTabs } from "../settings-kanban-tabs";
 
 export const metadata: Metadata = {
   title: "Kanban",
@@ -36,7 +35,7 @@ export default async function SettingsKanbanPage() {
     );
   }
 
-  const [stagesRes, subRes, workTypesRes] = await Promise.all([
+  const [stagesRes, subRes, workTypesRes, usersCountRes, manualRes] = await Promise.all([
     supabase
       .from("kanban_stages")
       .select("*")
@@ -52,9 +51,18 @@ export default async function SettingsKanbanPage() {
       .select("*")
       .eq("account_id", profile.account_id)
       .order("position", { ascending: true }),
+    supabase
+      .from("users")
+      .select("*", { count: "exact", head: true })
+      .eq("account_id", profile.account_id),
+    supabase
+      .from("manual_job_assignees")
+      .select("*")
+      .eq("account_id", profile.account_id)
+      .order("position", { ascending: true }),
   ]);
 
-  if (stagesRes.error || workTypesRes.error) {
+  if (stagesRes.error || workTypesRes.error || usersCountRes.error || manualRes.error) {
     return (
       <div>
         <p className="mt-2 text-sm text-red-600" role="alert">
@@ -66,11 +74,16 @@ export default async function SettingsKanbanPage() {
 
   const plan = subRes.data?.plan ?? "free";
   const isAdmin = profile.role === "admin";
+  const accountUserCount = usersCountRes.count ?? 0;
 
   return (
-    <div className="flex max-w-2xl flex-col gap-10">
-      <SettingsKanbanSection stages={stagesRes.data ?? []} plan={plan} isAdmin={isAdmin} />
-      <SettingsWorkTypesSection workTypes={workTypesRes.data ?? []} isAdmin={isAdmin} />
-    </div>
+    <SettingsKanbanTabs
+      stages={stagesRes.data ?? []}
+      workTypes={workTypesRes.data ?? []}
+      plan={plan}
+      isAdmin={isAdmin}
+      manualAssignees={manualRes.data ?? []}
+      accountUserCount={accountUserCount}
+    />
   );
 }

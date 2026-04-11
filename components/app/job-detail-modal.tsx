@@ -4,6 +4,8 @@ import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
+type ManualLite = { id: string; name: string; email: string | null };
+
 import type { JobWithRelations } from "@/app/(app)/dashboard/dashboard-view";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
@@ -44,17 +46,20 @@ export function JobDetailModal({
   job,
   allJobs,
   members,
+  manualAssignees,
   open,
   onClose,
 }: {
   job: JobWithRelations | null;
   allJobs: JobWithRelations[];
   members: MemberLite[];
+  manualAssignees: ManualLite[];
   open: boolean;
   onClose: () => void;
 }) {
   const [tab, setTab] = useState<DetailTabId>("geral");
   const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
+  const manualById = useMemo(() => new Map(manualAssignees.map((m) => [m.id, m])), [manualAssignees]);
 
   useEffect(() => {
     if (job?.id) setTab("geral");
@@ -65,6 +70,13 @@ export function JobDetailModal({
   const photoMember = job.photo_editor_id ? membersById.get(job.photo_editor_id) : null;
   const videoMember = job.video_editor_id ? membersById.get(job.video_editor_id) : null;
   const single = members.length === 1 ? members[0]! : null;
+
+  const photoManual = job.photo_manual_assignee_id
+    ? manualById.get(job.photo_manual_assignee_id)
+    : null;
+  const videoManual = job.video_manual_assignee_id
+    ? manualById.get(job.video_manual_assignee_id)
+    : null;
 
   const parentJob = job.parent_job_id
     ? allJobs.find((j) => j.id === job.parent_job_id)
@@ -78,13 +90,13 @@ export function JobDetailModal({
       ? "—"
       : job.type === "video"
         ? "—"
-        : (photoMember?.name ?? single?.name ?? "—");
+        : (photoManual?.name ?? photoMember?.name ?? single?.name ?? "—");
   const videoLine =
     job.job_kind === "video_edit"
-      ? (videoMember?.name ?? single?.name ?? "—")
+      ? (videoManual?.name ?? videoMember?.name ?? single?.name ?? "—")
       : job.type === "foto"
         ? "—"
-        : (videoMember?.name ?? single?.name ?? "—");
+        : (videoManual?.name ?? videoMember?.name ?? single?.name ?? "—");
 
   return (
     <Modal

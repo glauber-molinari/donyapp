@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Admin — Donyapp",
+  title: "Admin | Donyapp",
   robots: { index: false, follow: false },
 };
 

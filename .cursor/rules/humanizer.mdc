@@ -1,0 +1,28 @@
+---
+description: Texto natural (anti-IA) — UI, marketing, docs e mensagens ao usuário seguem a skill Humanizer.
+alwaysApply: true
+---
+
+# Humanizer no projeto
+
+Ao **escrever ou revisar texto** que usuários veem (UI, landing, e-mails, toasts, erros, `aria-label`, documentação de produto, changelog voltado ao cliente, posts), trate como **edição**: evite padrões típicos de texto gerado por IA e prefira voz humana, específica e direta.
+
+## Quando aplicar
+
+- Cópias de interface, marketing, onboarding, ajuda contextual.
+- Não precisa “humanizar” código técnico, nomes de variáveis ou comentários internos secos — use bom português claro.
+
+## Como obter o guia completo
+
+Leia o arquivo da skill no repositório (lista de padrões, exemplos antes/depois, calibragem de voz e passagem final anti-IA):
+
+`.cursor/skills/humanizer/SKILL.md`
+
+Para manter sua cópia global alinhada (Claude Code / terminal), você também pode ter em `%USERPROFILE%\.claude\skills\humanizer\`. Repositório upstream: https://github.com/blader/humanizer
+
+## Resumo operacional (se não for ler o SKILL agora)
+
+1. Cortar enrolação, “testemunho” de importância, listas de veículos de mídia sem contexto, regra de três forçada, vocabulário genérico de IA (*landscape*, *delve*, *testament*, *showcasing*, etc.).
+2. Frases mais curtas onde fizer sentido; voz consistente com o tom do produto (pt-BR quando o app for em português).
+3. Sem tom de chatbot no fim (“espero ter ajudado”, “fico à disposição” em textos de produto).
+4. Para textos longos ou sensíveis: após reescrever, faça um passe rápido “o que ainda soa óbvio de IA?” e ajuste.

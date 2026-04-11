@@ -26,12 +26,18 @@ import {
   deleteKanbanStage,
   reorderKanbanStages,
   setFinalKanbanStage,
-  updateKanbanStageName,
+  updateKanbanStageDetails,
 } from "./kanban-actions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
+import { kanbanStageAccentHex } from "@/lib/kanban-stage-accent";
+import {
+  isValidKanbanStageColor,
+  KANBAN_STAGE_TAILWIND_COLORS,
+  pickNextKanbanStageColor,
+} from "@/lib/kanban-stage-colors";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import type { Database } from "@/types/database";
@@ -40,6 +46,35 @@ type Stage = Database["public"]["Tables"]["kanban_stages"]["Row"];
 type Plan = Database["public"]["Tables"]["subscriptions"]["Row"]["plan"];
 
 const FREE_MAX_STAGES = 4;
+
+function StageColorSwatch({
+  color,
+  className,
+  title,
+}: {
+  color: string;
+  className?: string;
+  title?: string;
+}) {
+  const trimmed = color?.trim() ?? "";
+  if (trimmed.startsWith("#")) {
+    return (
+      <div
+        className={cn("rounded-lg border border-ds-border/80", className)}
+        style={{ backgroundColor: trimmed }}
+        title={title}
+        aria-hidden
+      />
+    );
+  }
+  return (
+    <div
+      className={cn("rounded-lg border border-ds-border/80", trimmed, className)}
+      title={title}
+      aria-hidden
+    />
+  );
+}
 
 function SortableStageRow({
   stage,
@@ -91,13 +126,10 @@ function SortableStageRow({
         <span className="w-5 shrink-0" aria-hidden />
       )}
 
-      <div
-        className={cn(
-          "h-8 w-8 shrink-0 rounded-lg border border-ds-border/80",
-          stage.color
-        )}
+      <StageColorSwatch
+        color={stage.color}
+        className="h-8 w-8 shrink-0"
         title="Cor da coluna no quadro"
-        aria-hidden
       />
 
       <div className="min-w-0 flex-1">
@@ -166,7 +198,13 @@ export function SettingsKanbanSection({ stages, plan, isAdmin }: SettingsKanbanS
   const [newName, setNewName] = useState("");
   const [renameStage, setRenameStage] = useState<Stage | null>(null);
   const [renameValue, setRenameValue] = useState("");
+  const [renameColor, setRenameColor] = useState("");
   const [deleteStage, setDeleteStage] = useState<Stage | null>(null);
+
+  const nextPreviewColor = useMemo(
+    () => pickNextKanbanStageColor(sorted.map((s) => s.color)),
+    [sorted]
+  );
 
   const canAdd = isAdmin && (plan !== "free" || stages.length < FREE_MAX_STAGES);
 
@@ -229,13 +267,13 @@ export function SettingsKanbanSection({ stages, plan, isAdmin }: SettingsKanbanS
     setErrorMessage(null);
     setPending(true);
     try {
-      const res = await updateKanbanStageName(renameStage.id, t);
+      const res = await updateKanbanStageDetails(renameStage.id, t, renameColor);
       if (!res.ok) {
         setErrorMessage(res.error);
         return;
       }
       setRenameStage(null);
-      toast.success("Nome da etapa atualizado.");
+      toast.success("Etapa atualizada.");
       router.refresh();
     } finally {
       setPending(false);
@@ -280,11 +318,11 @@ export function SettingsKanbanSection({ stages, plan, isAdmin }: SettingsKanbanS
     <section className="flex flex-col gap-4" aria-labelledby="settings-kanban-heading">
       <div>
         <h2 id="settings-kanban-heading" className="text-lg font-semibold text-ds-ink">
-          Kanban
+          Etapas do quadro
         </h2>
         <p className="mt-1 text-sm text-ds-muted">
-          Etapas do quadro de edição, cores e etapa final. Ordene, renomeie e defina a entrega final
-          — o quadro em Edições usa estas colunas.
+          Etapas do quadro de edição, cores e etapa final. Ordene, renomeie e defina a entrega final.
+          O quadro em Edições usa estas colunas.
         </p>
       </div>
 
@@ -327,6 +365,12 @@ export function SettingsKanbanSection({ stages, plan, isAdmin }: SettingsKanbanS
                     onEdit={(s) => {
                       setRenameStage(s);
                       setRenameValue(s.name);
+                      const c = s.color?.trim() ?? "";
+                      setRenameColor(
+                        isValidKanbanStageColor(c)
+                          ? c
+                          : pickNextKanbanStageColor(sorted.map((x) => x.color))
+                      );
                       setErrorMessage(null);
                     }}
                     onDelete={(s) => {
@@ -348,8 +392,11 @@ export function SettingsKanbanSection({ stages, plan, isAdmin }: SettingsKanbanS
       </Card>
 
       {isAdmin ? (
-        <form onSubmit={handleAdd} className="flex flex-col gap-3 sm:flex-row sm:items-end">
-          <div className="min-w-0 flex-1">
+        <form
+          onSubmit={handleAdd}
+          className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end"
+        >
+          <div className="min-w-0 flex-1 sm:min-w-[200px]">
             <Input
               id="new-stage-name"
               label="Nova etapa"
@@ -359,17 +406,23 @@ export function SettingsKanbanSection({ stages, plan, isAdmin }: SettingsKanbanS
               disabled={pending || !canAdd}
             />
           </div>
-          <Button type="submit" disabled={pending || !canAdd || !newName.trim()}>
-            <Plus className="h-4 w-4" aria-hidden />
-            Adicionar
-          </Button>
+          <div className="flex items-center gap-3 sm:shrink-0">
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-medium text-ds-subtle">Cor ao salvar</span>
+              <StageColorSwatch color={nextPreviewColor} className="h-10 w-10" />
+            </div>
+            <Button type="submit" disabled={pending || !canAdd || !newName.trim()}>
+              <Plus className="h-4 w-4" aria-hidden />
+              Adicionar
+            </Button>
+          </div>
         </form>
       ) : null}
 
       <Modal
         open={Boolean(renameStage)}
         onClose={() => setRenameStage(null)}
-        title="Renomear etapa"
+        title="Editar etapa"
         size="md"
       >
         {renameStage ? (
@@ -381,6 +434,46 @@ export function SettingsKanbanSection({ stages, plan, isAdmin }: SettingsKanbanS
               onChange={(e) => setRenameValue(e.target.value)}
               autoFocus
             />
+            <fieldset className="min-w-0 space-y-2">
+              <legend className="text-sm font-medium text-ds-ink">Cor da coluna</legend>
+              <p className="text-xs text-ds-muted">
+                Tons pastéis como no quadro padrão, ou uma cor personalizada abaixo.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {KANBAN_STAGE_TAILWIND_COLORS.map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    title={preset}
+                    aria-pressed={renameColor === preset}
+                    onClick={() => setRenameColor(preset)}
+                    className={cn(
+                      "h-9 w-9 rounded-lg border-2 border-transparent p-0.5 transition-shadow",
+                      renameColor === preset && "border-ds-accent ring-2 ring-ds-accent/20"
+                    )}
+                  >
+                    <span className={cn("block h-full w-full rounded-md border border-ds-border/80", preset)} />
+                  </button>
+                ))}
+              </div>
+              <div className="flex flex-wrap items-center gap-3 pt-1">
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-ds-muted">
+                  <span>Personalizada</span>
+                  <input
+                    type="color"
+                    className="h-10 w-14 cursor-pointer overflow-hidden rounded-md border border-ds-border bg-ds-surface p-0"
+                    aria-label="Escolher cor personalizada em hexadecimal"
+                    value={
+                      renameColor.startsWith("#")
+                        ? renameColor
+                        : kanbanStageAccentHex(renameColor)
+                    }
+                    onChange={(e) => setRenameColor(e.target.value)}
+                  />
+                </label>
+                <StageColorSwatch color={renameColor} className="h-10 w-10" title="Prévia" />
+              </div>
+            </fieldset>
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button type="button" variant="secondary" onClick={() => setRenameStage(null)}>
                 Cancelar

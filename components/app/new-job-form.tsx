@@ -35,6 +35,10 @@ export type NewJobFormProps = {
   stageOptions: SelectOption[];
   workTypeOptions: SelectOption[];
   memberOptions: SelectOption[];
+  /** Pro + um usuário: lista de responsáveis cadastrados manualmente em Configurações → Kanban. */
+  manualAssigneeOptions?: SelectOption[];
+  /** Quando true, usa `manualAssigneeOptions` em vez de membros da equipe para foto/vídeo. */
+  useManualAssigneeDirectory?: boolean;
   isPending: boolean;
   onCancel: () => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
@@ -46,6 +50,8 @@ export function NewJobForm({
   stageOptions,
   workTypeOptions,
   memberOptions,
+  manualAssigneeOptions = [],
+  useManualAssigneeDirectory = false,
   isPending,
   onCancel,
   onSubmit,
@@ -57,6 +63,10 @@ export function NewJobForm({
   const initialYmd = useMemo(() => todayYmd(), []);
 
   const hasTeamMembers = memberOptions.length > 0;
+  const showManualDirectory =
+    useManualAssigneeDirectory && manualAssigneeOptions.length > 0;
+  const manualDirectoryEmpty =
+    useManualAssigneeDirectory && manualAssigneeOptions.length === 0;
 
   return (
     <form className="flex flex-col gap-4" onSubmit={onSubmit}>
@@ -177,7 +187,65 @@ export function NewJobForm({
           options={JOB_DELIVERY_OPTIONS}
         />
 
-        {!hasTeamMembers ? (
+        {showManualDirectory ? (
+          <>
+            <input type="hidden" name="photo_editor_id" value="" />
+            <input type="hidden" name="video_editor_id" value="" />
+            {deliveryType === "foto_video" ? (
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Select
+                  id={`${fieldIdPrefix}-photo-manual`}
+                  name="photo_manual_assignee_id"
+                  label="Responsável pela foto"
+                  required={manualAssigneeOptions.length > 1}
+                  placeholder={manualAssigneeOptions.length > 1 ? "Selecione" : undefined}
+                  defaultValue={
+                    manualAssigneeOptions.length === 1 ? manualAssigneeOptions[0]!.value : ""
+                  }
+                  options={manualAssigneeOptions}
+                />
+                <Select
+                  id={`${fieldIdPrefix}-video-manual`}
+                  name="video_manual_assignee_id"
+                  label="Responsável pelo vídeo"
+                  required={manualAssigneeOptions.length > 1}
+                  placeholder={manualAssigneeOptions.length > 1 ? "Selecione" : undefined}
+                  defaultValue={
+                    manualAssigneeOptions.length === 1 ? manualAssigneeOptions[0]!.value : ""
+                  }
+                  options={manualAssigneeOptions}
+                />
+              </div>
+            ) : (
+              <Select
+                id={`${fieldIdPrefix}-manual-editor`}
+                name={
+                  deliveryType === "video" ? "video_manual_assignee_id" : "photo_manual_assignee_id"
+                }
+                label="Responsável"
+                required={manualAssigneeOptions.length > 1}
+                placeholder={manualAssigneeOptions.length > 1 ? "Selecione" : undefined}
+                defaultValue={
+                  manualAssigneeOptions.length === 1 ? manualAssigneeOptions[0]!.value : ""
+                }
+                options={manualAssigneeOptions}
+              />
+            )}
+          </>
+        ) : manualDirectoryEmpty ? (
+          <div className="rounded-ds-lg border border-amber-200/80 bg-amber-50/90 px-3 py-2.5 text-xs text-amber-950">
+            <p className="font-medium">Responsáveis</p>
+            <p className="mt-1 text-amber-900/90">
+              Cadastre responsáveis manuais em{" "}
+              <strong>Configurações → Kanban → Responsáveis</strong> para atribuir foto e vídeo sem
+              convidar usuários. Por ora o job pode ser salvo sem responsáveis definidos.
+            </p>
+            <input type="hidden" name="photo_editor_id" value="" />
+            <input type="hidden" name="video_editor_id" value="" />
+            <input type="hidden" name="photo_manual_assignee_id" value="" />
+            <input type="hidden" name="video_manual_assignee_id" value="" />
+          </div>
+        ) : !hasTeamMembers ? (
           <div className="rounded-ds-lg border border-amber-200/80 bg-amber-50/90 px-3 py-2.5 text-xs text-amber-950">
             <p className="font-medium">Responsáveis</p>
             <p className="mt-1 text-amber-900/90">

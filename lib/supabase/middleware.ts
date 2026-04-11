@@ -71,7 +71,8 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/api/webhooks") ||
     path.startsWith("/api/cron") ||
     path.startsWith("/politica-de-privacidade") ||
-    path.startsWith("/termos-de-servico");
+    path.startsWith("/termos-de-servico") ||
+    path.startsWith("/por-que-usar");
 
   if (!user && !isPublic) {
     const redirect = NextResponse.redirect(new URL("/login", request.url));

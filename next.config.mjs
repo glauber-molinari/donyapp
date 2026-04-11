@@ -1,6 +1,19 @@
 /** @type {import('next').NextConfig} */
 const appOrigin = (process.env.NEXT_PUBLIC_APP_URL ?? "https://donyapp.com").replace(/\/$/, "");
 
+/** Origin do projeto Supabase (URL default *.supabase.co ou domínio customizado, ex.: auth.donyapp.com). */
+function supabaseOriginForCsp() {
+  const raw = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  if (!raw) return "";
+  try {
+    return new URL(raw).origin;
+  } catch {
+    return "";
+  }
+}
+
+const supabaseImgOrigin = supabaseOriginForCsp();
+
 // CSP mínimo (compatível com Next.js) para atender o relatório SEC sem exigir nonces.
 // Mantém o comportamento padrão do app (scripts/estilos do próprio domínio) e endurece vetores comuns.
 const csp = [
@@ -9,8 +22,10 @@ const csp = [
   // Preferível usar nonces/hashes, mas aqui mantemos compatibilidade sem complexidade extra.
   "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
   "style-src 'self' 'unsafe-inline'",
-  // Avatar do Google (OAuth) e data URIs (ex.: placeholders, favicons embutidos).
-  "img-src 'self' data: https://lh3.googleusercontent.com https://*.googleusercontent.com",
+  // Avatar Google, Storage (Supabase default + domínio custom em NEXT_PUBLIC_SUPABASE_URL), data/blob para prévia.
+  `img-src 'self' data: blob: https://lh3.googleusercontent.com https://*.googleusercontent.com https://*.supabase.co${
+    supabaseImgOrigin ? ` ${supabaseImgOrigin}` : ""
+  }`,
   "font-src 'self' data:",
   "base-uri 'self'",
   "object-src 'none'",
