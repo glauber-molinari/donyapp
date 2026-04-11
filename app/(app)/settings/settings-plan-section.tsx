@@ -198,7 +198,8 @@ export function SettingsPlanSection({
       <div>
         <h2 className="text-lg font-semibold text-ds-ink">Plano e limites</h2>
         <p className="mt-1 text-sm text-ds-muted">
-          Free para começar. No Pro entram equipe, e-mail automático e limites maiores.
+          Free para começar. No Pro: equipe, e-mail ao cliente na entrega, etapas extras no Kanban e
+          limites ampliados.
         </p>
       </div>
 
@@ -280,10 +281,17 @@ export function SettingsPlanSection({
           <h3 className="font-medium text-ds-ink">Pro</h3>
           <p className="mt-1 text-sm text-ds-muted">{priceLabel} por mês</p>
           <ul className="mt-3 list-inside list-disc space-y-1.5 text-sm text-ds-muted">
-            <li>Jobs e contatos ilimitados</li>
-            <li>Equipe e convites por e-mail</li>
-            <li>E-mail automático ao mover etapa (Resend)</li>
-            <li>Pagamento via Asaas (cartão de crédito)</li>
+            <li>Jobs ativos ilimitados e contatos ilimitados</li>
+            <li>Vários usuários na mesma conta, com convites por e-mail</li>
+            <li>Etapas ilimitadas no Kanban</li>
+            <li>
+              Na etapa final do job: opção de enviar e-mail ao cliente com o link do material final
+            </li>
+            <li>
+              Responsáveis: cadastro de nomes, e-mails e fotos para equipe externa quando só você
+              usa a conta
+            </li>
+            <li>Assinatura mensal ou anual com pagamento por cartão de crédito</li>
           </ul>
         </Card>
       </div>
@@ -326,9 +334,8 @@ export function SettingsPlanSection({
       <Modal open={upgradeOpen} onClose={closeUpgrade} title="Assinar Pro" size="md">
         <div className="flex flex-col gap-4">
           <p className="text-sm text-ds-muted">
-            Escolha o ciclo (mensal ou anual). Você será redirecionado ao checkout seguro da Asaas
-            para pagar com cartão de crédito. Após a confirmação, o plano Pro é ativado
-            automaticamente.
+            Escolha entre mensal ou anual, você será redirecionado ao checkout seguro para pagar.
+            Após a confirmação, o plano Pro é ativado automaticamente.
           </p>
           {error ? (
             <p className="text-sm text-red-700" role="alert">
