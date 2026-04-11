@@ -20,7 +20,7 @@ function ProductPreviewMock() {
     >
       <div className="relative h-[min(260px,38vh)] w-full sm:h-[min(400px,55vh)]">
         <Image
-          src="/marketing/kanban-hero.png"
+          src="/marketing/kanban-oficial.png"
           alt=""
           fill
           unoptimized

@@ -289,7 +289,7 @@ export function NewJobForm({
           />
         )}
 
-        {deliveryType === "video" || deliveryType === "foto_video" ? (
+        {deliveryType === "foto_video" ? (
           <div className="rounded-ds-xl border border-sky-200 bg-sky-50/90 p-4">
             <p className="text-sm font-semibold text-sky-950">Edição de vídeo</p>
             <p className="mt-1 text-xs text-sky-900/85">

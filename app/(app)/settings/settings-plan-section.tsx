@@ -345,6 +345,7 @@ export function SettingsPlanSection({
           <div className="grid gap-2 sm:grid-cols-2">
             <Button
               type="button"
+              variant="secondary"
               className="w-full"
               disabled={cardBusy}
               onClick={() => void handleCard("MONTHLY")}
@@ -353,7 +354,6 @@ export function SettingsPlanSection({
             </Button>
             <Button
               type="button"
-              variant="secondary"
               className="w-full"
               disabled={cardBusy}
               onClick={() => void handleCard("YEARLY")}

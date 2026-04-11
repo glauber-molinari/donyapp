@@ -41,7 +41,7 @@ export function SettingsKanbanTabs({
       label: "Responsáveis",
       suffix:
         plan === "pro" ? undefined : (
-          <span className="ml-1 rounded-md bg-ds-ink/10 px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide text-ds-muted">
+          <span className="rounded-md bg-ds-ink/10 px-1 py-px text-[9px] font-semibold uppercase tracking-wide text-ds-muted max-md:mt-0.5 md:ml-1 md:px-1.5 md:text-[10px]">
             Pro
           </span>
         ),
@@ -53,7 +53,7 @@ export function SettingsKanbanTabs({
       <div
         role="tablist"
         aria-label="Seções do Kanban"
-        className="flex flex-wrap gap-1 border-b border-ds-border pb-px"
+        className="grid w-full grid-cols-3 gap-0 border-b border-ds-border pb-px md:flex md:flex-wrap md:gap-1"
       >
         {tabs.map((t) => (
           <button
@@ -65,13 +65,13 @@ export function SettingsKanbanTabs({
             aria-controls={`kanban-panel-${t.id}`}
             onClick={() => setTab(t.id)}
             className={cn(
-              "-mb-px border-b-2 px-3 py-2.5 text-sm font-medium transition-colors",
+              "-mb-px flex min-h-[2.85rem] flex-col items-center justify-center gap-0.5 border-b-2 px-1 py-1.5 text-center text-[11px] font-medium leading-tight transition-colors md:min-h-0 md:flex-row md:px-3 md:py-2.5 md:text-left md:text-sm",
               tab === t.id
                 ? "border-ds-accent text-ds-ink"
                 : "border-transparent text-ds-muted hover:text-ds-ink"
             )}
           >
-            {t.label}
+            <span className="max-md:max-w-full max-md:text-balance">{t.label}</span>
             {t.suffix}
           </button>
         ))}

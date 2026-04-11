@@ -312,6 +312,44 @@ function parseJobForm(formData: FormData): { error: string } | ParsedJobFields {
   };
 }
 
+/** Card extra de edição de vídeo: só para `foto_video` (um card foto + um card vídeo no quadro). */
+async function insertVideoEditChildJob(
+  supabase: ReturnType<typeof createClient>,
+  ctx: { accountId: string; userId: string },
+  parentJobId: string,
+  parsed: ParsedJobFields,
+  video_editor_id: string | null,
+  video_manual_assignee_id: string | null,
+  stageId: string
+): Promise<ActionResult> {
+  const nextPos = await nextPositionAtEndOfStage(supabase, ctx.accountId, stageId);
+  const { error: childErr } = await supabase.from("jobs").insert({
+    account_id: ctx.accountId,
+    contact_id: parsed.contact_id,
+    stage_id: stageId,
+    position: nextPos,
+    name: `Edição de vídeo — ${parsed.name}`,
+    type: "video",
+    internal_deadline: parsed.internal_deadline,
+    deadline: parsed.deadline,
+    job_date: parsed.job_date,
+    work_type_id: parsed.work_type_id,
+    notes: null,
+    delivery_link: null,
+    created_by: ctx.userId,
+    photo_editor_id: null,
+    video_editor_id,
+    photo_manual_assignee_id: null,
+    video_manual_assignee_id,
+    job_kind: "video_edit",
+    parent_job_id: parentJobId,
+  });
+  if (childErr) {
+    return { ok: false, error: childErr.message };
+  }
+  return { ok: true };
+}
+
 async function verifyUserBelongs(
   supabase: ReturnType<typeof createClient>,
   accountId: string,
@@ -444,33 +482,17 @@ export async function createJob(formData: FormData): Promise<ActionResult> {
     return { ok: false, error: "Não foi possível criar o job." };
   }
 
-  const needsVideoEditCard = parsed.type === "video" || parsed.type === "foto_video";
-  if (needsVideoEditCard) {
-    const nextPos2 = await nextPositionAtEndOfStage(supabase, ctx.accountId, stageId);
-    const { error: childErr } = await supabase.from("jobs").insert({
-      account_id: ctx.accountId,
-      contact_id: parsed.contact_id,
-      stage_id: stageId,
-      position: nextPos2,
-      name: `Edição de vídeo — ${parsed.name}`,
-      type: "video",
-      internal_deadline: parsed.internal_deadline,
-      deadline: parsed.deadline,
-      job_date: parsed.job_date,
-      work_type_id: parsed.work_type_id,
-      notes: null,
-      delivery_link: null,
-      created_by: ctx.userId,
-      photo_editor_id: null,
+  if (parsed.type === "foto_video") {
+    const childRes = await insertVideoEditChildJob(
+      supabase,
+      ctx,
+      inserted.id,
+      parsed,
       video_editor_id,
-      photo_manual_assignee_id: null,
       video_manual_assignee_id,
-      job_kind: "video_edit",
-      parent_job_id: inserted.id,
-    });
-    if (childErr) {
-      return { ok: false, error: childErr.message };
-    }
+      stageId
+    );
+    if (!childRes.ok) return childRes;
   }
 
   revalidatePath("/dashboard");
@@ -584,23 +606,50 @@ export async function updateJob(jobId: string, formData: FormData): Promise<Acti
   }
 
   if (existing.job_kind === "standard") {
-    const { data: child } = await supabase
+    const { data: childRows } = await supabase
       .from("jobs")
       .select("id")
       .eq("account_id", ctx.accountId)
       .eq("parent_job_id", jobId)
-      .eq("job_kind", "video_edit")
-      .maybeSingle();
-    if (child?.id) {
-      await supabase
-        .from("jobs")
-        .update({
+      .eq("job_kind", "video_edit");
+
+    const children = childRows ?? [];
+
+    if (parsed.type === "foto_video") {
+      if (children.length === 0) {
+        const childRes = await insertVideoEditChildJob(
+          supabase,
+          ctx,
+          jobId,
+          parsed,
           video_editor_id,
           video_manual_assignee_id,
-          photo_manual_assignee_id: null,
-        })
-        .eq("id", child.id)
+          parsed.stage_id!
+        );
+        if (!childRes.ok) return childRes;
+      } else {
+        await supabase
+          .from("jobs")
+          .update({
+            video_editor_id,
+            video_manual_assignee_id,
+            photo_manual_assignee_id: null,
+          })
+          .eq("id", children[0]!.id)
+          .eq("account_id", ctx.accountId);
+      }
+    } else if (children.length > 0) {
+      const { error: delErr } = await supabase
+        .from("jobs")
+        .delete()
+        .in(
+          "id",
+          children.map((c) => c.id)
+        )
         .eq("account_id", ctx.accountId);
+      if (delErr) {
+        return { ok: false, error: delErr.message };
+      }
     }
   }
 

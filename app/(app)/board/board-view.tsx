@@ -542,7 +542,12 @@ const KanbanColumn = memo(function KanbanColumn({
 
   return (
     <div
-      className="flex min-h-0 min-w-[128px] max-w-[260px] flex-1 basis-0 flex-col overflow-hidden rounded-xl border border-ds-border/60 shadow-sm transition-[box-shadow,colors]"
+      className={cn(
+        "flex min-h-0 flex-col overflow-hidden rounded-xl border border-ds-border/60 shadow-sm transition-[box-shadow,colors]",
+        /* Mobile/tablet: colunas com largura legível + scroll horizontal (evita flex-1 espremendo tudo). */
+        "max-lg:w-[min(92vw,20rem)] max-lg:max-w-[20rem] max-lg:shrink-0 max-lg:flex-none",
+        "lg:min-w-[128px] lg:max-w-[260px] lg:flex-1 lg:basis-0"
+      )}
       style={{
         backgroundColor: columnTint,
         ...(isOver
@@ -558,7 +563,7 @@ const KanbanColumn = memo(function KanbanColumn({
           backgroundColor: `color-mix(in srgb, ${accentHex} 22%, white)`,
         }}
       >
-        <h2 className="text-[11px] font-semibold uppercase tracking-wide text-ds-muted">
+        <h2 className="break-words text-[11px] font-semibold uppercase tracking-wide text-ds-muted">
           {stage.name}
         </h2>
       </div>
@@ -924,10 +929,14 @@ export function BoardView({
           onDragEnd={handleDragEnd}
           onDragCancel={handleDragCancel}
         >
-          <div className="w-full min-w-0 max-w-full overflow-x-auto pb-4 pt-1 overscroll-x-contain [scrollbar-width:thin]">
+          <div
+            className="w-full min-w-0 overflow-x-auto pb-4 pt-1 [scrollbar-width:thin] overscroll-x-contain touch-pan-x"
+            role="region"
+            aria-label="Colunas do quadro — em telas pequenas, deslize horizontalmente para ver todas as etapas"
+          >
             <div
               id="kanban-board"
-              className="flex w-full min-w-0 gap-3"
+              className="flex w-max min-w-full flex-nowrap gap-3"
             >
               {sortedStages.map((stage) => (
                 <KanbanColumn
