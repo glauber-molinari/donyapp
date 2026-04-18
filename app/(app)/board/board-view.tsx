@@ -273,10 +273,13 @@ function jobMatchesQuery(job: JobWithRelations | undefined, q: string): boolean 
   if (!job) return false;
   const t = q.trim().toLowerCase();
   if (!t) return true;
+  const tagHit =
+    job.sd_card_tags?.some((tag) => tag.toLowerCase().includes(t)) ?? false;
   return (
     job.name.toLowerCase().includes(t) ||
     (job.contacts?.name?.toLowerCase().includes(t) ?? false) ||
-    (job.job_work_types?.name?.toLowerCase().includes(t) ?? false)
+    (job.job_work_types?.name?.toLowerCase().includes(t) ?? false) ||
+    tagHit
   );
 }
 

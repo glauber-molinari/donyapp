@@ -10,6 +10,8 @@ export type UserRole = "admin" | "member";
 export type JobType = "foto" | "video" | "foto_video";
 export type JobKind = "standard" | "video_edit";
 export type Plan = "free" | "pro";
+export type TaskPriority = "baixa" | "media" | "alta";
+export type TaskStatus = "para_fazer" | "iniciado" | "feito";
 export type SubscriptionStatus = "active" | "trialing" | "past_due" | "canceled";
 
 export type FeedbackStatus = "pending" | "approved" | "rejected";
@@ -18,6 +20,48 @@ export type FeedbackStage = "em_estudo" | "faremos" | "produzindo" | "pronto";
 export interface Database {
   public: {
     Tables: {
+      tasks: {
+        Row: {
+          id: string;
+          account_id: string;
+          created_by: string;
+          name: string;
+          priority: TaskPriority;
+          deadline: string;
+          notes: string | null;
+          status: TaskStatus;
+          position: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          created_by: string;
+          name: string;
+          priority: TaskPriority;
+          deadline: string;
+          notes?: string | null;
+          status?: TaskStatus;
+          position?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          created_by?: string;
+          name?: string;
+          priority?: TaskPriority;
+          deadline?: string;
+          notes?: string | null;
+          status?: TaskStatus;
+          position?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       feedback_suggestions: {
         Row: {
           id: string;
@@ -494,6 +538,7 @@ export interface Database {
           parent_job_id: string | null;
           job_kind: JobKind;
           notes: string | null;
+          sd_card_tags: string[];
           delivery_link: string | null;
           client_revision: number;
           photo_editor_id: string | null;
@@ -519,6 +564,7 @@ export interface Database {
           parent_job_id?: string | null;
           job_kind?: JobKind;
           notes?: string | null;
+          sd_card_tags?: string[];
           delivery_link?: string | null;
           client_revision?: number;
           photo_editor_id?: string | null;
@@ -544,6 +590,7 @@ export interface Database {
           parent_job_id?: string | null;
           job_kind?: JobKind;
           notes?: string | null;
+          sd_card_tags?: string[];
           delivery_link?: string | null;
           client_revision?: number;
           photo_editor_id?: string | null;

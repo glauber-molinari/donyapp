@@ -9,6 +9,7 @@ import {
   parseJobType,
   parseOptionalContactId,
   parseRequiredId,
+  parseSdCardTagsFromFormData,
 } from "@/lib/validation/job";
 import { FREE_MAX_ACTIVE_JOBS } from "@/lib/plan-limits";
 import { normalizeOptionalText } from "@/lib/validation/contact";
@@ -249,6 +250,7 @@ type ParsedJobFields = {
   video_editor_id: string | null;
   photo_manual_assignee_id: string | null;
   video_manual_assignee_id: string | null;
+  sd_card_tags: string[];
 };
 
 function parseOptionalUserId(v: FormDataEntryValue | null): string | null {
@@ -294,6 +296,10 @@ function parseJobForm(formData: FormData): { error: string } | ParsedJobFields {
   const photo_manual_assignee_id = parseOptionalUserId(formData.get("photo_manual_assignee_id"));
   const video_manual_assignee_id = parseOptionalUserId(formData.get("video_manual_assignee_id"));
 
+  const sdParsed = parseSdCardTagsFromFormData(formData);
+  if ("error" in sdParsed) return sdParsed;
+  const sd_card_tags = sdParsed;
+
   return {
     name,
     type,
@@ -309,6 +315,7 @@ function parseJobForm(formData: FormData): { error: string } | ParsedJobFields {
     video_editor_id,
     photo_manual_assignee_id,
     video_manual_assignee_id,
+    sd_card_tags,
   };
 }
 
@@ -336,6 +343,7 @@ async function insertVideoEditChildJob(
     work_type_id: parsed.work_type_id,
     notes: null,
     delivery_link: null,
+    sd_card_tags: [],
     created_by: ctx.userId,
     photo_editor_id: null,
     video_editor_id,
@@ -459,6 +467,7 @@ export async function createJob(formData: FormData): Promise<ActionResult> {
     job_date: parsed.job_date,
     work_type_id: parsed.work_type_id,
     notes: parsed.notes,
+    sd_card_tags: parsed.sd_card_tags,
     delivery_link: parsed.delivery_link,
     created_by: ctx.userId,
     photo_editor_id,
@@ -592,6 +601,7 @@ export async function updateJob(jobId: string, formData: FormData): Promise<Acti
       job_date: parsed.job_date,
       work_type_id: parsed.work_type_id,
       notes: parsed.notes,
+      sd_card_tags: parsed.sd_card_tags,
       delivery_link: parsed.delivery_link,
       photo_editor_id,
       video_editor_id,

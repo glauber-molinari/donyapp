@@ -44,3 +44,32 @@ export function parseRequiredId(value: unknown, emptyMessage: string): string | 
   if (!t) return { error: emptyMessage };
   return t;
 }
+
+const SD_CARD_TAG_MAX_LEN = 80;
+const SD_CARD_TAG_MAX_COUNT = 20;
+
+/** Vários campos hidden `name="sd_card_tags"` → FormData.getAll. */
+export function parseSdCardTagsFromFormData(
+  formData: FormData
+): string[] | { error: string } {
+  const raw = formData.getAll("sd_card_tags");
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const e of raw) {
+    if (typeof e !== "string") continue;
+    const t = e.trim();
+    if (!t) continue;
+    if (t.length > SD_CARD_TAG_MAX_LEN) {
+      return {
+        error: `Cada tag de CartãoSD pode ter no máximo ${SD_CARD_TAG_MAX_LEN} caracteres.`,
+      };
+    }
+    if (seen.has(t)) continue;
+    seen.add(t);
+    out.push(t);
+    if (out.length > SD_CARD_TAG_MAX_COUNT) {
+      return { error: `No máximo ${SD_CARD_TAG_MAX_COUNT} tags de cartão por job.` };
+    }
+  }
+  return out;
+}

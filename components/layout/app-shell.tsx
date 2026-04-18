@@ -2,6 +2,7 @@
 
 import {
   Calendar,
+  CheckSquare,
   ChevronLeft,
   ChevronRight,
   HelpCircle,
@@ -49,6 +50,12 @@ const navItems = [
     label: "Edições",
     id: "menu-edicoes",
     icon: LaptopMinimal,
+  },
+  {
+    href: "/tasks",
+    label: "Tarefas",
+    id: "menu-tarefas",
+    icon: CheckSquare,
   },
   {
     href: "/notes",

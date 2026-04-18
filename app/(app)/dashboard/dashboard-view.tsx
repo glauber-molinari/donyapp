@@ -23,6 +23,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ActivationChecklist } from "@/components/app/activation-checklist";
 import { ContactSearchField } from "@/components/app/contact-search-field";
 import { NewJobForm } from "@/components/app/new-job-form";
+import { SdCardTagsField } from "@/components/app/sd-card-tags-field";
 import { KanbanMiniPreview } from "@/components/app/kanban-mini-preview";
 import { useOnboardingTour } from "@/components/app/onboarding-tour";
 import { Avatar } from "@/components/ui/avatar";
@@ -282,11 +283,14 @@ export function DashboardView({
         const contactName = j.contacts?.name?.toLowerCase() ?? "";
         const stageName = j.kanban_stages?.name?.toLowerCase() ?? "";
         const workTypeName = j.job_work_types?.name?.toLowerCase() ?? "";
+        const tagHit =
+          j.sd_card_tags?.some((tag) => tag.toLowerCase().includes(q)) ?? false;
         return (
           j.name.toLowerCase().includes(q) ||
           contactName.includes(q) ||
           stageName.includes(q) ||
-          workTypeName.includes(q)
+          workTypeName.includes(q) ||
+          tagHit
         );
       })
       .filter((j) => {
@@ -1183,6 +1187,13 @@ export function DashboardView({
                   required
                   defaultValue={editJob.work_type_id}
                   options={workTypeOptions}
+                />
+                <SdCardTagsField
+                  key={editJob.id}
+                  id="job-edit-sd-card-tags"
+                  label="CartãoSD"
+                  hint="Opcional. Texto livre (ex.: 001). Enter adiciona; vírgula ou ponto e vírgula separam vários de uma vez."
+                  initialTags={editJob.sd_card_tags ?? []}
                 />
                 <Select
                   id="job-edit-type"

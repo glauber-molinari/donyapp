@@ -1,15 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type ManualLite = { id: string; name: string; email: string | null };
 
 import type { JobWithRelations } from "@/app/(app)/dashboard/dashboard-view";
+import { deleteJob } from "@/app/(app)/jobs/actions";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
 import { formatDeadlinePt } from "@/lib/job-display";
+import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
 function formatOptionalDate(ymd: string | null | undefined): string {
@@ -57,12 +60,18 @@ export function JobDetailModal({
   open: boolean;
   onClose: () => void;
 }) {
+  const router = useRouter();
   const [tab, setTab] = useState<DetailTabId>("geral");
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
   const manualById = useMemo(() => new Map(manualAssignees.map((m) => [m.id, m])), [manualAssignees]);
 
   useEffect(() => {
-    if (job?.id) setTab("geral");
+    if (job?.id) {
+      setTab("geral");
+      setConfirmDelete(false);
+    }
   }, [job?.id]);
 
   if (!open || !job) return null;
@@ -156,6 +165,22 @@ export function JobDetailModal({
               <DetailRow label="Tipo de entrega">
                 <Badge kind="job-type" value={job.type} />
               </DetailRow>
+              <DetailRow label="Cartão cSD">
+                {(job.sd_card_tags ?? []).length > 0 ? (
+                  <span className="flex flex-wrap gap-1.5">
+                    {(job.sd_card_tags ?? []).map((t, i) => (
+                      <span
+                        key={`${i}-${t}`}
+                        className="rounded-md bg-ds-cream px-2 py-0.5 text-xs font-medium text-ds-ink"
+                      >
+                        {t}
+                      </span>
+                    ))}
+                  </span>
+                ) : (
+                  <span className="text-ds-muted">—</span>
+                )}
+              </DetailRow>
               {job.job_kind === "video_edit" && parentJob ? (
                 <DetailRow label="Job principal">{parentJob.name}</DetailRow>
               ) : null}
@@ -208,13 +233,63 @@ export function JobDetailModal({
           ) : null}
         </div>
 
-        <p className="shrink-0 border-t border-app-border pt-3 text-xs text-ds-muted">
-          Para editar dados ou mover etapa, use o{" "}
-          <Link href="/dashboard" className="font-medium text-ds-accent hover:underline">
-            Dashboard
-          </Link>
-          .
-        </p>
+        <div className="shrink-0 border-t border-app-border pt-3">
+          {confirmDelete ? (
+            <div className="flex flex-col gap-2 rounded-lg border border-red-200 bg-red-50 p-3">
+              <p className="text-xs font-medium text-red-800">
+                Excluir <strong>{job.name}</strong>? Esta ação não pode ser desfeita.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  disabled={deleting}
+                  onClick={async () => {
+                    setDeleting(true);
+                    const res = await deleteJob(job.id);
+                    setDeleting(false);
+                    if (!res.ok) {
+                      toast.error(res.error);
+                      setConfirmDelete(false);
+                      return;
+                    }
+                    toast.success("Job excluído.");
+                    onClose();
+                    router.refresh();
+                  }}
+                  className="rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-60"
+                >
+                  {deleting ? "Excluindo…" : "Confirmar exclusão"}
+                </button>
+                <button
+                  type="button"
+                  disabled={deleting}
+                  onClick={() => setConfirmDelete(false)}
+                  className="rounded-md border border-app-border px-3 py-1.5 text-xs font-medium text-ds-ink hover:bg-ds-cream disabled:opacity-60"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-xs text-ds-muted">
+                Para editar dados ou mover etapa, use o{" "}
+                <Link href="/dashboard" className="font-medium text-ds-accent hover:underline">
+                  Dashboard
+                </Link>
+                .
+              </p>
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(true)}
+                className="flex shrink-0 items-center gap-1.5 rounded-md border border-red-200 px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 hover:border-red-300"
+              >
+                <Trash2 className="h-3.5 w-3.5" aria-hidden />
+                Excluir
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </Modal>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Columns3, CreditCard, Mail, UserCircle, Users } from "lucide-react";
+import { Calendar, Columns3, CreditCard, Mail, Upload, UserCircle, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -13,6 +13,7 @@ const items = [
   { href: "/settings/email", label: "E-mail", icon: Mail },
   { href: "/settings/agenda", label: "Agenda", icon: Calendar },
   { href: "/settings/plan", label: "Plano", icon: CreditCard },
+  { href: "/settings/import", label: "Importar", icon: Upload },
 ] as const;
 
 export function SettingsNav() {

@@ -15,7 +15,7 @@ import {
 function ProductPreviewMock() {
   return (
     <div
-      className="mx-auto w-full max-w-5xl overflow-hidden rounded-t-ds-xl border border-ds-border bg-ds-surface shadow-ds-card sm:rounded-t-ds-card"
+      className="mx-auto w-full max-w-5xl overflow-hidden rounded-t-lg border border-ds-border bg-ds-surface shadow-ds-card sm:rounded-t-ds-card"
       aria-hidden
     >
       <div className="relative h-[min(260px,38vh)] w-full sm:h-[min(400px,55vh)]">
@@ -26,7 +26,7 @@ function ProductPreviewMock() {
           unoptimized
           priority
           sizes="(max-width: 1024px) 100vw, 1024px"
-          className="object-cover object-top"
+          className="object-contain object-top sm:object-cover"
         />
       </div>
     </div>
@@ -304,7 +304,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
               </Link>
 
               <p className="relative mt-3 text-center text-xs text-white/60">
-                Pagamento do Pro com cartão de crédito (checkout Asaas).
+                Pagamento do Pro com cartão de crédito.
               </p>
 
               <div className="relative mt-7 border-t border-white/10 pt-6">

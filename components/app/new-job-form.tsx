@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { ContactSearchField, type ContactSearchOption } from "@/components/app/contact-search-field";
+import { SdCardTagsField } from "@/components/app/sd-card-tags-field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, type SelectOption } from "@/components/ui/select";
@@ -145,6 +146,11 @@ export function NewJobForm({
             Adicione tipos em <strong>Configurações → Kanban</strong>.
           </p>
         ) : null}
+        <SdCardTagsField
+          id={`${fieldIdPrefix}-sd-card-tags`}
+          label="CartãoSD"
+          hint="Opcional. Texto livre (ex.: 001). Enter adiciona; vírgula ou ponto e vírgula separam vários de uma vez."
+        />
         <Textarea
           id={`${fieldIdPrefix}-notes`}
           name="notes"
