@@ -686,6 +686,7 @@ export function TasksView({ tasks }: { tasks: TaskRow[] }) {
           </div>
 
           <Button
+            id="btn-nova-tarefa"
             type="button"
             size="md"
             onClick={() => openCreate("para_fazer")}
@@ -706,6 +707,7 @@ export function TasksView({ tasks }: { tasks: TaskRow[] }) {
           onDragCancel={handleDragCancel}
         >
           <div
+            id="tasks-kanban"
             className="w-full min-w-0 overflow-x-auto pb-4 pt-1 [scrollbar-width:thin] overscroll-x-contain touch-pan-x"
             role="region"
             aria-label="Colunas do quadro — em telas pequenas, deslize horizontalmente"

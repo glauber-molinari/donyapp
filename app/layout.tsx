@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
@@ -65,7 +66,10 @@ export default function RootLayout({
           content="2808dcae-6f69-43d7-9e44-e6b6ac706447"
         />
       </head>
-      <body className={`${inter.variable} font-sans antialiased`}>{children}</body>
+      <body className={`${inter.variable} font-sans antialiased`}>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }

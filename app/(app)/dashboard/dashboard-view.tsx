@@ -1191,7 +1191,7 @@ export function DashboardView({
                 <SdCardTagsField
                   key={editJob.id}
                   id="job-edit-sd-card-tags"
-                  label="CartãoSD"
+                  label="Cartão SD"
                   hint="Opcional. Texto livre (ex.: 001). Enter adiciona; vírgula ou ponto e vírgula separam vários de uma vez."
                   initialTags={editJob.sd_card_tags ?? []}
                 />

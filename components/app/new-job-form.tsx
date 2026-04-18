@@ -148,7 +148,7 @@ export function NewJobForm({
         ) : null}
         <SdCardTagsField
           id={`${fieldIdPrefix}-sd-card-tags`}
-          label="CartãoSD"
+          label="Cartão SD"
           hint="Opcional. Texto livre (ex.: 001). Enter adiciona; vírgula ou ponto e vírgula separam vários de uma vez."
         />
         <Textarea

@@ -121,6 +121,7 @@ export function NotesView({ notes }: NotesViewProps) {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-ds-ink">Anotações</h1>
         <Link
+          id="btn-nova-nota"
           href="/notes/new"
           className={cn(
             "inline-flex h-10 w-full items-center justify-center gap-2 rounded-ds-xl px-4 text-sm font-medium transition-colors duration-ds ease-out sm:w-auto",

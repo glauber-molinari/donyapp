@@ -36,12 +36,13 @@ function waitForSelector(selector: string, timeoutMs = 10000): Promise<boolean> 
 
 function buildSteps(router: ReturnType<typeof useRouter>): DriveStep[] {
   return [
+    // 1 — Dashboard
     {
-      element: "#menu-contatos",
+      element: "#menu-dashboard",
       popover: {
-        title: "Contatos",
+        title: "Dashboard",
         description:
-          "Cadastre clientes aqui para vincular aos trabalhos. Nome e e-mail já bastam para começar.",
+          "Visão geral de todos os jobs: filtre por status, data ou cliente e crie ou edite direto na tabela.",
         side: "right",
         align: "start",
         onNextClick: (_el, _step, { driver: d }) => {
@@ -53,6 +54,25 @@ function buildSteps(router: ReturnType<typeof useRouter>): DriveStep[] {
         },
       },
     },
+    // 2 — Contatos (menu)
+    {
+      element: "#menu-contatos",
+      popover: {
+        title: "Contatos",
+        description:
+          "Cadastre clientes aqui para vincular aos trabalhos. Nome e e-mail já bastam para começar.",
+        side: "right",
+        align: "start",
+        onPrevClick: (_el, _step, { driver: d }) => {
+          router.push("/dashboard");
+          void waitForSelector("#menu-dashboard").then(() => {
+            d.refresh();
+            d.movePrevious();
+          });
+        },
+      },
+    },
+    // 3 — Novo contato
     {
       element: "#btn-novo-contato",
       popover: {
@@ -62,6 +82,7 @@ function buildSteps(router: ReturnType<typeof useRouter>): DriveStep[] {
         align: "start",
       },
     },
+    // 4 — Edições (menu)
     {
       element: "#menu-edicoes",
       popover: {
@@ -85,6 +106,7 @@ function buildSteps(router: ReturnType<typeof useRouter>): DriveStep[] {
         },
       },
     },
+    // 5 — Novo job
     {
       element: "#btn-novo-job",
       popover: {
@@ -94,26 +116,28 @@ function buildSteps(router: ReturnType<typeof useRouter>): DriveStep[] {
         align: "start",
       },
     },
+    // 6 — Kanban board
     {
       element: "#kanban-board",
       popover: {
-        title: "Kanban",
-        description: "Arraste os cards entre as colunas conforme avança na edição.",
+        title: "Kanban de Edições",
+        description: "Arraste os cards entre as colunas conforme avança na edição. Clique em um card para ver detalhes ou excluir.",
         side: "top",
         align: "start",
       },
     },
+    // 7 — Tarefas (menu)
     {
-      element: "#menu-settings",
+      element: "#menu-tarefas",
       popover: {
-        title: "Abrir configurações",
+        title: "Tarefas (PRO)",
         description:
-          "Configurações da conta ficam por aqui. No próximo passo, um resumo rápido de cada seção.",
+          "Organize tarefas internas do estúdio em um quadro Kanban com 3 colunas: Para fazer, Iniciado e Feito. Defina prioridade e prazo de cada tarefa.",
         side: "right",
         align: "start",
         onNextClick: (_el, _step, { driver: d }) => {
-          router.push("/settings/profile");
-          void waitForSelector("#tour-settings-sidebar").then(() => {
+          router.push("/notes");
+          void waitForSelector("#btn-nova-nota").then(() => {
             d.refresh();
             d.moveNext();
           });
@@ -127,12 +151,84 @@ function buildSteps(router: ReturnType<typeof useRouter>): DriveStep[] {
         },
       },
     },
+    // 8 — Anotações (menu)
+    {
+      element: "#menu-anotacoes",
+      popover: {
+        title: "Anotações",
+        description:
+          "Registre observações sobre clientes, jobs ou qualquer assunto do estúdio. Associe à nota o contato e o job correspondentes.",
+        side: "right",
+        align: "start",
+        onPrevClick: (_el, _step, { driver: d }) => {
+          router.push("/board");
+          void waitForSelector("#menu-tarefas").then(() => {
+            d.refresh();
+            d.movePrevious();
+          });
+        },
+      },
+    },
+    // 9 — Nova nota
+    {
+      element: "#btn-nova-nota",
+      popover: {
+        title: "Nova anotação",
+        description: "Crie uma nota com título, texto rico e vínculos a contato ou job.",
+        side: "bottom",
+        align: "start",
+      },
+    },
+    // 10 — Agenda (menu)
+    {
+      element: "#menu-agenda",
+      popover: {
+        title: "Agenda",
+        description:
+          "Conecte o Google Calendar do estúdio em Configurações → Agenda. Toda a equipe passa a ver os eventos diretamente aqui.",
+        side: "right",
+        align: "start",
+        onNextClick: (_el, _step, { driver: d }) => {
+          router.push("/settings/profile");
+          void waitForSelector("#tour-settings-sidebar").then(() => {
+            d.refresh();
+            d.moveNext();
+          });
+        },
+        onPrevClick: (_el, _step, { driver: d }) => {
+          router.push("/notes");
+          void waitForSelector("#btn-nova-nota").then(() => {
+            d.refresh();
+            d.movePrevious();
+          });
+        },
+      },
+    },
+    // 11 — Link de Configurações
+    {
+      element: "#menu-settings",
+      popover: {
+        title: "Configurações",
+        description:
+          "Configurações da conta ficam por aqui. No próximo passo, um resumo rápido de cada seção.",
+        side: "right",
+        align: "start",
+        onPrevClick: (_el, _step, { driver: d }) => {
+          router.push("/notes");
+          void waitForSelector("#menu-agenda").then(() => {
+            d.refresh();
+            d.movePrevious();
+          });
+        },
+      },
+    },
+    // 12 — Sidebar de Configurações
     {
       element: "#tour-settings-sidebar",
       popover: {
         title: "Dentro de Configurações",
         description:
-          "Em Perfil você ajusta o nome e pode refazer este tour. Em Kanban ficam as etapas do quadro e os tipos de trabalho ao criar jobs (só admin mexe nos tipos). Em Equipe você convida ou remove pessoas; quem é admin cuida do acesso. Em E-mail ficam as mensagens para o cliente na entrega. Em Plano você vê trial, assinatura e limites.",
+          "Perfil — ajuste seu nome e refaça este tour. Kanban — etapas do quadro e tipos de trabalho. Equipe — convide ou remova colaboradores. E-mail — templates de entrega ao cliente. Agenda — conecte o Google Calendar. Plano — veja trial e assinatura. Importar — adicione contatos em lote a partir de uma planilha .csv.",
         side: "right",
         align: "start",
       },

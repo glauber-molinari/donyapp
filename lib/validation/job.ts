@@ -61,7 +61,7 @@ export function parseSdCardTagsFromFormData(
     if (!t) continue;
     if (t.length > SD_CARD_TAG_MAX_LEN) {
       return {
-        error: `Cada tag de CartãoSD pode ter no máximo ${SD_CARD_TAG_MAX_LEN} caracteres.`,
+        error: `Cada tag de Cartão SD pode ter no máximo ${SD_CARD_TAG_MAX_LEN} caracteres.`,
       };
     }
     if (seen.has(t)) continue;
