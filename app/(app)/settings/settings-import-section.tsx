@@ -348,7 +348,7 @@ export function SettingsImportSection() {
             <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-500" aria-hidden />
             <div>
               <p className="text-sm font-semibold text-red-800">Erro na importação</p>
-              <p className="mt-0.5 text-xs text-red-700">{status.error}</p>
+              <p className="mt-0.5 text-xs text-red-700">{status.message}</p>
               <button
                 type="button"
                 onClick={reset}
