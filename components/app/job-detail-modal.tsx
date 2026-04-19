@@ -165,7 +165,7 @@ export function JobDetailModal({
               <DetailRow label="Tipo de entrega">
                 <Badge kind="job-type" value={job.type} />
               </DetailRow>
-              <DetailRow label="Cartão cSD">
+              <DetailRow label="Cartão SD">
                 {(job.sd_card_tags ?? []).length > 0 ? (
                   <span className="flex flex-wrap gap-1.5">
                     {(job.sd_card_tags ?? []).map((t, i) => (

@@ -2,8 +2,10 @@ import { google } from "googleapis";
 
 import { googleCalendarOAuthRedirectUri } from "@/lib/app-url";
 
+/** Escopos mínimos para Agenda: lista do calendário primary, eventos só em calendários próprios, e-mail da conta (exibição). */
 export const GOOGLE_CALENDAR_SCOPES = [
-  "https://www.googleapis.com/auth/calendar.readonly",
+  "https://www.googleapis.com/auth/calendar.calendarlist.readonly",
+  "https://www.googleapis.com/auth/calendar.events.owned.readonly",
   "openid",
   "https://www.googleapis.com/auth/userinfo.email",
 ] as const;
