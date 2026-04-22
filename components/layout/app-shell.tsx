@@ -189,7 +189,7 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-ds-xl p-2 text-ds-subtle hover:bg-ds-cream"
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-ds-xl p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-ds-subtle hover:bg-ds-cream"
             aria-label="Fechar menu"
           >
             <X className="h-5 w-5" />
@@ -199,8 +199,9 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
         {/* Desktop: expandido — logo + recolher (só md+, nunca junto do bloco recolhido) */}
         <div
           className={cn(
-            "relative h-16 max-md:hidden shrink-0 items-center justify-between gap-2 border-b border-app-border px-3",
-            sidebarCollapsed ? "hidden" : "flex"
+            "relative h-16 shrink-0 items-center justify-between gap-2 border-b border-app-border px-3",
+            "hidden md:flex",
+            sidebarCollapsed && "md:hidden"
           )}
         >
           <Link
@@ -235,8 +236,9 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
         {/* Desktop: recolhido — expandir + ícone compacto */}
         <div
           className={cn(
-            "max-md:hidden shrink-0 flex-col items-center gap-2 border-b border-app-border py-3",
-            sidebarCollapsed ? "flex" : "hidden"
+            "shrink-0 flex-col items-center gap-2 border-b border-app-border py-3",
+            "hidden md:flex",
+            !sidebarCollapsed && "md:hidden"
           )}
         >
           <button
