@@ -24,6 +24,7 @@ import { useCallback, useEffect, useLayoutEffect, useState, type ReactNode } fro
 
 import { OnboardingTourProvider } from "@/components/app/onboarding-tour";
 import { SidebarCollapsedContext } from "@/components/layout/sidebar-collapsed-context";
+import { NotificationBell } from "@/components/layout/notification-bell";
 import { AppToaster } from "@/components/ui/app-toaster";
 import { Avatar } from "@/components/ui/avatar";
 import { createClient } from "@/lib/supabase/client";
@@ -126,7 +127,7 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
 
   const linkClass = (href: string, collapsed: boolean) =>
     cn(
-      "flex items-center gap-3 rounded-ds-xl px-3 py-2.5 text-sm font-medium transition-colors duration-ds ease-out",
+      "flex items-center gap-3 rounded-ds-xl px-3 py-2.5 min-h-[44px] text-sm font-medium transition-colors duration-ds ease-out",
       collapsed && "md:justify-center md:gap-0 md:px-2 md:py-3",
       pathname === href ||
         (href !== "/dashboard" && href !== "/" && pathname.startsWith(href))
@@ -390,16 +391,22 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
 
       <SidebarCollapsedContext.Provider value={sidebarCollapsed}>
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-app-border bg-app-sidebar px-4 md:hidden">
+          {/* Header mobile */}
+          <header className="sticky top-0 z-30 flex min-h-[48px] shrink-0 items-center gap-3 border-b border-app-border bg-app-sidebar px-4 md:hidden">
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
-              className="rounded-ds-xl p-2 text-ds-muted hover:bg-ds-cream"
+              className="rounded-ds-xl p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-ds-muted hover:bg-ds-cream"
               aria-label="Abrir menu"
             >
               <Menu className="h-5 w-5" />
             </button>
             <span className="text-base font-semibold text-ds-ink">Donyapp</span>
+          </header>
+
+          {/* Header desktop */}
+          <header className="sticky top-0 z-30 hidden min-h-[48px] shrink-0 items-center justify-end gap-3 border-b border-app-border bg-app-sidebar px-6 md:flex">
+            <NotificationBell />
           </header>
 
           <main className="min-w-0 flex-1 overflow-auto px-4 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom,0px))] sm:px-6 sm:pt-6 sm:pb-8">

@@ -50,6 +50,7 @@ export function Modal({
     <div
       className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:items-center"
       role="presentation"
+      style={{ maxHeight: '100dvh' }}
     >
       <button
         type="button"
@@ -63,6 +64,8 @@ export function Modal({
         aria-labelledby={titleId}
         className={cn(
           "relative z-10 flex min-h-0 w-full min-w-0 flex-col rounded-ds-xl border border-app-border bg-app-sidebar p-6 shadow-ds-md",
+          // Usar dvh para altura dinâmica que se adapta às barras de navegação mobile
+          "max-h-[90dvh]",
           widthClass[size],
           className
         )}
@@ -76,14 +79,14 @@ export function Modal({
             type="button"
             variant="ghost"
             size="sm"
-            className="-mr-2 h-8 w-8 shrink-0 p-0"
+            className="-mr-2 min-h-[44px] min-w-[44px] shrink-0 p-0"
             onClick={onClose}
             aria-label="Fechar"
           >
             <X className="h-4 w-4" />
           </Button>
         </div>
-        <div className="min-h-0 flex-1">{children}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
       </div>
     </div>
   );

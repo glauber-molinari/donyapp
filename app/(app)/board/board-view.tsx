@@ -431,7 +431,9 @@ const JobCardContent = memo(function JobCardContent({
   return (
     <div
       className={cn(
-        "rounded-lg border border-ds-border/70 bg-white p-2 shadow-sm",
+        "rounded-lg border border-ds-border/70 bg-white shadow-sm",
+        // Padding se ajusta ao container width com container queries
+        "p-2 @md:p-3",
         isDragging && "opacity-60",
         overlay && "shadow-md ring-2 ring-ds-accent/15",
         openEnabled && !dragHandle && "cursor-pointer"
@@ -486,12 +488,12 @@ const SortableJobCard = memo(function SortableJobCard({
   const dragHandle = dragDisabled ? undefined : (
     <button
       type="button"
-      className="flex h-7 w-6 shrink-0 items-center justify-center rounded-md border border-transparent text-ds-muted hover:border-ds-border/80 hover:bg-stone-50 hover:text-ds-ink"
+      className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-md border border-transparent text-ds-muted hover:border-ds-border/80 hover:bg-stone-50 hover:text-ds-ink"
       aria-label="Arrastar card"
       {...listeners}
       {...attributes}
     >
-      <GripVertical className="h-3.5 w-3.5" aria-hidden />
+      <GripVertical className="h-4 w-4" aria-hidden />
     </button>
   );
 
@@ -547,7 +549,9 @@ const KanbanColumn = memo(function KanbanColumn({
     <div
       className={cn(
         "flex min-h-0 flex-col overflow-hidden rounded-xl border border-ds-border/60 shadow-sm transition-[box-shadow,colors]",
-        /* Mobile/tablet: colunas com largura legível + scroll horizontal (evita flex-1 espremendo tudo). */
+        // Container context para cards internos responderem ao tamanho da coluna
+        "@container",
+        /* Mobile/tablet: colunas com largura legível + scroll horizontal */
         "max-lg:w-[min(92vw,20rem)] max-lg:max-w-[20rem] max-lg:shrink-0 max-lg:flex-none",
         "lg:min-w-[128px] lg:max-w-[260px] lg:flex-1 lg:basis-0"
       )}
@@ -799,8 +803,6 @@ export function BoardView({
         stageAfter
       ) {
         setEmailStub(jobBefore);
-      } else {
-        toast.success("Quadro atualizado.", { duration: 2800 });
       }
     },
     [
@@ -933,13 +935,13 @@ export function BoardView({
           onDragCancel={handleDragCancel}
         >
           <div
-            className="w-full min-w-0 overflow-x-auto pb-4 pt-1 [scrollbar-width:thin] overscroll-x-contain touch-pan-x"
+            className="w-full min-w-0 overflow-x-auto scroll-smooth pb-4 pt-1 [scrollbar-width:thin] overscroll-x-contain touch-pan-x"
             role="region"
             aria-label="Colunas do quadro — em telas pequenas, deslize horizontalmente para ver todas as etapas"
           >
             <div
               id="kanban-board"
-              className="flex w-max min-w-full flex-nowrap gap-3"
+              className="flex w-max min-w-full flex-nowrap gap-3 px-1"
             >
               {sortedStages.map((stage) => (
                 <KanbanColumn

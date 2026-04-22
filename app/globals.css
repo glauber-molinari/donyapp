@@ -7,6 +7,29 @@
   --foreground: #0c0a09;
   --ds-accent: #ff5500;
   --ds-border: #e8e4df;
+  
+  /* Fluid Typography Scale - usando clamp() para escalar suavemente entre mobile e desktop */
+  /* Calculado com: fluidType({ minFontSize: X, maxFontSize: Y, minViewport: 320, maxViewport: 1200 }) */
+  
+  /* Títulos principais - escala de 18px (mobile) a 24px (desktop) */
+  --font-size-h1: clamp(1.125rem, 0.9rem + 1.125vw, 1.5rem);
+  
+  /* Subtítulos - escala de 14px a 18px */
+  --font-size-h2: clamp(0.875rem, 0.75rem + 0.625vw, 1.125rem);
+  
+  /* Corpo de texto - escala de 13px a 15px */
+  --font-size-body: clamp(0.8125rem, 0.75rem + 0.3125vw, 0.9375rem);
+  
+  /* Labels pequenos - escala de 11px a 12px */
+  --font-size-small: clamp(0.6875rem, 0.65rem + 0.1875vw, 0.75rem);
+  
+  /* Escala de espaçamento fluido - adapta conforme viewport */
+  --space-xs: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem);
+  --space-sm: clamp(0.75rem, 0.6rem + 0.75vw, 1rem);
+  --space-md: clamp(1rem, 0.8rem + 1vw, 1.5rem);
+  --space-lg: clamp(1.5rem, 1.2rem + 1.5vw, 2rem);
+  --space-xl: clamp(2rem, 1.5rem + 2.5vw, 3rem);
+  --space-2xl: clamp(3rem, 2rem + 5vw, 5rem);
 }
 
 body {

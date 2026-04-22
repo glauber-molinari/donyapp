@@ -71,9 +71,16 @@ const config: Config = {
       },
       spacing: {
         section: "1.25rem",
+        'touch-target': '2.75rem', // 44px - WCAG 2.1 minimum touch target
+        'mobile-padding': 'max(1rem, env(safe-area-inset-left, 0px))',
+      },
+      screens: {
+        'tablet-landscape': { raw: '(min-width: 768px) and (orientation: landscape)' },
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/container-queries'),
+  ],
 };
 export default config;
