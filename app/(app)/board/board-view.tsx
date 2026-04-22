@@ -432,8 +432,8 @@ const JobCardContent = memo(function JobCardContent({
     <div
       className={cn(
         "rounded-lg border border-ds-border/70 bg-white shadow-sm",
-        // Padding se ajusta ao container width com container queries
-        "p-2 @md:p-3",
+        // Padding padrão (sem container queries)
+        "p-2 sm:p-3",
         isDragging && "opacity-60",
         overlay && "shadow-md ring-2 ring-ds-accent/15",
         openEnabled && !dragHandle && "cursor-pointer"
@@ -549,8 +549,6 @@ const KanbanColumn = memo(function KanbanColumn({
     <div
       className={cn(
         "flex min-h-0 flex-col overflow-hidden rounded-xl border border-ds-border/60 shadow-sm transition-[box-shadow,colors]",
-        // Container context para cards internos responderem ao tamanho da coluna
-        "@container",
         /* Mobile/tablet: colunas com largura legível + scroll horizontal */
         "max-lg:w-[min(92vw,20rem)] max-lg:max-w-[20rem] max-lg:shrink-0 max-lg:flex-none",
         "lg:min-w-[128px] lg:max-w-[260px] lg:flex-1 lg:basis-0"

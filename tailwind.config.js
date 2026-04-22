@@ -1,6 +1,5 @@
-import type { Config } from "tailwindcss";
-
-const config: Config = {
+/** @type {import('tailwindcss').Config} */
+module.exports = {
   /** Classes vindas do banco (`kanban_stages.color`) precisam existir no bundle */
   safelist: [
     "bg-ds-accent/10",
@@ -83,4 +82,3 @@ const config: Config = {
     require('@tailwindcss/container-queries'),
   ],
 };
-export default config;
