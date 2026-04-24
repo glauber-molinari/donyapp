@@ -105,20 +105,43 @@ export function SettingsKanbanTabs({
         className={tab === "assignees" ? "flex flex-col gap-4" : "hidden"}
       >
         {plan !== "pro" ? (
-          <div className="rounded-ds-xl border border-amber-100 bg-amber-50/90 px-4 py-4 text-sm text-amber-950">
-            <p className="font-medium text-amber-950">Disponível no plano Pro</p>
-            <p className="mt-2 text-amber-900/95">
-              Cadastre responsáveis por nome, e-mail e foto quando você é o único usuário da conta —
-              útil para equipes externas sem convite no app.
+          <div className="relative overflow-hidden rounded-lg border-2 border-ds-accent bg-gradient-to-br from-orange-50 to-orange-100/50 p-6">
+            <div className="mb-3 flex items-center gap-2">
+              <span className="rounded-full bg-ds-accent px-3 py-1.5 text-xs font-bold text-white">
+                EXCLUSIVO PRO
+              </span>
+            </div>
+            <h3 className="mb-2 text-lg font-bold text-orange-900">Responsáveis Manuais</h3>
+            <p className="mb-4 text-sm text-orange-800">
+              Cadastre editores externos por nome, e-mail e foto. Ideal quando você trabalha com freelancers ou equipes externas que não precisam acessar o Donyapp.
             </p>
-            <p className="mt-3">
-              <Link
-                href="/settings/plan"
-                className="font-medium text-ds-accent underline underline-offset-2"
+            <div className="mb-4 rounded-lg bg-white/60 p-3">
+              <p className="text-xs font-medium text-orange-900">✨ Funcionalidades:</p>
+              <ul className="mt-2 space-y-1 text-xs text-orange-800">
+                <li>• Cadastro ilimitado de responsáveis</li>
+                <li>• Nome, e-mail e foto personalizados</li>
+                <li>• Atribuição direta nos jobs do quadro</li>
+                <li>• Gestão completa sem convites de acesso</li>
+              </ul>
+            </div>
+            <a
+              href="/settings/plan"
+              className="inline-flex items-center gap-1 text-sm font-semibold text-ds-accent hover:underline"
+            >
+              Fazer upgrade para PRO
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4"
               >
-                Ver planos e fazer upgrade
-              </Link>
-            </p>
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </a>
           </div>
         ) : (
           <SettingsManualAssigneesSection

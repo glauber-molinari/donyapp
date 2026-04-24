@@ -22,7 +22,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const { data: profile } = await supabase
     .from("users")
-    .select("name, email, avatar_url, tour_completed")
+    .select("name, email, avatar_url, tour_completed, account_id")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -31,12 +31,21 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const avatarUrl = profile?.avatar_url ?? oauthAvatarUrlFromUser(user) ?? null;
   const tourCompleted = profile == null ? true : profile.tour_completed;
 
+  const { data: subscription } = await supabase
+    .from("subscriptions")
+    .select("plan")
+    .eq("account_id", profile?.account_id ?? "")
+    .maybeSingle();
+
+  const isPro = subscription?.plan === "pro";
+
   return (
     <AppShell
       userName={userName}
       userEmail={userEmail}
       avatarUrl={avatarUrl}
       tourCompleted={tourCompleted}
+      isPro={isPro}
     >
       {children}
     </AppShell>

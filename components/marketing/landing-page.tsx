@@ -101,7 +101,8 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
 
           <div className="relative mx-auto mt-14 max-w-[1200px] sm:mt-20">
             <div className="relative -mb-px overflow-hidden px-0 sm:px-4 lg:px-8">
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-ds-cream to-transparent max-sm:h-[min(58%,12rem)] sm:h-32 max-sm:from-[40%] sm:from-10%" />
+              {/* Degradê fade de baixo: mobile com fade mais alto e suave, desktop mantém padrão */}
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[min(65%,13rem)] bg-gradient-to-t from-ds-cream via-ds-cream/60 to-transparent from-[25%] via-[55%] sm:h-32 sm:from-10% sm:via-transparent" />
               <ProductPreviewMock />
             </div>
           </div>

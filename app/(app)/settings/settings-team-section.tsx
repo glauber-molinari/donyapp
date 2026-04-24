@@ -123,12 +123,44 @@ export function SettingsTeamSection({
       </div>
 
       {!isPro ? (
-        <p className="rounded-ds-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-          Multi-usuário e convites por e-mail estão no plano Pro.{" "}
-          <Link href="/settings/plan" className="font-medium text-ds-ink underline underline-offset-2">
-            Ver planos
-          </Link>
-        </p>
+        <div className="relative overflow-hidden rounded-lg border-2 border-ds-accent bg-gradient-to-br from-orange-50 to-orange-100/50 p-6">
+          <div className="mb-3 flex items-center gap-2">
+            <span className="rounded-full bg-ds-accent px-3 py-1.5 text-xs font-bold text-white">
+              EXCLUSIVO PRO
+            </span>
+          </div>
+          <h3 className="mb-2 text-lg font-bold text-orange-900">Multi-usuário com Convites</h3>
+          <p className="mb-4 text-sm text-orange-800">
+            Convide colaboradores por e-mail para trabalhar na mesma conta. Todos os membros têm acesso completo ao painel e podem gerenciar edições, contatos e tarefas juntos.
+          </p>
+          <div className="mb-4 rounded-lg bg-white/60 p-3">
+            <p className="text-xs font-medium text-orange-900">✨ Recursos inclusos:</p>
+            <ul className="mt-2 space-y-1 text-xs text-orange-800">
+              <li>• Convites ilimitados por e-mail</li>
+              <li>• Gestão de papéis (Admin/Membro)</li>
+              <li>• Acesso compartilhado em tempo real</li>
+              <li>• Colaboração completa no quadro de edições</li>
+            </ul>
+          </div>
+          <a
+            href="/settings/plan"
+            className="inline-flex items-center gap-1 text-sm font-semibold text-ds-accent hover:underline"
+          >
+            Fazer upgrade para PRO
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-4 w-4"
+            >
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </a>
+        </div>
       ) : null}
 
       <Card className="overflow-hidden p-0">

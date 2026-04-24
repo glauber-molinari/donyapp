@@ -16,6 +16,7 @@ import {
   Settings,
   Users,
   X,
+  BarChart3,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -39,36 +40,42 @@ const navItems = [
     label: "Dashboard",
     id: "menu-dashboard",
     icon: LayoutDashboard,
+    isPro: false,
   },
   {
     href: "/contacts",
     label: "Contatos",
     id: "menu-contatos",
     icon: Users,
+    isPro: false,
   },
   {
     href: "/board",
     label: "Edições",
     id: "menu-edicoes",
     icon: LaptopMinimal,
+    isPro: false,
   },
   {
     href: "/tasks",
     label: "Tarefas",
     id: "menu-tarefas",
     icon: CheckSquare,
+    isPro: true,
   },
   {
     href: "/notes",
     label: "Anotações",
     id: "menu-anotacoes",
     icon: NotebookPen,
+    isPro: false,
   },
   {
     href: "/agenda",
     label: "Agenda",
     id: "menu-agenda",
     icon: Calendar,
+    isPro: false,
   },
 ] as const;
 
@@ -78,9 +85,10 @@ export interface AppShellProps {
   userEmail: string | null;
   avatarUrl: string | null;
   tourCompleted: boolean;
+  isPro: boolean;
 }
 
-export function AppShell({ children, userName, userEmail, avatarUrl, tourCompleted }: AppShellProps) {
+export function AppShell({ children, userName, userEmail, avatarUrl, tourCompleted, isPro }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -278,7 +286,7 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
           )}
           aria-label="Principal"
         >
-          {navItems.map(({ href, label, id, icon: Icon }) => (
+          {navItems.map(({ href, label, id, icon: Icon, isPro: isProFeature }) => (
             <Link
               key={href}
               href={href}
@@ -287,9 +295,32 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
               className={linkClass(href, sidebarCollapsed)}
             >
               <Icon className="h-5 w-5 shrink-0 opacity-80" aria-hidden />
-              <span className={cn(sidebarCollapsed && "md:sr-only")}>{label}</span>
+              <span className={cn("flex items-center gap-2", sidebarCollapsed && "md:sr-only")}>
+                {label}
+                {isProFeature && !isPro && (
+                  <span className="rounded-full bg-ds-accent px-2 py-0.5 text-[10px] font-bold text-white">
+                    PRO
+                  </span>
+                )}
+              </span>
             </Link>
           ))}
+          <Link
+            href="/reports"
+            id="menu-reports"
+            title={sidebarCollapsed ? "Relatórios" : undefined}
+            className={linkClass("/reports", sidebarCollapsed)}
+          >
+            <BarChart3 className="h-5 w-5 shrink-0 opacity-80" aria-hidden />
+            <span className={cn("flex items-center gap-2", sidebarCollapsed && "md:sr-only")}>
+              Relatórios
+              {!isPro && (
+                <span className="rounded-full bg-ds-accent px-2 py-0.5 text-[10px] font-bold text-white">
+                  PRO
+                </span>
+              )}
+            </span>
+          </Link>
         </nav>
 
         <div

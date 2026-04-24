@@ -82,14 +82,42 @@ export function SettingsEmailSection({
   return (
     <div className="flex flex-col gap-6">
       {!isPro ? (
-        <div
-          className="rounded-ds-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950"
-          role="status"
-        >
-          <p className="font-medium">Plano Pro</p>
-          <p className="mt-1 text-amber-900/90">
-            A personalização do e-mail de entrega ao cliente está incluída no Pro.
+          <div className="relative overflow-hidden rounded-lg border-2 border-ds-accent bg-gradient-to-br from-orange-50 to-orange-100/50 p-6">
+            <div className="mb-3 flex items-center gap-2">
+              <span className="rounded-full bg-ds-accent px-3 py-1.5 text-xs font-bold text-white">
+                EXCLUSIVO PRO
+              </span>
+            </div>
+          <h3 className="mb-2 text-lg font-bold text-orange-900">Templates Personalizados de E-mail</h3>
+          <p className="mb-4 text-sm text-orange-800">
+            Crie seus próprios modelos de e-mail com placeholders dinâmicos. Configure assunto e corpo da mensagem que serão usados automaticamente ao enviar o material para o cliente.
           </p>
+          <div className="mb-4 rounded-lg bg-white/60 p-3">
+            <p className="text-xs font-medium text-orange-900">✨ Recursos inclusos:</p>
+            <ul className="mt-2 space-y-1 text-xs text-orange-800">
+              <li>• Placeholders dinâmicos (nome, job, link, remetente)</li>
+              <li>• Preview em tempo real</li>
+              <li>• Modelos salvos para uso automático</li>
+            </ul>
+          </div>
+          <a
+            href="/settings/plan"
+            className="inline-flex items-center gap-1 text-sm font-semibold text-ds-accent hover:underline"
+          >
+            Fazer upgrade para PRO
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-4 w-4"
+            >
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </a>
         </div>
       ) : null}
 

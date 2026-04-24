@@ -147,17 +147,36 @@ export function DeliveryEmailModal({
 
         {!isPro ? (
           <div
-            className="rounded-ds-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950"
+            className="rounded-lg border-2 border-ds-accent bg-gradient-to-br from-orange-50 to-orange-100/50 px-5 py-4 text-sm"
             role="status"
           >
-            <p className="font-medium">Disponível no plano Pro</p>
-            <p className="mt-1 text-amber-900/90">
-              O envio de e-mail ao cliente está incluído no Pro.{" "}
-              <Link href="/settings/kanban" className="font-medium text-ds-accent underline underline-offset-2">
-                Ver planos em Configurações
-              </Link>
-              .
+            <div className="mb-2 flex items-center gap-2">
+              <span className="rounded-full bg-ds-accent px-2.5 py-1 text-xs font-bold text-white">
+                EXCLUSIVO PRO
+              </span>
+            </div>
+            <p className="font-semibold text-orange-900">Envio de e-mail automático ao cliente</p>
+            <p className="mt-2 text-orange-800">
+              Envie o link de entrega diretamente do Donyapp para o e-mail do cliente, com templates personalizados e reply-to configurável.
             </p>
+            <Link
+              href="/settings/plan"
+              className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-ds-accent hover:underline"
+            >
+              Fazer upgrade para PRO
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </Link>
           </div>
         ) : null}
 
