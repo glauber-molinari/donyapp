@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState, type ReactNode } from "react";
 
 import { SettingsKanbanSection } from "./settings-kanban-section";
