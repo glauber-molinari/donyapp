@@ -90,7 +90,7 @@ export default async function ReportsPage() {
               </div>
               <h2 className="mb-2 text-xl font-bold text-ds-ink">Relatórios Detalhados PRO</h2>
               <p className="mb-6 max-w-md text-sm text-ds-muted">
-                Acompanhe métricas completas: média de entrega, desempenho por tipo de job, entregas no prazo, revisões e muito mais.
+                Acompanhe métricas completas: média de entrega, desempenho por tipo de job, entregas no prazo, alterações e muito mais.
                 <br />
                 Tome decisões baseadas em dados reais do seu estúdio.
               </p>

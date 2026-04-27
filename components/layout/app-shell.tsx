@@ -26,7 +26,6 @@ import { useCallback, useEffect, useLayoutEffect, useState, type ReactNode } fro
 import { OnboardingTourProvider } from "@/components/app/onboarding-tour";
 import { SidebarCollapsedContext } from "@/components/layout/sidebar-collapsed-context";
 import { NotificationBell } from "@/components/layout/notification-bell";
-import { AppToaster } from "@/components/ui/app-toaster";
 import { Avatar } from "@/components/ui/avatar";
 import { createClient } from "@/lib/supabase/client";
 import { getSupportEmail, supportMailtoLink, supportWhatsAppLink } from "@/lib/support";
@@ -447,7 +446,6 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
           </main>
         </div>
       </SidebarCollapsedContext.Provider>
-      <AppToaster />
     </div>
     </OnboardingTourProvider>
   );

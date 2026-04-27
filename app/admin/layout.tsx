@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { AppToaster } from "@/components/ui/app-toaster";
 import { isPlatformAdminEmail } from "@/lib/admin/platform-admin";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
@@ -30,6 +29,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { href: "/admin", label: "Visão geral" },
     { href: "/admin/planos", label: "Planos e contas" },
     { href: "/admin/feedback", label: "Feedback" },
+    { href: "/admin/apresentacao", label: "Apresentação" },
   ] as const;
 
   return (
@@ -57,7 +57,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
-      <AppToaster />
     </div>
   );
 }

@@ -86,7 +86,7 @@ export function ReportsView() {
           color="orange"
         />
         <MetricCard
-          title="Média de Revisões"
+          title="Média de Alterações"
           value={metrics.averageRevisions.toString()}
           icon={RefreshCw}
           description="Por job"
