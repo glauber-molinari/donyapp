@@ -2,6 +2,44 @@
 
 import { useEffect, useRef, useState } from "react";
 
+// Declarações mínimas da Web Speech API (não incluídas em todas as versões do TS/DOM lib)
+interface SrAlternative {
+  transcript: string;
+  confidence: number;
+}
+interface SrResult {
+  isFinal: boolean;
+  length: number;
+  [index: number]: SrAlternative;
+}
+interface SrResultList {
+  length: number;
+  [index: number]: SrResult;
+}
+interface SrEvent extends Event {
+  resultIndex: number;
+  results: SrResultList;
+}
+interface SrErrorEvent extends Event {
+  error: string;
+}
+interface SrInstance extends EventTarget {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  maxAlternatives: number;
+  onstart: (() => void) | null;
+  onresult: ((event: SrEvent) => void) | null;
+  onerror: ((event: SrErrorEvent) => void) | null;
+  onend: (() => void) | null;
+  start(): void;
+  stop(): void;
+  abort(): void;
+}
+interface SrConstructor {
+  new (): SrInstance;
+}
+
 interface UseVoiceTranscriptionReturn {
   isSupported: boolean;
   isRecording: boolean;
@@ -11,14 +49,10 @@ interface UseVoiceTranscriptionReturn {
   stop: () => void;
 }
 
-function getAPI(): typeof SpeechRecognition | null {
+function getAPI(): SrConstructor | null {
   if (typeof window === "undefined") return null;
-  return (
-    (window as Window & { webkitSpeechRecognition?: typeof SpeechRecognition })
-      .webkitSpeechRecognition ??
-    window.SpeechRecognition ??
-    null
-  );
+  const w = window as Window & { webkitSpeechRecognition?: SrConstructor; SpeechRecognition?: SrConstructor };
+  return w.webkitSpeechRecognition ?? w.SpeechRecognition ?? null;
 }
 
 export function useVoiceTranscription(): UseVoiceTranscriptionReturn {
@@ -30,7 +64,7 @@ export function useVoiceTranscription(): UseVoiceTranscriptionReturn {
 
   const wantRecordingRef = useRef(false);
   const onFinalTextRef = useRef<((text: string) => void) | null>(null);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<SrInstance | null>(null);
 
   // Not a useCallback — avoids stale closure issues in the recursive onend chain
   function createAndStart() {
@@ -49,7 +83,7 @@ export function useVoiceTranscription(): UseVoiceTranscriptionReturn {
       setIsRecording(true);
     };
 
-    r.onresult = (event: SpeechRecognitionEvent) => {
+    r.onresult = (event: SrEvent) => {
       let interim = "";
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
@@ -63,7 +97,7 @@ export function useVoiceTranscription(): UseVoiceTranscriptionReturn {
       if (interim) setInterimText(interim);
     };
 
-    r.onerror = (event: SpeechRecognitionErrorEvent) => {
+    r.onerror = (event: SrErrorEvent) => {
       // no-speech = silêncio detectado, não é fatal — onend vai reiniciar
       if (event.error === "no-speech") return;
 
