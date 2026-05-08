@@ -98,8 +98,8 @@ export function useVoiceTranscription(): UseVoiceTranscriptionReturn {
     };
 
     r.onerror = (event: SrErrorEvent) => {
-      // no-speech = silêncio detectado, não é fatal — onend vai reiniciar
-      if (event.error === "no-speech") return;
+      // no-speech = silêncio; aborted = stop() chamado manualmente — ambos não são erros reais
+      if (event.error === "no-speech" || event.error === "aborted") return;
 
       wantRecordingRef.current = false;
       setIsRecording(false);
