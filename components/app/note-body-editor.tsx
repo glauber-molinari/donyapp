@@ -6,12 +6,15 @@ import {
   Link2,
   List,
   ListOrdered,
+  Mic,
+  MicOff,
   Strikethrough,
   Underline,
 } from "lucide-react";
 import { useEffect, useRef, type MouseEvent } from "react";
 
 import { Button } from "@/components/ui/button";
+import { useVoiceTranscription } from "@/lib/hooks/use-voice-transcription";
 import { cn } from "@/lib/utils";
 
 export function NoteBodyEditor({
@@ -27,6 +30,8 @@ export function NoteBodyEditor({
   onHtmlChange: (html: string) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const { isSupported, isRecording, interimText, errorMessage, start, stop } =
+    useVoiceTranscription();
 
   useEffect(() => {
     const el = ref.current;
@@ -55,6 +60,23 @@ export function NoteBodyEditor({
   /** Evita que o botão roube o foco do contentEditable; sem isso a seleção some e listas/execCommand falham. */
   function keepEditorSelectionOnToolbarPointer(e: MouseEvent) {
     e.preventDefault();
+  }
+
+  function handleFinalText(text: string) {
+    const el = ref.current;
+    if (!el) return;
+    el.focus();
+    document.execCommand("insertText", false, text + " ");
+    onHtmlChange(el.innerHTML);
+  }
+
+  function toggleRecording() {
+    if (isRecording) {
+      stop();
+    } else {
+      ref.current?.focus();
+      start(handleFinalText);
+    }
   }
 
   return (
@@ -143,7 +165,48 @@ export function NoteBodyEditor({
         >
           <Link2 className="h-4 w-4" aria-hidden />
         </Button>
+        <span className="mx-0.5 h-6 w-px shrink-0 bg-app-border" aria-hidden />
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onMouseDown={keepEditorSelectionOnToolbarPointer}
+          onClick={toggleRecording}
+          disabled={!isSupported}
+          title={
+            !isSupported
+              ? "Seu browser não suporta gravação de voz. Use Chrome ou Edge."
+              : isRecording
+                ? "Parar gravação"
+                : "Gravar voz (pt-BR)"
+          }
+          aria-label={isRecording ? "Parar gravação de voz" : "Gravar voz"}
+          aria-pressed={isRecording}
+          className={cn(
+            "h-8 gap-1.5 px-2 text-xs",
+            isRecording && "animate-pulse bg-red-100 text-red-600 hover:bg-red-100 hover:text-red-600",
+          )}
+        >
+          {isRecording ? (
+            <MicOff className="h-4 w-4 shrink-0" aria-hidden />
+          ) : (
+            <Mic className="h-4 w-4 shrink-0" aria-hidden />
+          )}
+          {isRecording ? "Parar" : "Voz"}
+        </Button>
       </div>
+      {isRecording && interimText ? (
+        <div className="flex items-center gap-1.5 rounded-ds-xl border border-app-border bg-ds-cream/60 px-3 py-1.5 text-xs italic text-ds-muted">
+          <Mic className="h-3 w-3 shrink-0 text-red-500" aria-hidden />
+          <span className="truncate">{interimText}</span>
+        </div>
+      ) : null}
+      {errorMessage ? (
+        <div className="flex items-center gap-1.5 rounded-ds-xl border border-red-100 bg-red-50 px-3 py-1.5 text-xs text-red-700">
+          <MicOff className="h-3 w-3 shrink-0" aria-hidden />
+          <span>{errorMessage}</span>
+        </div>
+      ) : null}
       <div
         ref={ref}
         id={id}
