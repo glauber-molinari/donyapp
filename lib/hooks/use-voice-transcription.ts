@@ -107,7 +107,7 @@ export function useVoiceTranscription(): UseVoiceTranscriptionReturn {
 
       if (event.error === "not-allowed") {
         setErrorMessage(
-          "Permissão de microfone negada. Clique no ícone ⓘ (ou 🔒) à esquerda do endereço no navegador → Microfone → Permitir, depois recarregue a página.",
+          "Microfone bloqueado. Verifique: (1) Chrome — clique no cadeado 🔒 ao lado do endereço → Microfone → Permitir; (2) Windows — Configurações → Privacidade → Microfone → ative \"Permitir que aplicativos da área de trabalho acessem seu microfone\". Recarregue a página após alterar.",
         );
       } else if (event.error === "audio-capture") {
         setErrorMessage(
@@ -137,7 +137,22 @@ export function useVoiceTranscription(): UseVoiceTranscriptionReturn {
     setErrorMessage(null);
     onFinalTextRef.current = onFinalText;
     wantRecordingRef.current = true;
-    createAndStart();
+
+    // Pré-teste: getUserMedia confirma permissão real antes de iniciar SpeechRecognition.
+    // No Windows, o SpeechRecognition pode receber "not-allowed" mesmo com a permissão
+    // do Chrome ativa se as configurações de privacidade do SO bloquearem apps desktop.
+    navigator.mediaDevices
+      .getUserMedia({ audio: true })
+      .then((stream) => {
+        stream.getTracks().forEach((t) => t.stop());
+        if (wantRecordingRef.current) createAndStart();
+      })
+      .catch(() => {
+        wantRecordingRef.current = false;
+        setErrorMessage(
+          "Microfone bloqueado. Verifique: (1) Chrome — clique no cadeado 🔒 ao lado do endereço → Microfone → Permitir; (2) Windows — Configurações → Privacidade → Microfone → ative \"Permitir que aplicativos da área de trabalho acessem seu microfone\". Recarregue a página após alterar.",
+        );
+      });
   }
 
   function stop() {
