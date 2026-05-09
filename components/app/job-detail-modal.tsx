@@ -1,16 +1,18 @@
 "use client";
 
-import Link from "next/link";
-import { ExternalLink, Trash2 } from "lucide-react";
+import { ExternalLink, Pencil, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type ManualLite = { id: string; name: string; email: string | null };
 
 import type { JobWithRelations } from "@/app/(app)/dashboard/dashboard-view";
-import { deleteJob } from "@/app/(app)/jobs/actions";
+import { deleteJob, updateJob } from "@/app/(app)/jobs/actions";
+import { NewJobForm } from "@/components/app/new-job-form";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
+import type { SelectOption } from "@/components/ui/select";
+import type { ContactSearchOption } from "@/components/app/contact-search-field";
 import { formatDeadlinePt } from "@/lib/job-display";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -50,6 +52,12 @@ export function JobDetailModal({
   allJobs,
   members,
   manualAssignees,
+  contacts,
+  stageOptions,
+  workTypeOptions,
+  memberOptions,
+  manualAssigneeOptions,
+  useManualAssigneeDirectory,
   open,
   onClose,
 }: {
@@ -57,6 +65,12 @@ export function JobDetailModal({
   allJobs: JobWithRelations[];
   members: MemberLite[];
   manualAssignees: ManualLite[];
+  contacts: ContactSearchOption[];
+  stageOptions: SelectOption[];
+  workTypeOptions: SelectOption[];
+  memberOptions: SelectOption[];
+  manualAssigneeOptions: SelectOption[];
+  useManualAssigneeDirectory: boolean;
   open: boolean;
   onClose: () => void;
 }) {
@@ -64,6 +78,8 @@ export function JobDetailModal({
   const [tab, setTab] = useState<DetailTabId>("geral");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
   const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
   const manualById = useMemo(() => new Map(manualAssignees.map((m) => [m.id, m])), [manualAssignees]);
 
@@ -71,6 +87,7 @@ export function JobDetailModal({
     if (job?.id) {
       setTab("geral");
       setConfirmDelete(false);
+      setEditing(false);
     }
   }, [job?.id]);
 
@@ -107,190 +124,242 @@ export function JobDetailModal({
         ? "—"
         : (videoManual?.name ?? videoMember?.name ?? single?.name ?? "—");
 
+  async function handleEditSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    setSaving(true);
+    try {
+      const res = await updateJob(job.id, fd);
+      if (!res.ok) {
+        toast.error(res.error);
+        return;
+      }
+      toast.success("Job atualizado.");
+      setEditing(false);
+      router.refresh();
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <Modal
       open={open}
       onClose={onClose}
-      title="Detalhes do job"
+      title={editing ? "Editar job" : "Detalhes do job"}
       size="lg"
       className="max-h-[min(92vh,720px)] overflow-hidden"
     >
-      <div className="flex min-h-0 flex-1 flex-col gap-3">
-        <div
-          role="tablist"
-          aria-label="Seções dos detalhes"
-          className="-mx-1 flex shrink-0 flex-wrap gap-1 px-1"
-        >
-          {DETAIL_TABS.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              role="tab"
-              aria-selected={tab === t.id}
-              onClick={() => setTab(t.id)}
-              className={cn(
-                "rounded-ds-lg px-3 py-2.5 min-h-[44px] text-left text-xs font-medium transition sm:text-sm",
-                tab === t.id
-                  ? "bg-ds-cream text-ds-ink shadow-sm"
-                  : "text-ds-subtle hover:bg-ds-cream/60 hover:text-ds-ink"
-              )}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-
-        <div
-          role="tabpanel"
-          className="min-h-0 max-h-[min(42vh,320px)] overflow-y-auto overscroll-contain pr-1 sm:max-h-[min(50vh,380px)]"
-        >
-          {tab === "geral" ? (
-            <dl>
-              <DetailRow label="Nome">{job.name}</DetailRow>
-              <DetailRow label="Coluna">{job.kanban_stages?.name ?? "—"}</DetailRow>
-              <DetailRow label="Data job">{formatOptionalDate(job.job_date)}</DetailRow>
-              <DetailRow label="Cliente">
-                {job.contacts ? (
-                  <>
-                    {job.contacts.name}
-                    {job.contacts.email ? (
-                      <span className="mt-0.5 block text-xs text-ds-muted">{job.contacts.email}</span>
-                    ) : null}
-                  </>
-                ) : (
-                  "—"
+      {editing ? (
+        <NewJobForm
+          fieldIdPrefix={`job-edit-${job.id}`}
+          contacts={contacts}
+          stageOptions={stageOptions}
+          workTypeOptions={workTypeOptions}
+          memberOptions={memberOptions}
+          manualAssigneeOptions={manualAssigneeOptions}
+          useManualAssigneeDirectory={useManualAssigneeDirectory}
+          initialValues={{
+            name: job.name,
+            stage_id: job.stage_id,
+            job_date: job.job_date,
+            contact_id: job.contact_id,
+            work_type_id: job.work_type_id,
+            sd_card_tags: job.sd_card_tags ?? [],
+            notes: job.notes,
+            internal_deadline: job.internal_deadline,
+            deadline: job.deadline,
+            type: job.type,
+            delivery_link: job.delivery_link,
+            photo_editor_id: job.photo_editor_id,
+            video_editor_id: job.video_editor_id,
+            photo_manual_assignee_id: job.photo_manual_assignee_id,
+            video_manual_assignee_id: job.video_manual_assignee_id,
+          }}
+          submitLabel="Salvar alterações"
+          isPending={saving}
+          onCancel={() => setEditing(false)}
+          onSubmit={handleEditSubmit}
+        />
+      ) : (
+        <div className="flex min-h-0 flex-1 flex-col gap-3">
+          <div
+            role="tablist"
+            aria-label="Seções dos detalhes"
+            className="-mx-1 flex shrink-0 flex-wrap gap-1 px-1"
+          >
+            {DETAIL_TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                role="tab"
+                aria-selected={tab === t.id}
+                onClick={() => setTab(t.id)}
+                className={cn(
+                  "rounded-ds-lg px-3 py-2.5 min-h-[44px] text-left text-xs font-medium transition sm:text-sm",
+                  tab === t.id
+                    ? "bg-ds-cream text-ds-ink shadow-sm"
+                    : "text-ds-subtle hover:bg-ds-cream/60 hover:text-ds-ink"
                 )}
-              </DetailRow>
-              <DetailRow label="Tipo do job">{job.job_work_types?.name ?? "—"}</DetailRow>
-              <DetailRow label="Tipo de entrega">
-                <Badge kind="job-type" value={job.type} />
-              </DetailRow>
-              <DetailRow label="Cartão SD">
-                {(job.sd_card_tags ?? []).length > 0 ? (
-                  <span className="flex flex-wrap gap-1.5">
-                    {(job.sd_card_tags ?? []).map((t, i) => (
-                      <span
-                        key={`${i}-${t}`}
-                        className="rounded-md bg-ds-cream px-2 py-0.5 text-xs font-medium text-ds-ink"
-                      >
-                        {t}
-                      </span>
-                    ))}
-                  </span>
-                ) : (
-                  <span className="text-ds-muted">—</span>
-                )}
-              </DetailRow>
-              {job.job_kind === "video_edit" && parentJob ? (
-                <DetailRow label="Job principal">{parentJob.name}</DetailRow>
-              ) : null}
-              {job.job_kind === "standard" && videoSidecar ? (
-                <DetailRow label="Card de vídeo">{videoSidecar.name}</DetailRow>
-              ) : null}
-            </dl>
-          ) : null}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
 
-          {tab === "prazos" ? (
-            <dl>
-              <DetailRow label="Prazo interno">{formatOptionalDate(job.internal_deadline)}</DetailRow>
-              <DetailRow label="Prazo final">{formatOptionalDate(job.deadline)}</DetailRow>
-            </dl>
-          ) : null}
+          <div
+            role="tabpanel"
+            className="min-h-0 max-h-[min(42vh,320px)] overflow-y-auto overscroll-contain pr-1 sm:max-h-[min(50vh,380px)]"
+          >
+            {tab === "geral" ? (
+              <dl>
+                <DetailRow label="Nome">{job.name}</DetailRow>
+                <DetailRow label="Coluna">{job.kanban_stages?.name ?? "—"}</DetailRow>
+                <DetailRow label="Data job">{formatOptionalDate(job.job_date)}</DetailRow>
+                <DetailRow label="Cliente">
+                  {job.contacts ? (
+                    <>
+                      {job.contacts.name}
+                      {job.contacts.email ? (
+                        <span className="mt-0.5 block text-xs text-ds-muted">{job.contacts.email}</span>
+                      ) : null}
+                    </>
+                  ) : (
+                    "—"
+                  )}
+                </DetailRow>
+                <DetailRow label="Tipo do job">{job.job_work_types?.name ?? "—"}</DetailRow>
+                <DetailRow label="Tipo de entrega">
+                  <Badge kind="job-type" value={job.type} />
+                </DetailRow>
+                <DetailRow label="Cartão SD">
+                  {(job.sd_card_tags ?? []).length > 0 ? (
+                    <span className="flex flex-wrap gap-1.5">
+                      {(job.sd_card_tags ?? []).map((t, i) => (
+                        <span
+                          key={`${i}-${t}`}
+                          className="rounded-md bg-ds-cream px-2 py-0.5 text-xs font-medium text-ds-ink"
+                        >
+                          {t}
+                        </span>
+                      ))}
+                    </span>
+                  ) : (
+                    <span className="text-ds-muted">—</span>
+                  )}
+                </DetailRow>
+                {job.job_kind === "video_edit" && parentJob ? (
+                  <DetailRow label="Job principal">{parentJob.name}</DetailRow>
+                ) : null}
+                {job.job_kind === "standard" && videoSidecar ? (
+                  <DetailRow label="Card de vídeo">{videoSidecar.name}</DetailRow>
+                ) : null}
+              </dl>
+            ) : null}
 
-          {tab === "equipe" ? (
-            <dl>
-              <DetailRow label="Responsável (foto)">{photoLine}</DetailRow>
-              <DetailRow label="Responsável (vídeo)">{videoLine}</DetailRow>
-            </dl>
-          ) : null}
+            {tab === "prazos" ? (
+              <dl>
+                <DetailRow label="Prazo interno">{formatOptionalDate(job.internal_deadline)}</DetailRow>
+                <DetailRow label="Prazo final">{formatOptionalDate(job.deadline)}</DetailRow>
+              </dl>
+            ) : null}
 
-          {tab === "extras" ? (
-            <dl>
-              <DetailRow label="Alteração cliente">{job.client_revision ?? 0}</DetailRow>
-              <DetailRow label="Observações">
-                {job.notes?.trim() ? (
-                  <span className="whitespace-pre-wrap">{job.notes}</span>
-                ) : (
-                  <span className="text-ds-muted">—</span>
-                )}
-              </DetailRow>
-              <DetailRow label="Link entrega">
-                {job.delivery_link ? (
-                  <a
-                    href={job.delivery_link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-ds-accent hover:underline"
+            {tab === "equipe" ? (
+              <dl>
+                <DetailRow label="Responsável (foto)">{photoLine}</DetailRow>
+                <DetailRow label="Responsável (vídeo)">{videoLine}</DetailRow>
+              </dl>
+            ) : null}
+
+            {tab === "extras" ? (
+              <dl>
+                <DetailRow label="Alteração cliente">{job.client_revision ?? 0}</DetailRow>
+                <DetailRow label="Observações">
+                  {job.notes?.trim() ? (
+                    <span className="whitespace-pre-wrap">{job.notes}</span>
+                  ) : (
+                    <span className="text-ds-muted">—</span>
+                  )}
+                </DetailRow>
+                <DetailRow label="Link entrega">
+                  {job.delivery_link ? (
+                    <a
+                      href={job.delivery_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-ds-accent hover:underline"
+                    >
+                      Abrir link
+                      <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+                    </a>
+                  ) : (
+                    <span className="text-ds-muted">—</span>
+                  )}
+                </DetailRow>
+              </dl>
+            ) : null}
+          </div>
+
+          <div className="shrink-0 border-t border-app-border pt-3">
+            {confirmDelete ? (
+              <div className="flex flex-col gap-2 rounded-lg border border-red-200 bg-red-50 p-3">
+                <p className="text-xs font-medium text-red-800">
+                  Excluir <strong>{job.name}</strong>? Esta ação não pode ser desfeita.
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    disabled={deleting}
+                    onClick={async () => {
+                      setDeleting(true);
+                      const res = await deleteJob(job.id);
+                      setDeleting(false);
+                      if (!res.ok) {
+                        toast.error(res.error);
+                        setConfirmDelete(false);
+                        return;
+                      }
+                      toast.success("Job excluído.");
+                      onClose();
+                      router.refresh();
+                    }}
+                    className="rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-60"
                   >
-                    Abrir link
-                    <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-                  </a>
-                ) : (
-                  <span className="text-ds-muted">—</span>
-                )}
-              </DetailRow>
-            </dl>
-          ) : null}
-        </div>
-
-        <div className="shrink-0 border-t border-app-border pt-3">
-          {confirmDelete ? (
-            <div className="flex flex-col gap-2 rounded-lg border border-red-200 bg-red-50 p-3">
-              <p className="text-xs font-medium text-red-800">
-                Excluir <strong>{job.name}</strong>? Esta ação não pode ser desfeita.
-              </p>
-              <div className="flex gap-2">
+                    {deleting ? "Excluindo…" : "Confirmar exclusão"}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={deleting}
+                    onClick={() => setConfirmDelete(false)}
+                    className="rounded-md border border-app-border px-3 py-1.5 text-xs font-medium text-ds-ink hover:bg-ds-cream disabled:opacity-60"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between gap-3">
                 <button
                   type="button"
-                  disabled={deleting}
-                  onClick={async () => {
-                    setDeleting(true);
-                    const res = await deleteJob(job.id);
-                    setDeleting(false);
-                    if (!res.ok) {
-                      toast.error(res.error);
-                      setConfirmDelete(false);
-                      return;
-                    }
-                    toast.success("Job excluído.");
-                    onClose();
-                    router.refresh();
-                  }}
-                  className="rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-60"
+                  onClick={() => setEditing(true)}
+                  className="flex shrink-0 items-center gap-1.5 rounded-md border border-app-border px-2.5 py-1.5 text-xs font-medium text-ds-ink hover:bg-ds-cream"
                 >
-                  {deleting ? "Excluindo…" : "Confirmar exclusão"}
+                  <Pencil className="h-3.5 w-3.5" aria-hidden />
+                  Editar
                 </button>
                 <button
                   type="button"
-                  disabled={deleting}
-                  onClick={() => setConfirmDelete(false)}
-                  className="rounded-md border border-app-border px-3 py-1.5 text-xs font-medium text-ds-ink hover:bg-ds-cream disabled:opacity-60"
+                  onClick={() => setConfirmDelete(true)}
+                  className="flex shrink-0 items-center gap-1.5 rounded-md border border-red-200 px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 hover:border-red-300"
                 >
-                  Cancelar
+                  <Trash2 className="h-3.5 w-3.5" aria-hidden />
+                  Excluir
                 </button>
               </div>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-xs text-ds-muted">
-                Para editar dados ou mover etapa, use o{" "}
-                <Link href="/dashboard" className="font-medium text-ds-accent hover:underline">
-                  Dashboard
-                </Link>
-                .
-              </p>
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(true)}
-                className="flex shrink-0 items-center gap-1.5 rounded-md border border-red-200 px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 hover:border-red-300"
-              >
-                <Trash2 className="h-3.5 w-3.5" aria-hidden />
-                Excluir
-              </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </Modal>
   );
 }

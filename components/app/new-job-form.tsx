@@ -29,6 +29,24 @@ function todayYmd(): string {
 
 type NewJobTab = "info" | "prazos";
 
+export type InitialJobValues = {
+  name?: string | null;
+  stage_id?: string | null;
+  job_date?: string | null;
+  contact_id?: string | null;
+  work_type_id?: string | null;
+  sd_card_tags?: string[];
+  notes?: string | null;
+  internal_deadline?: string | null;
+  deadline?: string | null;
+  type?: JobRow["type"] | null;
+  delivery_link?: string | null;
+  photo_editor_id?: string | null;
+  video_editor_id?: string | null;
+  photo_manual_assignee_id?: string | null;
+  video_manual_assignee_id?: string | null;
+};
+
 export type NewJobFormProps = {
   /** Prefixo único para ids (ex.: `job-create` ou `board-job-create`). */
   fieldIdPrefix: string;
@@ -40,6 +58,10 @@ export type NewJobFormProps = {
   manualAssigneeOptions?: SelectOption[];
   /** Quando true, usa `manualAssigneeOptions` em vez de membros da equipe para foto/vídeo. */
   useManualAssigneeDirectory?: boolean;
+  /** Valores iniciais para pré-preencher o formulário (modo edição). */
+  initialValues?: InitialJobValues;
+  /** Rótulo do botão de envio. Padrão: "Salvar". */
+  submitLabel?: string;
   isPending: boolean;
   onCancel: () => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
@@ -53,12 +75,16 @@ export function NewJobForm({
   memberOptions,
   manualAssigneeOptions = [],
   useManualAssigneeDirectory = false,
+  initialValues,
+  submitLabel = "Salvar",
   isPending,
   onCancel,
   onSubmit,
 }: NewJobFormProps) {
   const [tab, setTab] = useState<NewJobTab>("info");
-  const [deliveryType, setDeliveryType] = useState<JobRow["type"]>("foto");
+  const [deliveryType, setDeliveryType] = useState<JobRow["type"]>(
+    initialValues?.type ?? "foto"
+  );
 
   /** Valores iniciais fixos por montagem do formulário (datas independentes entre si). */
   const initialYmd = useMemo(() => todayYmd(), []);
@@ -119,19 +145,30 @@ export function NewJobForm({
           required
           placeholder="Selecione a etapa"
           options={stageOptions}
+          defaultValue={initialValues?.stage_id ?? ""}
         />
         <Input
           id={`${fieldIdPrefix}-job-date`}
           name="job_date"
           type="date"
           label="Data do trabalho"
-          defaultValue={initialYmd}
+          defaultValue={initialValues?.job_date?.slice(0, 10) ?? initialYmd}
         />
         <p className="-mt-2 text-xs text-ds-muted">
           Data em que ocorreu a sessão de fotos ou a gravação (referência do serviço).
         </p>
-        <Input id={`${fieldIdPrefix}-name`} name="name" label="Nome do Job" required />
-        <ContactSearchField id={`${fieldIdPrefix}-contact`} contacts={contacts} />
+        <Input
+          id={`${fieldIdPrefix}-name`}
+          name="name"
+          label="Nome do Job"
+          required
+          defaultValue={initialValues?.name ?? ""}
+        />
+        <ContactSearchField
+          id={`${fieldIdPrefix}-contact`}
+          contacts={contacts}
+          defaultContactId={initialValues?.contact_id ?? null}
+        />
         <Select
           id={`${fieldIdPrefix}-work-type`}
           name="work_type_id"
@@ -140,6 +177,7 @@ export function NewJobForm({
           placeholder={workTypeOptions.length ? "Selecione" : "Cadastre tipos em Configurações"}
           options={workTypeOptions}
           disabled={workTypeOptions.length === 0}
+          defaultValue={initialValues?.work_type_id ?? ""}
         />
         {workTypeOptions.length === 0 ? (
           <p className="text-xs text-amber-800">
@@ -150,6 +188,7 @@ export function NewJobForm({
           id={`${fieldIdPrefix}-sd-card-tags`}
           label="Cartão SD"
           hint="Opcional. Texto livre (ex.: 001). Enter adiciona; vírgula ou ponto e vírgula separam vários de uma vez."
+          initialTags={initialValues?.sd_card_tags}
         />
         <Textarea
           id={`${fieldIdPrefix}-notes`}
@@ -157,6 +196,7 @@ export function NewJobForm({
           label="Observações"
           placeholder="Opcional"
           rows={3}
+          defaultValue={initialValues?.notes ?? ""}
         />
       </div>
 
@@ -171,7 +211,7 @@ export function NewJobForm({
           type="date"
           label="Prazo interno"
           required
-          defaultValue={initialYmd}
+          defaultValue={initialValues?.internal_deadline?.slice(0, 10) ?? initialYmd}
         />
         <p className="-mt-2 text-xs text-ds-muted">Prazo para a equipe concluir o material.</p>
         <Input
@@ -180,7 +220,7 @@ export function NewJobForm({
           type="date"
           label="Prazo final"
           required
-          defaultValue={initialYmd}
+          defaultValue={initialValues?.deadline?.slice(0, 10) ?? initialYmd}
         />
         <p className="-mt-2 text-xs text-ds-muted">Prazo para entrega ao cliente.</p>
         <Select
@@ -191,6 +231,14 @@ export function NewJobForm({
           value={deliveryType}
           onChange={(e) => setDeliveryType(e.target.value as JobRow["type"])}
           options={JOB_DELIVERY_OPTIONS}
+        />
+        <Input
+          id={`${fieldIdPrefix}-delivery-link`}
+          name="delivery_link"
+          type="text"
+          label="Link de entrega"
+          placeholder="https://… (opcional)"
+          defaultValue={initialValues?.delivery_link ?? ""}
         />
 
         {showManualDirectory ? (
@@ -206,7 +254,8 @@ export function NewJobForm({
                   required={manualAssigneeOptions.length > 1}
                   placeholder={manualAssigneeOptions.length > 1 ? "Selecione" : undefined}
                   defaultValue={
-                    manualAssigneeOptions.length === 1 ? manualAssigneeOptions[0]!.value : ""
+                    initialValues?.photo_manual_assignee_id ??
+                    (manualAssigneeOptions.length === 1 ? manualAssigneeOptions[0]!.value : "")
                   }
                   options={manualAssigneeOptions}
                 />
@@ -217,7 +266,8 @@ export function NewJobForm({
                   required={manualAssigneeOptions.length > 1}
                   placeholder={manualAssigneeOptions.length > 1 ? "Selecione" : undefined}
                   defaultValue={
-                    manualAssigneeOptions.length === 1 ? manualAssigneeOptions[0]!.value : ""
+                    initialValues?.video_manual_assignee_id ??
+                    (manualAssigneeOptions.length === 1 ? manualAssigneeOptions[0]!.value : "")
                   }
                   options={manualAssigneeOptions}
                 />
@@ -232,7 +282,11 @@ export function NewJobForm({
                 required={manualAssigneeOptions.length > 1}
                 placeholder={manualAssigneeOptions.length > 1 ? "Selecione" : undefined}
                 defaultValue={
-                  manualAssigneeOptions.length === 1 ? manualAssigneeOptions[0]!.value : ""
+                  deliveryType === "video"
+                    ? (initialValues?.video_manual_assignee_id ??
+                        (manualAssigneeOptions.length === 1 ? manualAssigneeOptions[0]!.value : ""))
+                    : (initialValues?.photo_manual_assignee_id ??
+                        (manualAssigneeOptions.length === 1 ? manualAssigneeOptions[0]!.value : ""))
                 }
                 options={manualAssigneeOptions}
               />
@@ -270,7 +324,10 @@ export function NewJobForm({
               label="Responsável pela foto"
               required={memberOptions.length > 1}
               placeholder={memberOptions.length > 1 ? "Selecione" : undefined}
-              defaultValue={memberOptions.length === 1 ? memberOptions[0]!.value : ""}
+              defaultValue={
+                initialValues?.photo_editor_id ??
+                (memberOptions.length === 1 ? memberOptions[0]!.value : "")
+              }
               options={memberOptions}
             />
             <Select
@@ -279,7 +336,10 @@ export function NewJobForm({
               label="Responsável pelo vídeo"
               required={memberOptions.length > 1}
               placeholder={memberOptions.length > 1 ? "Selecione" : undefined}
-              defaultValue={memberOptions.length === 1 ? memberOptions[0]!.value : ""}
+              defaultValue={
+                initialValues?.video_editor_id ??
+                (memberOptions.length === 1 ? memberOptions[0]!.value : "")
+              }
               options={memberOptions}
             />
           </div>
@@ -290,7 +350,13 @@ export function NewJobForm({
             label="Responsável"
             required={memberOptions.length > 1}
             placeholder={memberOptions.length > 1 ? "Selecione" : undefined}
-            defaultValue={memberOptions.length === 1 ? memberOptions[0]!.value : ""}
+            defaultValue={
+              deliveryType === "video"
+                ? (initialValues?.video_editor_id ??
+                    (memberOptions.length === 1 ? memberOptions[0]!.value : ""))
+                : (initialValues?.photo_editor_id ??
+                    (memberOptions.length === 1 ? memberOptions[0]!.value : ""))
+            }
             options={memberOptions}
           />
         )}
@@ -311,7 +377,7 @@ export function NewJobForm({
           Cancelar
         </Button>
         <Button type="submit" disabled={isPending || workTypeOptions.length === 0}>
-          {isPending ? "Salvando…" : "Salvar"}
+          {isPending ? "Salvando…" : submitLabel}
         </Button>
       </div>
     </form>
