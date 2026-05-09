@@ -1,23 +1,12 @@
 "use client";
 
-import { MoreHorizontal, Plus, Search, Trash2 } from "lucide-react";
-import Link from "next/link";
-import { useMemo, useState } from "react";
+import { Plus, Search } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { deleteNote } from "./actions";
-import { Button } from "@/components/ui/button";
+import { InlineNoteEditor } from "./inline-note-editor";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Modal } from "@/components/ui/modal";
-import { toast } from "@/lib/toast";
-import {
-  categoryPillClass,
-  isNotePriority,
-  notePriorityLabel,
-  notePriorityPillClass,
-  snippetFromHtml,
-  type NotePriority,
-} from "@/lib/notes/note-utils";
+import { categoryPillClass, formatNoteDate, snippetFromHtml } from "@/lib/notes/note-utils";
 import { cn } from "@/lib/utils";
 import type { Database } from "@/types/database";
 
@@ -40,6 +29,8 @@ export type NoteWithRelations = NoteRow & {
 
 interface NotesViewProps {
   notes: NoteWithRelations[];
+  contacts: ContactOption[];
+  jobs: JobOption[];
 }
 
 function normalizeOne<T>(value: T | T[] | null | undefined): T | null {
@@ -47,331 +38,264 @@ function normalizeOne<T>(value: T | T[] | null | undefined): T | null {
   return Array.isArray(value) ? value[0] ?? null : value;
 }
 
-export function NotesView({ notes }: NotesViewProps) {
+type PanelMode = "idle" | "create" | "edit";
+
+export function NotesView({ notes, contacts, jobs }: NotesViewProps) {
   const router = useRouter();
-
   const [query, setQuery] = useState("");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
-  const [deleteNoteRow, setDeleteNoteRow] = useState<NoteWithRelations | null>(null);
-  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isPending, setIsPending] = useState(false);
+  const [panelMode, setPanelMode] = useState<PanelMode>("idle");
+  const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
+  const [pendingNoteId, setPendingNoteId] = useState<string | null>(null);
 
-  function refresh() {
-    router.refresh();
-  }
+  const isOpen = panelMode !== "idle";
+
+  const selectedNote = useMemo(
+    () => (selectedNoteId ? (notes.find((n) => n.id === selectedNoteId) ?? null) : null),
+    [notes, selectedNoteId]
+  );
+
+  // After creating a note, switch to edit mode once it appears in the refreshed list
+  useEffect(() => {
+    if (!pendingNoteId) return;
+    const found = notes.find((n) => n.id === pendingNoteId);
+    if (found) {
+      setSelectedNoteId(found.id);
+      setPanelMode("edit");
+      setPendingNoteId(null);
+    }
+  }, [notes, pendingNoteId]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const fromMs = dateFrom ? Date.parse(`${dateFrom}T00:00:00`) : null;
-    const toMs = dateTo ? Date.parse(`${dateTo}T23:59:59`) : null;
+    if (!q) return notes;
+    return notes.filter((n) => {
+      const contact = normalizeOne(n.contacts);
+      const job = normalizeOne(n.jobs);
+      const cats = (n.categories ?? []).map((c) => c.toLowerCase());
+      return (
+        (contact?.name?.toLowerCase() ?? "").includes(q) ||
+        (contact?.email?.toLowerCase() ?? "").includes(q) ||
+        (job?.name?.toLowerCase() ?? "").includes(q) ||
+        (n.title ?? "").toLowerCase().includes(q) ||
+        snippetFromHtml(n.content ?? "", 2000).toLowerCase().includes(q) ||
+        cats.some((c) => c.includes(q))
+      );
+    });
+  }, [notes, query]);
 
-    return notes
-      .filter((n) => {
-        if (!q) return true;
-        const contact = normalizeOne(n.contacts);
-        const job = normalizeOne(n.jobs);
-        const contactName = contact?.name?.toLowerCase() ?? "";
-        const contactEmail = contact?.email?.toLowerCase() ?? "";
-        const jobName = job?.name?.toLowerCase() ?? "";
-        const title = (n.title ?? "").toLowerCase();
-        const bodyText = snippetFromHtml(n.content ?? "", 2000).toLowerCase();
-        const cats = (n.categories ?? []).map((c) => c.toLowerCase());
-        const catMatch = cats.some((c) => c.includes(q));
-        return (
-          contactName.includes(q) ||
-          contactEmail.includes(q) ||
-          jobName.includes(q) ||
-          title.includes(q) ||
-          bodyText.includes(q) ||
-          catMatch
-        );
-      })
-      .filter((n) => {
-        if (!fromMs && !toMs) return true;
-        const dt = Date.parse(n.created_at);
-        if (!Number.isFinite(dt)) return true;
-        if (fromMs && dt < fromMs) return false;
-        if (toMs && dt > toMs) return false;
-        return true;
-      });
-  }, [dateFrom, dateTo, notes, query]);
-
-  async function handleDelete() {
-    if (!deleteNoteRow) return;
-    setErrorMessage(null);
-    setIsPending(true);
-    try {
-      const res = await deleteNote(deleteNoteRow.id);
-      if (!res.ok) {
-        setErrorMessage(res.error);
-        return;
-      }
-      toast.success("Nota excluída.");
-      setDeleteNoteRow(null);
-      refresh();
-    } finally {
-      setIsPending(false);
-    }
+  function handleSelectNote(n: NoteWithRelations) {
+    setSelectedNoteId(n.id);
+    setPanelMode("edit");
   }
 
+  function handleNewNote() {
+    setSelectedNoteId(null);
+    setPanelMode("create");
+  }
+
+  function handleSaved(noteId: string) {
+    if (panelMode === "create") {
+      setPendingNoteId(noteId);
+    }
+    router.refresh();
+  }
+
+  function handleDeleted() {
+    setSelectedNoteId(null);
+    setPanelMode("idle");
+    router.refresh();
+  }
+
+  const editorKey = panelMode === "create" ? "create" : selectedNoteId ?? "idle";
+
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold text-ds-ink">Anotações</h1>
-        <Link
-          id="btn-nova-nota"
-          href="/notes/new"
+    <div
+      className={cn(
+        isOpen
+          ? "flex h-[calc(100dvh-7rem)] overflow-hidden rounded-ds-xl border border-ds-border bg-ds-surface shadow-ds-card"
+          : "flex flex-col gap-6"
+      )}
+    >
+      {/* ── Left column / full grid ──────────────────────────── */}
+      <div
+        className={cn(
+          isOpen
+            ? "flex w-[260px] shrink-0 flex-col overflow-hidden border-r border-ds-border"
+            : "flex flex-col gap-6"
+        )}
+      >
+        {/* Header */}
+        <div
           className={cn(
-            "inline-flex h-10 w-full items-center justify-center gap-2 rounded-ds-xl px-4 text-sm font-medium transition-colors duration-ds ease-out sm:w-auto",
-            "bg-app-primary text-white shadow-sm hover:brightness-95",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/35 focus-visible:ring-offset-2 focus-visible:ring-offset-app-canvas"
+            "flex items-center justify-between gap-3",
+            isOpen && "shrink-0 border-b border-ds-border px-4 py-3"
           )}
         >
-          <Plus className="h-4 w-4" aria-hidden />
-          Nova nota
-        </Link>
-      </div>
-
-      {errorMessage ? (
-        <div
-          role="alert"
-          className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-800"
-        >
-          {errorMessage}
-        </div>
-      ) : null}
-
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-        <div className="relative w-full max-w-md">
-          <Search
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ds-subtle"
-            aria-hidden
-          />
-          <input
-            id="notes-filter-query"
-            name="notes_filter_query"
-            type="search"
-            placeholder="Buscar por cliente, título, categoria…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="w-full rounded-ds-xl border border-app-border bg-app-sidebar py-2.5 pl-10 pr-3 text-sm text-ds-ink shadow-sm placeholder:text-ds-subtle focus:border-app-primary/50 focus:outline-none focus:ring-2 focus:ring-app-primary/20"
-            aria-label="Buscar anotações"
-          />
-        </div>
-
-        <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
-          <label htmlFor="notes-filter-date-from" className="flex flex-col gap-1 text-sm text-ds-muted">
-            Data de
-            <input
-              id="notes-filter-date-from"
-              name="notes_filter_date_from"
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-              className="rounded-ds-xl border border-app-border bg-app-sidebar px-3 py-2 text-sm text-ds-ink shadow-sm focus:border-app-primary/50 focus:outline-none focus:ring-2 focus:ring-app-primary/20"
-            />
-          </label>
-          <label htmlFor="notes-filter-date-to" className="flex flex-col gap-1 text-sm text-ds-muted">
-            Data até
-            <input
-              id="notes-filter-date-to"
-              name="notes_filter_date_to"
-              type="date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-              className="rounded-ds-xl border border-app-border bg-app-sidebar px-3 py-2 text-sm text-ds-ink shadow-sm focus:border-app-primary/50 focus:outline-none focus:ring-2 focus:ring-app-primary/20"
-            />
-          </label>
-        </div>
-      </div>
-
-      {notes.length === 0 ? (
-        <EmptyState
-          title="Nenhuma anotação ainda"
-          description="Crie notas para registrar reuniões e detalhes importantes de clientes e jobs."
-        >
-          <Link
-            href="/notes/new"
+          <h1 className={cn("font-bold text-ds-ink", isOpen ? "text-sm" : "text-2xl")}>
+            Anotações
+          </h1>
+          <button
+            type="button"
+            onClick={handleNewNote}
             className={cn(
-              "inline-flex h-10 items-center justify-center gap-2 rounded-ds-xl px-4 text-sm font-medium transition-colors duration-ds ease-out",
+              "inline-flex shrink-0 items-center justify-center gap-1.5 rounded-ds-xl font-medium transition-colors ease-out",
               "bg-app-primary text-white shadow-sm hover:brightness-95",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/35 focus-visible:ring-offset-2 focus-visible:ring-offset-app-canvas"
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/35",
+              isOpen ? "h-8 px-2.5 text-xs" : "h-10 w-full px-4 text-sm sm:w-auto"
             )}
           >
             <Plus className="h-4 w-4" aria-hidden />
-            Nova nota
-          </Link>
-        </EmptyState>
-      ) : filtered.length === 0 ? (
-        <p className="text-sm text-ds-muted">Nenhuma anotação encontrada para “{query.trim()}”.</p>
-      ) : (
-        <ul className="grid grid-cols-2 gap-2 overflow-visible sm:grid-cols-3 sm:gap-3 md:grid-cols-4 lg:grid-cols-5">
-          {filtered.map((n) => {
-            const contact = normalizeOne(n.contacts);
-            const job = normalizeOne(n.jobs);
-            const cats = Array.isArray(n.categories) ? n.categories : [];
-            const prRaw = n.priority ?? "none";
-            const pr: NotePriority = isNotePriority(prRaw) ? prRaw : "none";
-            const dateLabel = new Date(n.created_at).toLocaleDateString("pt-BR", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            });
-            const titleLine = (n.title ?? "").trim() || "Sem título";
-            const snippet = snippetFromHtml(n.content ?? "", 72);
+            {!isOpen && "Nova nota"}
+          </button>
+        </div>
 
-            return (
-              <li key={n.id} className="min-w-0 overflow-visible">
-                <div
-                  className={cn(
-                    "relative min-h-0 overflow-visible rounded-xl border border-app-border bg-app-sidebar shadow-ds-sm",
-                    "transition duration-ds ease-out hover:border-app-primary/35 hover:shadow-ds-card"
-                  )}
-                >
-                  {/* Camada de clique para abrir a nota — fica atrás do conteúdo */}
-                  <Link
-                    href={`/notes/${n.id}`}
+        {/* Search */}
+        <div className={cn(isOpen ? "shrink-0 border-b border-ds-border p-2" : "max-w-md")}>
+          <div className="relative">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ds-subtle"
+              aria-hidden
+            />
+            <input
+              type="search"
+              placeholder={isOpen ? "Buscar…" : "Buscar por cliente, título, categoria…"}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="w-full rounded-ds-xl border border-app-border bg-ds-cream/60 py-2 pl-9 pr-3 text-sm text-ds-ink shadow-sm placeholder:text-ds-subtle focus:border-app-primary/50 focus:outline-none focus:ring-2 focus:ring-app-primary/20"
+              aria-label="Buscar anotações"
+            />
+          </div>
+        </div>
+
+        {/* Cards */}
+        {notes.length === 0 ? (
+          <EmptyState
+            title="Nenhuma anotação ainda"
+            description="Crie notas para registrar reuniões e detalhes importantes de clientes e jobs."
+          >
+            <button
+              type="button"
+              onClick={handleNewNote}
+              className="inline-flex h-10 items-center gap-2 rounded-ds-xl bg-app-primary px-4 text-sm font-medium text-white shadow-sm transition-colors hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/35"
+            >
+              <Plus className="h-4 w-4" aria-hidden />
+              Nova nota
+            </button>
+          </EmptyState>
+        ) : filtered.length === 0 ? (
+          <p className={cn("text-sm text-ds-muted", isOpen ? "px-4 py-3" : "")}>
+            Nenhuma anotação encontrada.
+          </p>
+        ) : isOpen ? (
+          /* ── Column view ─────────────────────────────────────── */
+          <ul className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-2">
+            {filtered.map((n) => {
+              const cats = Array.isArray(n.categories) ? n.categories : [];
+              const titleLine = (n.title ?? "").trim() || "Sem título";
+              const snippet = snippetFromHtml(n.content ?? "", 60);
+              const dateLabel = formatNoteDate(n.updated_at ?? n.created_at);
+              const isActive = selectedNoteId === n.id;
+              return (
+                <li key={n.id}>
+                  <button
+                    type="button"
                     className={cn(
-                      "absolute inset-0 z-0 rounded-xl",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/25 focus-visible:ring-offset-2 focus-visible:ring-offset-app-canvas"
+                      "w-full rounded-ds-xl border px-3 py-2.5 text-left transition-all duration-150",
+                      isActive
+                        ? "border-ds-accent/40 bg-ds-accent/5"
+                        : "border-transparent hover:border-ds-border hover:bg-ds-cream"
                     )}
-                    aria-label={`Abrir nota: ${titleLine}`}
-                  />
-                  <div className="relative z-[1] flex min-h-0 flex-col gap-1.5 p-3 pointer-events-none">
-                    <div className="flex shrink-0 items-start justify-between gap-1.5">
-                      <time className="text-[0.65rem] leading-tight text-ds-subtle" dateTime={n.created_at}>
-                        {dateLabel}
-                      </time>
-                      <div className="relative shrink-0 pointer-events-auto">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 bg-app-sidebar p-0 shadow-sm ring-1 ring-app-border hover:bg-ds-cream"
-                          aria-label="Menu da nota"
-                          aria-haspopup="menu"
-                          aria-expanded={menuOpenId === n.id}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setMenuOpenId((id) => (id === n.id ? null : n.id));
-                          }}
+                    onClick={() => handleSelectNote(n)}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      {cats[0] ? (
+                        <span
+                          className={cn(
+                            "max-w-[55%] truncate rounded-full px-2 py-0.5 text-[0.55rem] font-semibold uppercase tracking-wide",
+                            categoryPillClass(cats[0], 0)
+                          )}
                         >
-                          <MoreHorizontal className="h-3.5 w-3.5" aria-hidden />
-                        </Button>
-                        {menuOpenId === n.id ? (
-                          <>
-                            <button
-                              type="button"
-                              className="fixed inset-0 z-[200] cursor-default bg-transparent"
-                              aria-label="Fechar menu"
-                              onClick={() => setMenuOpenId(null)}
-                            />
-                            <div
-                              className="absolute right-0 top-full z-[210] mt-1 min-w-[10rem] rounded-ds-xl border border-app-border bg-app-sidebar py-1 shadow-ds-md"
-                              role="menu"
-                            >
-                              <Link
-                                href={`/notes/${n.id}`}
-                                className="block px-3 py-2 text-sm text-ds-ink hover:bg-ds-cream"
-                                role="menuitem"
-                                onClick={() => setMenuOpenId(null)}
-                              >
-                                Abrir / editar
-                              </Link>
-                              <button
-                                type="button"
-                                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-red-700 hover:bg-red-50"
-                                role="menuitem"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  setMenuOpenId(null);
-                                  setErrorMessage(null);
-                                  setDeleteNoteRow(n);
-                                }}
-                              >
-                                <Trash2 className="h-4 w-4 shrink-0" aria-hidden />
-                                Excluir
-                              </button>
-                            </div>
-                          </>
-                        ) : null}
-                      </div>
+                          {cats[0]}
+                        </span>
+                      ) : (
+                        <span />
+                      )}
+                      <time className="shrink-0 text-[0.6rem] text-ds-subtle">{dateLabel}</time>
                     </div>
-                    <h2 className="line-clamp-2 text-sm font-semibold leading-snug text-ds-ink">
+                    <p className="mt-1 line-clamp-1 text-xs font-semibold text-ds-ink">
                       {titleLine}
-                    </h2>
-                    <p className="line-clamp-2 text-xs leading-snug text-ds-muted">
+                    </p>
+                    <p className="mt-0.5 line-clamp-1 text-[0.7rem] text-ds-muted">
                       {snippet || "—"}
                     </p>
-                    <div className="flex shrink-0 flex-wrap items-center gap-1 pt-1">
-                      {pr !== "none" ? (
-                        <span
-                          className={cn(
-                            "rounded-md px-1.5 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wide",
-                            notePriorityPillClass(pr)
-                          )}
-                        >
-                          {notePriorityLabel(pr)}
-                        </span>
-                      ) : null}
-                      {cats.slice(0, 2).map((tag, i) => (
-                        <span
-                          key={`${n.id}-${tag}`}
-                          className={cn(
-                            "rounded-md px-1.5 py-0.5 text-[0.6rem] font-medium",
-                            categoryPillClass(tag, i)
-                          )}
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                      {cats.length > 2 ? (
-                        <span className="text-[0.6rem] text-ds-subtle">+{cats.length - 2}</span>
-                      ) : null}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          /* ── Grid view ───────────────────────────────────────── */
+          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+            {filtered.map((n) => {
+              const cats = Array.isArray(n.categories) ? n.categories : [];
+              const titleLine = (n.title ?? "").trim() || "Sem título";
+              const snippet = snippetFromHtml(n.content ?? "", 80);
+              const dateLabel = formatNoteDate(n.updated_at ?? n.created_at);
+              return (
+                <li key={n.id} className="min-w-0">
+                  <button
+                    type="button"
+                    className={cn(
+                      "flex min-h-[160px] w-full flex-col gap-2 rounded-ds-2xl border border-ds-border bg-ds-surface p-4 text-left shadow-ds-sm",
+                      "transition-all duration-150 ease-out hover:-translate-y-0.5 hover:border-ds-accent/25 hover:shadow-ds-card",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent/25"
+                    )}
+                    onClick={() => handleSelectNote(n)}
+                  >
+                    {cats[0] ? (
+                      <span
+                        className={cn(
+                          "self-start rounded-full px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wide",
+                          categoryPillClass(cats[0], 0)
+                        )}
+                      >
+                        {cats[0]}
+                      </span>
+                    ) : (
+                      <span className="h-5" />
+                    )}
+                    <div className="flex flex-1 flex-col gap-1">
+                      <h2 className="line-clamp-2 text-sm font-semibold leading-snug text-ds-ink">
+                        {titleLine}
+                      </h2>
+                      <p className="line-clamp-2 text-xs leading-snug text-ds-muted">
+                        {snippet || "—"}
+                      </p>
                     </div>
-                    <p className="truncate text-[0.65rem] leading-tight text-ds-subtle">
-                      {contact?.name ?? "Cliente"}
-                      {job ? ` · ${job.name}` : ""}
-                    </p>
-                  </div>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+                    <time className="text-[0.65rem] text-ds-subtle">{dateLabel}</time>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
 
-      <Modal
-        open={Boolean(deleteNoteRow)}
-        onClose={() => setDeleteNoteRow(null)}
-        title="Excluir nota"
-        size="sm"
-      >
-        {deleteNoteRow ? (
-          <div className="flex flex-col gap-4">
-            <p className="text-sm text-ds-muted">
-              Tem certeza que deseja excluir esta nota? Esta ação não pode ser desfeita.
-            </p>
-            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => setDeleteNoteRow(null)}
-                disabled={isPending}
-              >
-                Cancelar
-              </Button>
-              <Button type="button" variant="danger" onClick={handleDelete} disabled={isPending}>
-                {isPending ? "Excluindo…" : "Excluir"}
-              </Button>
-            </div>
-          </div>
-        ) : null}
-      </Modal>
+      {/* ── Right panel: inline editor ───────────────────────── */}
+      {isOpen && (
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <InlineNoteEditor
+            key={editorKey}
+            mode={panelMode === "create" ? "create" : "edit"}
+            note={panelMode === "edit" ? selectedNote : null}
+            contacts={contacts}
+            jobs={jobs}
+            onSaved={handleSaved}
+            onDeleted={handleDeleted}
+            onClose={() => setPanelMode("idle")}
+          />
+        </div>
+      )}
     </div>
   );
 }

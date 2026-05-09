@@ -83,3 +83,15 @@ export function normalizeNoteContentForEditor(raw: string): string {
   if (/<[a-z][\s\S]*>/i.test(raw)) return raw;
   return plainTextToEditorHtml(raw);
 }
+
+export function formatNoteDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  const now = new Date();
+  const todayMs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const dMs = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const timeStr = d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  if (dMs === todayMs) return `Hoje, ${timeStr}`;
+  if (dMs === todayMs - 86400000) return `Ontem, ${timeStr}`;
+  return `${d.toLocaleDateString("pt-BR", { day: "numeric", month: "short" })}, ${timeStr}`;
+}

@@ -22,12 +22,14 @@ export function NoteBodyEditor({
   editorKey,
   initialHtml,
   onHtmlChange,
+  className,
 }: {
   id: string;
   /** Muda ao trocar de nota — reaplica o HTML inicial sem depender de cada tecla. */
   editorKey: string;
   initialHtml: string;
   onHtmlChange: (html: string) => void;
+  className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const { isSupported, isRecording, interimText, errorMessage, start, stop } =
@@ -216,10 +218,11 @@ export function NoteBodyEditor({
           "min-h-[min(60vh,28rem)] w-full rounded-ds-xl border border-app-border bg-app-sidebar px-4 py-4 text-sm leading-relaxed text-ds-ink shadow-sm",
           "focus:outline-none focus:ring-2 focus:ring-app-primary/20",
           "[&_a]:text-ds-accent-ink [&_a]:underline",
-          /* Preflight do Tailwind remove list-style; sem isso ul/ol ficam “invisíveis”. */
+          // Preflight do Tailwind remove list-style; sem isso ul/ol ficam invisiveis.
           "[&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-7",
           "[&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-7",
-          "[&_li]:my-0.5"
+          "[&_li]:my-0.5",
+          className
         )}
         onInput={() => {
           if (ref.current) onHtmlChange(ref.current.innerHTML);

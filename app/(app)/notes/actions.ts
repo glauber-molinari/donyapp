@@ -172,6 +172,7 @@ export async function updateNote(noteId: string, formData: FormData): Promise<Ac
       content,
       categories,
       priority,
+      updated_at: new Date().toISOString(),
     })
     .eq("id", noteId)
     .eq("account_id", ctx.accountId);

@@ -3,7 +3,12 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 
-import { NotesView, type NoteWithRelations } from "./notes-view";
+import {
+  NotesView,
+  type ContactOption,
+  type JobOption,
+  type NoteWithRelations,
+} from "./notes-view";
 
 export const metadata: Metadata = {
   title: "Anotações",
@@ -19,16 +24,21 @@ export default async function NotesPage() {
     redirect("/login");
   }
 
-  const { data: notes, error: notesErr } = await supabase
-    .from("contact_notes")
-    .select(
-      `
-          *,
-          contacts ( id, name, email ),
-          jobs ( id, name, contact_id )
-        `
-    )
-    .order("created_at", { ascending: false });
+  const [
+    { data: notes, error: notesErr },
+    { data: contacts },
+    { data: jobs },
+  ] = await Promise.all([
+    supabase
+      .from("contact_notes")
+      .select(`*, contacts(id, name, email), jobs(id, name, contact_id)`)
+      .order("created_at", { ascending: false }),
+    supabase.from("contacts").select("id, name, email").order("name", { ascending: true }),
+    supabase
+      .from("jobs")
+      .select("id, name, contact_id")
+      .order("created_at", { ascending: false }),
+  ]);
 
   if (notesErr) {
     return (
@@ -41,6 +51,11 @@ export default async function NotesPage() {
     );
   }
 
-  return <NotesView notes={(notes ?? []) as NoteWithRelations[]} />;
+  return (
+    <NotesView
+      notes={(notes ?? []) as NoteWithRelations[]}
+      contacts={(contacts ?? []) as ContactOption[]}
+      jobs={(jobs ?? []) as JobOption[]}
+    />
+  );
 }
-
