@@ -124,12 +124,14 @@ export function JobDetailModal({
         ? "—"
         : (videoManual?.name ?? videoMember?.name ?? single?.name ?? "—");
 
+  const jobId = job.id;
+
   async function handleEditSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     setSaving(true);
     try {
-      const res = await updateJob(job.id, fd);
+      const res = await updateJob(jobId, fd);
       if (!res.ok) {
         toast.error(res.error);
         return;
