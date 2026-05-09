@@ -1448,7 +1448,7 @@ export function TasksView({ tasks }: { tasks: TaskWithAssignees[] }) {
           onDragCancel={handleDragCancel}
         >
           <div
-            className="w-full min-w-0 overflow-x-auto pb-4 pt-1 [scrollbar-width:thin] overscroll-x-contain touch-pan-x"
+            className="w-full min-w-0 overflow-x-auto px-2 pb-4 pt-1 [scrollbar-width:thin] overscroll-x-contain touch-pan-x"
             role="region"
             aria-label="Colunas do kanban"
           >
