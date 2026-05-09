@@ -21,6 +21,13 @@ export type JobKind = "standard" | "video_edit";
 export type Plan = "free" | "pro";
 export type TaskPriority = "baixa" | "media" | "alta";
 export type TaskStatus = "para_fazer" | "iniciado" | "feito";
+export type TaskType = "tarefa" | "sessao" | "edicao" | "revisao" | "entrega";
+
+export interface TaskSubtask {
+  id: string;
+  name: string;
+  done: boolean;
+}
 export type SubscriptionStatus = "active" | "trialing" | "past_due" | "canceled";
 
 export type FeedbackStatus = "pending" | "approved" | "rejected";
@@ -38,6 +45,10 @@ export interface Database {
           priority: TaskPriority;
           deadline: string;
           notes: string | null;
+          description: string | null;
+          type: TaskType;
+          start_date: string | null;
+          subtasks: TaskSubtask[];
           status: TaskStatus;
           position: number;
           created_at: string;
@@ -51,6 +62,10 @@ export interface Database {
           priority: TaskPriority;
           deadline: string;
           notes?: string | null;
+          description?: string | null;
+          type?: TaskType;
+          start_date?: string | null;
+          subtasks?: TaskSubtask[];
           status?: TaskStatus;
           position?: number;
           created_at?: string;
@@ -64,10 +79,80 @@ export interface Database {
           priority?: TaskPriority;
           deadline?: string;
           notes?: string | null;
+          description?: string | null;
+          type?: TaskType;
+          start_date?: string | null;
+          subtasks?: TaskSubtask[];
           status?: TaskStatus;
           position?: number;
           created_at?: string;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      task_assignees: {
+        Row: {
+          id: string;
+          task_id: string;
+          account_id: string;
+          name: string;
+          email: string;
+          user_id: string | null;
+          avatar_url: string | null;
+          invited_at: string;
+        };
+        Insert: {
+          id?: string;
+          task_id: string;
+          account_id: string;
+          name: string;
+          email: string;
+          user_id?: string | null;
+          avatar_url?: string | null;
+          invited_at?: string;
+        };
+        Update: {
+          id?: string;
+          task_id?: string;
+          account_id?: string;
+          name?: string;
+          email?: string;
+          user_id?: string | null;
+          avatar_url?: string | null;
+          invited_at?: string;
+        };
+        Relationships: [];
+      };
+      task_comments: {
+        Row: {
+          id: string;
+          task_id: string;
+          account_id: string;
+          user_id: string;
+          user_name: string;
+          user_avatar: string | null;
+          content: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          task_id: string;
+          account_id: string;
+          user_id: string;
+          user_name: string;
+          user_avatar?: string | null;
+          content: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          task_id?: string;
+          account_id?: string;
+          user_id?: string;
+          user_name?: string;
+          user_avatar?: string | null;
+          content?: string;
+          created_at?: string;
         };
         Relationships: [];
       };

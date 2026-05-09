@@ -13,6 +13,8 @@ export const metadata: Metadata = {
 };
 
 type TaskRow = Database["public"]["Tables"]["tasks"]["Row"];
+type TaskAssigneeRow = Database["public"]["Tables"]["task_assignees"]["Row"];
+type TaskWithAssignees = TaskRow & { task_assignees: TaskAssigneeRow[] };
 
 export default async function TasksPage() {
   const supabase = createClient();
@@ -165,14 +167,28 @@ export default async function TasksPage() {
     );
   }
 
-  const { data: tasks, error } = await supabase
+  // Try with task_assignees join (available after migration). Falls back gracefully if table
+  // doesn't exist yet so the page stays functional while the migration is pending.
+  const { data: tasksWithAssignees, error: joinError } = await supabase
+    .from("tasks")
+    .select("*, task_assignees(*)")
+    .eq("account_id", profile.account_id)
+    .order("status", { ascending: true })
+    .order("position", { ascending: true });
+
+  if (!joinError) {
+    return <TasksView tasks={(tasksWithAssignees ?? []) as unknown as TaskWithAssignees[]} />;
+  }
+
+  // Fallback: task_assignees table not yet created — load without join
+  const { data: tasksOnly, error: tasksError } = await supabase
     .from("tasks")
     .select("*")
     .eq("account_id", profile.account_id)
     .order("status", { ascending: true })
     .order("position", { ascending: true });
 
-  if (error) {
+  if (tasksError) {
     return (
       <div>
         <h1 className="text-2xl font-bold text-ds-ink">Tarefas</h1>
@@ -183,5 +199,14 @@ export default async function TasksPage() {
     );
   }
 
-  return <TasksView tasks={(tasks ?? []) as TaskRow[]} />;
+  const tasksNormalized = (tasksOnly ?? []).map((t) => ({
+    ...t,
+    description: (t as Record<string, unknown>).description as string | null ?? null,
+    type: ((t as Record<string, unknown>).type as string | null ?? "tarefa") as import("@/types/database").TaskType,
+    start_date: (t as Record<string, unknown>).start_date as string | null ?? null,
+    subtasks: ((t as Record<string, unknown>).subtasks as import("@/types/database").TaskSubtask[] | null) ?? [],
+    task_assignees: [] as TaskAssigneeRow[],
+  }));
+
+  return <TasksView tasks={tasksNormalized as TaskWithAssignees[]} />;
 }
