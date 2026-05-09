@@ -40,7 +40,6 @@ import {
   useEffect,
   useRef,
   useState,
-  useId,
 } from "react";
 import { useRouter } from "next/navigation";
 
@@ -150,12 +149,6 @@ const TYPE_CLASSES: Record<TaskType, string> = {
   edicao:  "bg-amber-50 text-amber-700 border-amber-200",
   revisao: "bg-orange-50 text-orange-700 border-orange-200",
   entrega: "bg-emerald-50 text-emerald-700 border-emerald-200",
-};
-
-const STATUS_LABELS: Record<TaskStatus, string> = {
-  para_fazer: "Para fazer",
-  iniciado:   "Em progresso",
-  feito:      "Feito",
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

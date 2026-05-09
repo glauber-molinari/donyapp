@@ -10,6 +10,7 @@ import {
   XCircle,
   Activity,
   RefreshCw,
+  Trophy,
 } from "lucide-react";
 
 import { fetchDeliveryMetrics, type DeliveryMetrics } from "./actions";
@@ -94,6 +95,37 @@ export function ReportsView() {
         />
       </div>
 
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <MetricCard
+          title="Tarefas Concluídas"
+          value={metrics.tasksSummary.done.toString()}
+          icon={CheckCircle2}
+          description="No status feito"
+          color="green"
+        />
+        <MetricCard
+          title="Tarefas em Aberto"
+          value={metrics.tasksSummary.open.toString()}
+          icon={Activity}
+          description="Para fazer ou iniciado"
+          color="orange"
+        />
+        <MetricCard
+          title="Média (tarefas)"
+          value={`${metrics.tasksSummary.averageDaysToComplete} dias`}
+          icon={Clock}
+          description="Tempo médio até concluir"
+          color="blue"
+        />
+        <MetricCard
+          title="Tarefas no prazo"
+          value={`${metrics.tasksSummary.percentDoneOnTime}%`}
+          icon={Calendar}
+          description="Considera tarefas concluídas"
+          color="purple"
+        />
+      </div>
+
       <div className="grid gap-4 md:grid-cols-2">
         <div className="rounded-lg border border-app-border bg-white p-6 shadow-sm">
           <div className="mb-4 flex items-center gap-2">
@@ -136,11 +168,74 @@ export function ReportsView() {
             <div className="h-3 w-full overflow-hidden rounded-full bg-gray-200">
               <div
                 className="h-full bg-green-600 transition-all"
-                style={{ width: `${metrics.percentOnTime}%` }}
+                style={{ inlineSize: `${metrics.percentOnTime}%` }}
               />
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="rounded-lg border border-app-border bg-white p-6 shadow-sm">
+        <div className="mb-4 flex items-center gap-2">
+          <Trophy className="h-5 w-5 text-ds-accent" />
+          <h2 className="text-lg font-semibold text-ds-ink">Top responsáveis (mais rápidos)</h2>
+        </div>
+
+        {metrics.topPerformers.length === 0 ? (
+          <div className="rounded-lg bg-gray-50 p-4 text-sm text-ds-muted">
+            Ainda não há dados suficientes para montar o ranking.
+            <br />
+            Assim que você finalizar algum <span className="font-medium text-ds-ink">job</span> ou marcar tarefas como{" "}
+            <span className="font-medium text-ds-ink">feito</span>, ele aparece aqui.
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-app-border text-left text-sm font-medium text-ds-muted">
+                    <th className="pb-2">Responsável</th>
+                    <th className="pb-2 text-center">Entregas</th>
+                    <th className="pb-2 text-center">Tarefas</th>
+                    <th className="pb-2 text-right">Média (dias)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {metrics.topPerformers.map((p, idx) => (
+                    <tr
+                      key={`${p.id}-${idx}`}
+                      className="border-b border-app-border/50 text-sm last:border-0"
+                    >
+                      <td className="py-3">
+                        <div className="flex items-center gap-3">
+                          {p.avatarUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={p.avatarUrl}
+                              alt=""
+                              className="h-8 w-8 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-ds-muted">
+                              {(p.name || "?").slice(0, 1).toUpperCase()}
+                            </div>
+                          )}
+                          <span className="font-medium text-ds-ink">{p.name}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 text-center text-ds-muted">{p.deliveries}</td>
+                      <td className="py-3 text-center text-ds-muted">{p.tasksDone}</td>
+                      <td className="py-3 text-right font-semibold text-ds-accent">{p.averageDays}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-3 text-xs text-ds-muted">
+              Média calculada por itens concluídos (entregas + tarefas). Se um job tiver foto e vídeo com responsáveis diferentes, conta para ambos.
+            </p>
+          </>
+        )}
       </div>
 
       {metrics.deliveriesByWorkType.length > 0 && (
