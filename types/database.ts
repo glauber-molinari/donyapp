@@ -7,6 +7,15 @@ export type Json =
   | Json[];
 
 export type UserRole = "admin" | "member";
+export type FormFieldType =
+  | "short_text"
+  | "long_text"
+  | "email"
+  | "phone"
+  | "number"
+  | "date"
+  | "multiple_choice"
+  | "checkbox";
 export type JobType = "foto" | "video" | "foto_video";
 export type JobKind = "standard" | "video_edit";
 export type Plan = "free" | "pro";
@@ -140,6 +149,18 @@ export interface Database {
           created_at: string;
           delivery_email_subject_template: string | null;
           delivery_email_body_template: string | null;
+          whatsapp_number: string | null;
+          whatsapp_notifications_enabled: boolean;
+          whatsapp_notify_days_before: number[];
+          whatsapp_notify_jobs: boolean;
+          whatsapp_notify_internal_deadline: boolean;
+          whatsapp_notify_tasks: boolean;
+          whatsapp_weekly_summary: boolean;
+          whatsapp_overdue_alerts: boolean;
+          whatsapp_client_delivery_enabled: boolean;
+          zapi_sender_instance_id: string | null;
+          zapi_sender_token: string | null;
+          zapi_sender_connected: boolean;
         };
         Insert: {
           id?: string;
@@ -147,6 +168,18 @@ export interface Database {
           created_at?: string;
           delivery_email_subject_template?: string | null;
           delivery_email_body_template?: string | null;
+          whatsapp_number?: string | null;
+          whatsapp_notifications_enabled?: boolean;
+          whatsapp_notify_days_before?: number[];
+          whatsapp_notify_jobs?: boolean;
+          whatsapp_notify_internal_deadline?: boolean;
+          whatsapp_notify_tasks?: boolean;
+          whatsapp_weekly_summary?: boolean;
+          whatsapp_overdue_alerts?: boolean;
+          whatsapp_client_delivery_enabled?: boolean;
+          zapi_sender_instance_id?: string | null;
+          zapi_sender_token?: string | null;
+          zapi_sender_connected?: boolean;
         };
         Update: {
           id?: string;
@@ -154,8 +187,63 @@ export interface Database {
           created_at?: string;
           delivery_email_subject_template?: string | null;
           delivery_email_body_template?: string | null;
+          whatsapp_number?: string | null;
+          whatsapp_notifications_enabled?: boolean;
+          whatsapp_notify_days_before?: number[];
+          whatsapp_notify_jobs?: boolean;
+          whatsapp_notify_internal_deadline?: boolean;
+          whatsapp_notify_tasks?: boolean;
+          whatsapp_weekly_summary?: boolean;
+          whatsapp_overdue_alerts?: boolean;
+          whatsapp_client_delivery_enabled?: boolean;
+          zapi_sender_instance_id?: string | null;
+          zapi_sender_token?: string | null;
+          zapi_sender_connected?: boolean;
         };
         Relationships: [];
+      };
+      whatsapp_notification_logs: {
+        Row: {
+          id: string;
+          account_id: string;
+          entity_type: "job" | "task" | "weekly";
+          entity_id: string;
+          notification_type: "deadline" | "internal_deadline" | "overdue" | "weekly_summary";
+          days_before: number | null;
+          phone: string;
+          sent_at: string;
+          sent_date: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          entity_type: "job" | "task" | "weekly";
+          entity_id: string;
+          notification_type: "deadline" | "internal_deadline" | "overdue" | "weekly_summary";
+          days_before?: number | null;
+          phone: string;
+          sent_at?: string;
+          sent_date?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          entity_type?: "job" | "task" | "weekly";
+          entity_id?: string;
+          notification_type?: "deadline" | "internal_deadline" | "overdue" | "weekly_summary";
+          days_before?: number | null;
+          phone?: string;
+          sent_at?: string;
+          sent_date?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_notification_logs_account_id_fkey";
+            columns: ["account_id"];
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       account_google_calendar: {
         Row: {
@@ -660,6 +748,110 @@ export interface Database {
             foreignKeyName: "jobs_video_manual_assignee_id_fkey";
             columns: ["video_manual_assignee_id"];
             referencedRelation: "manual_job_assignees";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      form_templates: {
+        Row: {
+          id: string;
+          account_id: string;
+          title: string;
+          description: string | null;
+          slug: string;
+          fields: Json;
+          active: boolean;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          title: string;
+          description?: string | null;
+          slug: string;
+          fields?: Json;
+          active?: boolean;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          title?: string;
+          description?: string | null;
+          slug?: string;
+          fields?: Json;
+          active?: boolean;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "form_templates_account_id_fkey";
+            columns: ["account_id"];
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      form_submissions: {
+        Row: {
+          id: string;
+          account_id: string;
+          form_template_id: string | null;
+          data: Json;
+          viewed: boolean;
+          submitted_at: string;
+          linked_contact_id: string | null;
+          linked_job_id: string | null;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          form_template_id?: string | null;
+          data?: Json;
+          viewed?: boolean;
+          submitted_at?: string;
+          linked_contact_id?: string | null;
+          linked_job_id?: string | null;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          form_template_id?: string | null;
+          data?: Json;
+          viewed?: boolean;
+          submitted_at?: string;
+          linked_contact_id?: string | null;
+          linked_job_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "form_submissions_account_id_fkey";
+            columns: ["account_id"];
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "form_submissions_form_template_id_fkey";
+            columns: ["form_template_id"];
+            referencedRelation: "form_templates";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "form_submissions_linked_contact_id_fkey";
+            columns: ["linked_contact_id"];
+            referencedRelation: "contacts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "form_submissions_linked_job_id_fkey";
+            columns: ["linked_job_id"];
+            referencedRelation: "jobs";
             referencedColumns: ["id"];
           },
         ];
