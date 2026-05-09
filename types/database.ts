@@ -33,6 +33,15 @@ export type SubscriptionStatus = "active" | "trialing" | "past_due" | "canceled"
 export type FeedbackStatus = "pending" | "approved" | "rejected";
 export type FeedbackStage = "em_estudo" | "faremos" | "produzindo" | "pronto";
 
+export type SupportTicketCategory =
+  | "problema_tecnico"
+  | "duvida"
+  | "cobranca"
+  | "sugestao"
+  | "outro";
+export type SupportTicketStatus = "open" | "answered" | "closed";
+export type SupportMessageSender = "user" | "support";
+
 export interface Database {
   public: {
     Tables: {
@@ -986,6 +995,89 @@ export interface Database {
             foreignKeyName: "subscriptions_account_id_fkey";
             columns: ["account_id"];
             referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      support_tickets: {
+        Row: {
+          id: string;
+          account_id: string;
+          user_id: string;
+          category: SupportTicketCategory;
+          description: string;
+          status: SupportTicketStatus;
+          has_unread_reply: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          user_id: string;
+          category: SupportTicketCategory;
+          description: string;
+          status?: SupportTicketStatus;
+          has_unread_reply?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          user_id?: string;
+          category?: SupportTicketCategory;
+          description?: string;
+          status?: SupportTicketStatus;
+          has_unread_reply?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "support_tickets_account_id_fkey";
+            columns: ["account_id"];
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "support_tickets_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      support_ticket_messages: {
+        Row: {
+          id: string;
+          ticket_id: string;
+          sender_type: SupportMessageSender;
+          sender_name: string;
+          content: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          ticket_id: string;
+          sender_type: SupportMessageSender;
+          sender_name: string;
+          content: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          ticket_id?: string;
+          sender_type?: SupportMessageSender;
+          sender_name?: string;
+          content?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "support_ticket_messages_ticket_id_fkey";
+            columns: ["ticket_id"];
+            referencedRelation: "support_tickets";
             referencedColumns: ["id"];
           },
         ];

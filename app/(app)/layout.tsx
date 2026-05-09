@@ -39,6 +39,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const isPro = subscription?.plan === "pro";
 
+  const { count: unreadSupportCount } = await supabase
+    .from("support_tickets")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .eq("has_unread_reply", true);
+
   return (
     <AppShell
       userName={userName}
@@ -46,6 +52,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       avatarUrl={avatarUrl}
       tourCompleted={tourCompleted}
       isPro={isPro}
+      unreadSupportCount={unreadSupportCount ?? 0}
     >
       {children}
     </AppShell>

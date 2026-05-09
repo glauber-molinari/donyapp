@@ -29,7 +29,7 @@ import { SidebarCollapsedContext } from "@/components/layout/sidebar-collapsed-c
 import { NotificationBell } from "@/components/layout/notification-bell";
 import { Avatar } from "@/components/ui/avatar";
 import { createClient } from "@/lib/supabase/client";
-import { getSupportEmail, supportMailtoLink, supportWhatsAppLink } from "@/lib/support";
+import { supportWhatsAppLink } from "@/lib/support";
 import { cn } from "@/lib/utils";
 
 const SIDEBAR_COLLAPSED_KEY = "donyapp-sidebar-collapsed";
@@ -93,9 +93,10 @@ export interface AppShellProps {
   avatarUrl: string | null;
   tourCompleted: boolean;
   isPro: boolean;
+  unreadSupportCount?: number;
 }
 
-export function AppShell({ children, userName, userEmail, avatarUrl, tourCompleted, isPro }: AppShellProps) {
+export function AppShell({ children, userName, userEmail, avatarUrl, tourCompleted, isPro, unreadSupportCount = 0 }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -119,12 +120,7 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
       /* ignore */
     }
   }, []);
-  const supportEmail = getSupportEmail();
   const helpBody = `Olá, equipe Donyapp.\n\nEstou na tela: ${pathname}\nPreciso de ajuda com: `;
-  const helpMail = supportMailtoLink({
-    subject: "Ajuda | Donyapp",
-    body: helpBody,
-  });
   const helpWhats = supportWhatsAppLink(helpBody);
 
   useEffect(() => {
@@ -345,19 +341,26 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
             Ajuda
           </p>
           <div className="flex flex-col gap-0.5">
-            <a
-              href={helpMail}
-              title={sidebarCollapsed ? `E-mail (${supportEmail})` : undefined}
+            <Link
+              href="/support"
+              id="menu-support"
+              title={sidebarCollapsed ? "Suporte" : undefined}
               className={cn(
-                "flex items-center gap-3 rounded-ds-xl px-3 py-2.5 text-sm font-medium text-ds-muted transition-colors duration-ds ease-out hover:bg-ds-cream/80 hover:text-ds-ink",
-                sidebarCollapsed && "md:justify-center md:px-2 md:py-3"
+                "relative flex items-center gap-3 rounded-ds-xl px-3 py-2.5 text-sm font-medium transition-colors duration-ds ease-out",
+                sidebarCollapsed && "md:justify-center md:px-2 md:py-3",
+                pathname === "/support" || pathname.startsWith("/support/")
+                  ? "bg-ds-cream text-ds-ink font-semibold"
+                  : "text-ds-muted hover:bg-ds-cream/80 hover:text-ds-ink"
               )}
             >
-              <HelpCircle className="h-5 w-5 shrink-0 opacity-80" aria-hidden />
-              <span className={cn(sidebarCollapsed && "md:sr-only")}>
-                E-mail ({supportEmail})
+              <span className="relative shrink-0">
+                <HelpCircle className="h-5 w-5 opacity-80" aria-hidden />
+                {unreadSupportCount > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-app-primary" />
+                )}
               </span>
-            </a>
+              <span className={cn(sidebarCollapsed && "md:sr-only")}>Suporte</span>
+            </Link>
             {helpWhats ? (
               <a
                 href={helpWhats}
