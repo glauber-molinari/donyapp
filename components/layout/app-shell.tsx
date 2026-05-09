@@ -5,6 +5,7 @@ import {
   CheckSquare,
   ChevronLeft,
   ChevronRight,
+  ClipboardList,
   HelpCircle,
   LaptopMinimal,
   LayoutDashboard,
@@ -74,6 +75,13 @@ const navItems = [
     label: "Agenda",
     id: "menu-agenda",
     icon: Calendar,
+    isPro: false,
+  },
+  {
+    href: "/formularios",
+    label: "Formulários",
+    id: "menu-formularios",
+    icon: ClipboardList,
     isPro: false,
   },
 ] as const;

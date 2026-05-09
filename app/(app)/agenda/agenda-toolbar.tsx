@@ -69,14 +69,6 @@ export function AgendaToolbar(props: ToolbarProps) {
             </button>
           ))}
         </div>
-        <a
-          href="https://calendar.google.com/calendar/u/0/r/eventedit"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex h-10 items-center justify-center rounded-ds-xl bg-app-primary px-4 text-sm font-semibold text-white shadow-sm transition-colors duration-ds ease-out hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/35 focus-visible:ring-offset-2 focus-visible:ring-offset-app-canvas"
-        >
-          + Novo evento
-        </a>
       </div>
     </div>
   );
