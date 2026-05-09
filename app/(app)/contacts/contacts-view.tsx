@@ -207,7 +207,16 @@ export function ContactsView({ contacts }: ContactsViewProps) {
                     key={c.id}
                     className="border-b border-ds-border last:border-0 hover:bg-ds-cream/60"
                   >
-                    <td className="px-4 py-3 font-medium text-ds-ink">{c.name}</td>
+                    <td className="px-4 py-3 font-medium text-ds-ink">
+                      <button
+                        type="button"
+                        className="text-left underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/30"
+                        onClick={() => router.push(`/contacts/${c.id}`)}
+                        aria-label={`Abrir ${c.name}`}
+                      >
+                        {c.name}
+                      </button>
+                    </td>
                     <td className="px-4 py-3 text-ds-muted">{c.email}</td>
                     <td className="px-4 py-3 text-ds-subtle">{c.phone ?? "—"}</td>
                     <td className="px-4 py-3 text-right">
@@ -272,7 +281,14 @@ export function ContactsView({ contacts }: ContactsViewProps) {
               <Card key={c.id} className="p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="font-semibold text-ds-ink">{c.name}</p>
+                    <button
+                      type="button"
+                      className="block w-full truncate text-left font-semibold text-ds-ink underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/30"
+                      onClick={() => router.push(`/contacts/${c.id}`)}
+                      aria-label={`Abrir ${c.name}`}
+                    >
+                      {c.name}
+                    </button>
                     <p className="text-sm text-ds-muted">{c.email}</p>
                     {c.phone ? (
                       <p className="mt-1 text-sm text-ds-subtle">{c.phone}</p>
@@ -340,7 +356,7 @@ export function ContactsView({ contacts }: ContactsViewProps) {
         title="Novo contato"
         size="lg"
       >
-        <form className="flex flex-col gap-4" onSubmit={handleCreate}>
+        <form className="flex flex-col gap-4 p-5" onSubmit={handleCreate}>
           <Input id="contact-create-name" name="name" label="Nome completo" required />
           <Input
             id="contact-create-email"
@@ -388,7 +404,7 @@ export function ContactsView({ contacts }: ContactsViewProps) {
         {editContact ? (
           <form
             key={editContact.id}
-            className="flex flex-col gap-4"
+            className="flex flex-col gap-4 p-5"
             onSubmit={handleEdit}
           >
             <Input
@@ -446,7 +462,7 @@ export function ContactsView({ contacts }: ContactsViewProps) {
         size="sm"
       >
         {deleteContactRow ? (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 p-5">
             <p className="text-sm text-ds-muted">
               Tem certeza que deseja excluir{" "}
               <span className="font-medium text-ds-ink">{deleteContactRow.name}</span>

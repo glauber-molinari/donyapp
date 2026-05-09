@@ -98,27 +98,27 @@ const TASK_COLUMNS: {
     label: "Para fazer",
     color: "#f97316",
     bg: "#fff7ed",
-    pillCls: "bg-orange-500 text-white",
-    bgCls: "bg-orange-50",
-    iconCls: "text-orange-500",
+    pillCls: "bg-orange-100 text-orange-800 border border-orange-200",
+    bgCls: "bg-orange-50/60",
+    iconCls: "text-orange-600/70",
   },
   {
     id: "iniciado",
     label: "Em progresso",
     color: "#f59e0b",
     bg: "#fffbeb",
-    pillCls: "bg-amber-500 text-white",
-    bgCls: "bg-amber-50",
-    iconCls: "text-amber-500",
+    pillCls: "bg-amber-100 text-amber-800 border border-amber-200",
+    bgCls: "bg-amber-50/60",
+    iconCls: "text-amber-600/70",
   },
   {
     id: "feito",
     label: "Feito",
     color: "#10b981",
     bg: "#f0fdf4",
-    pillCls: "bg-emerald-500 text-white",
-    bgCls: "bg-emerald-50",
-    iconCls: "text-emerald-500",
+    pillCls: "bg-emerald-100 text-emerald-800 border border-emerald-200",
+    bgCls: "bg-emerald-50/60",
+    iconCls: "text-emerald-600/70",
   },
 ];
 
@@ -1298,17 +1298,19 @@ const KanbanColumn = memo(function KanbanColumn({
     <div
       className={cn(
         "flex min-h-0 flex-col overflow-hidden rounded-xl border border-ds-border/60 shadow-sm transition-[box-shadow,colors]",
+        col.bgCls,
         "max-lg:w-[min(92vw,20rem)] max-lg:max-w-[20rem] max-lg:shrink-0 max-lg:flex-none",
         "lg:min-w-[128px] lg:max-w-[280px] lg:flex-1 lg:basis-0"
       )}
       style={{
-        backgroundColor: col.bg,
-        ...(isOver ? { boxShadow: `0 0 0 2px ${col.bg}, 0 0 0 5px ${col.color}55` } : {}),
+        ...(isOver ? { boxShadow: `0 0 0 2px rgb(255 255 255 / 0.6), 0 0 0 5px ${col.color}55` } : {}),
       }}
     >
-      <div className="shrink-0 border-b border-ds-border/35 px-2.5 py-2" style={{ backgroundColor: `color-mix(in srgb, ${col.color} 18%, white)` }}>
+      <div className="shrink-0 border-b border-ds-border/35 bg-white/35 px-2.5 py-2">
         <div className="flex items-center justify-between gap-2">
-          <h2 className="text-[11px] font-semibold uppercase tracking-wide text-ds-muted">{col.label}</h2>
+          <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold", col.pillCls)}>
+            {col.label}
+          </span>
           <span className="text-[10px] font-medium text-ds-subtle">{taskIds.length}</span>
         </div>
       </div>
