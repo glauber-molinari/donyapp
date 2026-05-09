@@ -327,7 +327,7 @@ interface SubmissionDetailProps {
 
 function SubmissionDetail({ submission, fields, data, onDelete, isPending }: SubmissionDetailProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-5">
       <p className="text-xs text-ds-muted">
         Recebido em {formatDate(submission.submitted_at)}
         {submission.linked_job_id && (

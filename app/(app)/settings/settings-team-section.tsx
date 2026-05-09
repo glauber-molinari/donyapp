@@ -206,8 +206,28 @@ export function SettingsTeamSection({
         </div>
       </Card>
 
-      <Modal open={inviteOpen} onClose={() => setInviteOpen(false)} title="Convidar membro" size="md">
-        <form className="flex flex-col gap-4" onSubmit={handleSendInvite}>
+      <Modal
+        open={inviteOpen}
+        onClose={() => setInviteOpen(false)}
+        title="Convidar membro"
+        size="md"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setInviteOpen(false)}
+              disabled={inviteBusy}
+            >
+              Fechar
+            </Button>
+            <Button form="team-invite-form" type="submit" disabled={inviteBusy}>
+              {inviteBusy ? "Enviando…" : "Enviar convite"}
+            </Button>
+          </div>
+        }
+      >
+        <form id="team-invite-form" className="flex flex-col gap-4 p-5" onSubmit={handleSendInvite}>
           <p className="text-sm text-ds-muted">
             Enviaremos um link válido por 48 horas. A pessoa deve entrar com a conta Google do mesmo
             e-mail.
@@ -228,14 +248,6 @@ export function SettingsTeamSection({
               {inviteError}
             </p>
           ) : null}
-          <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-            <Button type="button" variant="secondary" onClick={() => setInviteOpen(false)} disabled={inviteBusy}>
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={inviteBusy}>
-              {inviteBusy ? "Enviando…" : "Enviar convite"}
-            </Button>
-          </div>
         </form>
       </Modal>
 
@@ -244,19 +256,31 @@ export function SettingsTeamSection({
         onClose={() => setRemoveId(null)}
         title="Remover membro"
         size="sm"
-      >
-        <div className="flex flex-col gap-4">
-          <p className="text-sm text-ds-muted">
-            O acesso à conta será revogado. Os dados do estúdio permanecem na conta.
-          </p>
-          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <Button type="button" variant="secondary" onClick={() => setRemoveId(null)} disabled={removeBusy}>
-              Cancelar
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setRemoveId(null)}
+              disabled={removeBusy}
+            >
+              Fechar
             </Button>
-            <Button type="button" variant="danger" onClick={() => void handleConfirmRemove()} disabled={removeBusy}>
+            <Button
+              type="button"
+              variant="danger"
+              onClick={() => void handleConfirmRemove()}
+              disabled={removeBusy}
+            >
               {removeBusy ? "Removendo…" : "Remover"}
             </Button>
           </div>
+        }
+      >
+        <div className="p-5">
+          <p className="text-sm text-ds-muted">
+            O acesso à conta será revogado. Os dados do estúdio permanecem na conta.
+          </p>
         </div>
       </Modal>
     </section>

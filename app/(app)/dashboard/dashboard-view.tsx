@@ -1095,19 +1095,41 @@ export function DashboardView({
         onClose={() => setCreateOpen(false)}
         title="Novo job"
         size="lg"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setCreateOpen(false)}
+              disabled={isPending}
+            >
+              Fechar
+            </Button>
+            <Button
+              form="dashboard-job-create-form"
+              type="submit"
+              size="sm"
+              disabled={isPending || workTypeOptions.length === 0}
+            >
+              {isPending ? "Salvando…" : "Salvar"}
+            </Button>
+          </div>
+        }
       >
-        <NewJobForm
-          fieldIdPrefix="job-create"
-          contacts={contacts}
-          stageOptions={stageOptions}
-          workTypeOptions={workTypeOptions}
-          memberOptions={memberOptions}
-          manualAssigneeOptions={manualAssigneeOptions}
-          useManualAssigneeDirectory={plan === "pro" && members.length === 1}
-          isPending={isPending}
-          onCancel={() => setCreateOpen(false)}
-          onSubmit={handleCreate}
-        />
+        <div className="p-5">
+          <NewJobForm
+            formId="dashboard-job-create-form"
+            fieldIdPrefix="job-create"
+            contacts={contacts}
+            stageOptions={stageOptions}
+            workTypeOptions={workTypeOptions}
+            memberOptions={memberOptions}
+            manualAssigneeOptions={manualAssigneeOptions}
+            useManualAssigneeDirectory={plan === "pro" && members.length === 1}
+            onSubmit={handleCreate}
+          />
+        </div>
       </Modal>
 
       <Modal
@@ -1115,12 +1137,27 @@ export function DashboardView({
         onClose={() => setEditJob(null)}
         title="Editar job"
         size="lg"
-        className="max-h-[min(92vh,720px)] overflow-hidden"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setEditJob(null)}
+              disabled={isPending}
+            >
+              Fechar
+            </Button>
+            <Button form="dashboard-edit-job-form" type="submit" disabled={isPending}>
+              {isPending ? "Salvando…" : "Salvar"}
+            </Button>
+          </div>
+        }
       >
         {editJob ? (
           <form
+            id="dashboard-edit-job-form"
             key={editJob.id}
-            className="flex min-h-0 flex-1 flex-col gap-3"
+            className="flex flex-col gap-3 p-5"
             onSubmit={handleEdit}
           >
             {members.length <= 1 ? (
@@ -1163,7 +1200,7 @@ export function DashboardView({
               ))}
             </div>
 
-            <div className="min-h-0 max-h-[min(42vh,320px)] flex-1 overflow-y-auto overscroll-contain pr-1 sm:max-h-[min(46vh,360px)]">
+            <div className="flex-1">
               {/* Todas as seções permanecem no DOM para FormData e validação HTML5 ao salvar. */}
               <div role="tabpanel" hidden={editJobTab !== "geral"} className="space-y-4">
                 <Input
@@ -1353,19 +1390,6 @@ export function DashboardView({
               </div>
             </div>
 
-            <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-app-border pt-3 sm:flex-row sm:justify-end">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => setEditJob(null)}
-                disabled={isPending}
-              >
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={isPending}>
-                {isPending ? "Salvando…" : "Salvar"}
-              </Button>
-            </div>
           </form>
         ) : null}
       </Modal>
@@ -1375,32 +1399,34 @@ export function DashboardView({
         onClose={() => setDeleteJobRow(null)}
         title="Excluir job"
         size="sm"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setDeleteJobRow(null)}
+              disabled={isPending}
+            >
+              Fechar
+            </Button>
+            <Button
+              type="button"
+              variant="danger"
+              onClick={handleDelete}
+              disabled={isPending}
+            >
+              {isPending ? "Excluindo…" : "Excluir"}
+            </Button>
+          </div>
+        }
       >
         {deleteJobRow ? (
-          <div className="flex flex-col gap-4">
+          <div className="p-5">
             <p className="text-sm text-ds-muted">
               Tem certeza que deseja excluir{" "}
               <span className="font-medium text-ds-ink">{deleteJobRow.name}</span>? Esta ação não
               pode ser desfeita.
             </p>
-            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => setDeleteJobRow(null)}
-                disabled={isPending}
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="button"
-                variant="danger"
-                onClick={handleDelete}
-                disabled={isPending}
-              >
-                {isPending ? "Excluindo…" : "Excluir"}
-              </Button>
-            </div>
           </div>
         ) : null}
       </Modal>

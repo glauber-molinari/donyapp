@@ -10,6 +10,7 @@ import type { JobWithRelations } from "@/app/(app)/dashboard/dashboard-view";
 import { deleteJob, updateJob } from "@/app/(app)/jobs/actions";
 import { NewJobForm } from "@/components/app/new-job-form";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import type { SelectOption } from "@/components/ui/select";
 import type { ContactSearchOption } from "@/components/app/contact-search-field";
@@ -144,47 +145,120 @@ export function JobDetailModal({
     }
   }
 
+  const editFormId = `job-edit-${job.id}-form`;
+
+  const modalFooter = editing ? (
+    <div className="flex justify-end gap-2">
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => setEditing(false)}
+        disabled={saving}
+      >
+        Fechar
+      </Button>
+      <Button form={editFormId} type="submit" size="sm" disabled={saving}>
+        {saving ? "Salvando…" : "Salvar alterações"}
+      </Button>
+    </div>
+  ) : confirmDelete ? (
+    <div className="flex items-center gap-2">
+      <Button
+        type="button"
+        variant="danger"
+        size="sm"
+        disabled={deleting}
+        onClick={async () => {
+          setDeleting(true);
+          const res = await deleteJob(job.id);
+          setDeleting(false);
+          if (!res.ok) {
+            toast.error(res.error);
+            setConfirmDelete(false);
+            return;
+          }
+          toast.success("Job excluído.");
+          onClose();
+          router.refresh();
+        }}
+      >
+        {deleting ? "Excluindo…" : "Confirmar exclusão"}
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        disabled={deleting}
+        onClick={() => setConfirmDelete(false)}
+      >
+        Cancelar
+      </Button>
+    </div>
+  ) : (
+    <div className="flex items-center justify-between gap-3">
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => setEditing(true)}
+      >
+        <Pencil className="h-3.5 w-3.5" aria-hidden />
+        Editar
+      </Button>
+      <Button
+        type="button"
+        variant="danger"
+        size="sm"
+        onClick={() => setConfirmDelete(true)}
+      >
+        <Trash2 className="h-3.5 w-3.5" aria-hidden />
+        Excluir
+      </Button>
+    </div>
+  );
+
   return (
     <Modal
       open={open}
       onClose={onClose}
       title={editing ? "Editar job" : "Detalhes do job"}
       size="lg"
-      className="max-h-[min(92vh,720px)] overflow-hidden"
+      footer={modalFooter}
     >
       {editing ? (
-        <NewJobForm
-          fieldIdPrefix={`job-edit-${job.id}`}
-          contacts={contacts}
-          stageOptions={stageOptions}
-          workTypeOptions={workTypeOptions}
-          memberOptions={memberOptions}
-          manualAssigneeOptions={manualAssigneeOptions}
-          useManualAssigneeDirectory={useManualAssigneeDirectory}
-          initialValues={{
-            name: job.name,
-            stage_id: job.stage_id,
-            job_date: job.job_date,
-            contact_id: job.contact_id,
-            work_type_id: job.work_type_id,
-            sd_card_tags: job.sd_card_tags ?? [],
-            notes: job.notes,
-            internal_deadline: job.internal_deadline,
-            deadline: job.deadline,
-            type: job.type,
-            delivery_link: job.delivery_link,
-            photo_editor_id: job.photo_editor_id,
-            video_editor_id: job.video_editor_id,
-            photo_manual_assignee_id: job.photo_manual_assignee_id,
-            video_manual_assignee_id: job.video_manual_assignee_id,
-          }}
-          submitLabel="Salvar alterações"
-          isPending={saving}
-          onCancel={() => setEditing(false)}
-          onSubmit={handleEditSubmit}
-        />
+        <div className="p-5">
+          <NewJobForm
+            formId={editFormId}
+            fieldIdPrefix={`job-edit-${job.id}`}
+            contacts={contacts}
+            stageOptions={stageOptions}
+            workTypeOptions={workTypeOptions}
+            memberOptions={memberOptions}
+            manualAssigneeOptions={manualAssigneeOptions}
+            useManualAssigneeDirectory={useManualAssigneeDirectory}
+            initialValues={{
+              name: job.name,
+              stage_id: job.stage_id,
+              job_date: job.job_date,
+              contact_id: job.contact_id,
+              work_type_id: job.work_type_id,
+              sd_card_tags: job.sd_card_tags ?? [],
+              notes: job.notes,
+              internal_deadline: job.internal_deadline,
+              deadline: job.deadline,
+              type: job.type,
+              delivery_link: job.delivery_link,
+              photo_editor_id: job.photo_editor_id,
+              video_editor_id: job.video_editor_id,
+              photo_manual_assignee_id: job.photo_manual_assignee_id,
+              video_manual_assignee_id: job.video_manual_assignee_id,
+            }}
+            onSubmit={handleEditSubmit}
+          />
+        </div>
       ) : (
-        <div className="flex min-h-0 flex-1 flex-col gap-3">
+        <div className="flex flex-col gap-3 p-5">
           <div
             role="tablist"
             aria-label="Seções dos detalhes"
@@ -209,10 +283,7 @@ export function JobDetailModal({
             ))}
           </div>
 
-          <div
-            role="tabpanel"
-            className="min-h-0 max-h-[min(42vh,320px)] overflow-y-auto overscroll-contain pr-1 sm:max-h-[min(50vh,380px)]"
-          >
+          <div role="tabpanel">
             {tab === "geral" ? (
               <dl>
                 <DetailRow label="Nome">{job.name}</DetailRow>
@@ -302,64 +373,6 @@ export function JobDetailModal({
             ) : null}
           </div>
 
-          <div className="shrink-0 border-t border-app-border pt-3">
-            {confirmDelete ? (
-              <div className="flex flex-col gap-2 rounded-lg border border-red-200 bg-red-50 p-3">
-                <p className="text-xs font-medium text-red-800">
-                  Excluir <strong>{job.name}</strong>? Esta ação não pode ser desfeita.
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    disabled={deleting}
-                    onClick={async () => {
-                      setDeleting(true);
-                      const res = await deleteJob(job.id);
-                      setDeleting(false);
-                      if (!res.ok) {
-                        toast.error(res.error);
-                        setConfirmDelete(false);
-                        return;
-                      }
-                      toast.success("Job excluído.");
-                      onClose();
-                      router.refresh();
-                    }}
-                    className="rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-60"
-                  >
-                    {deleting ? "Excluindo…" : "Confirmar exclusão"}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={deleting}
-                    onClick={() => setConfirmDelete(false)}
-                    className="rounded-md border border-app-border px-3 py-1.5 text-xs font-medium text-ds-ink hover:bg-ds-cream disabled:opacity-60"
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center justify-between gap-3">
-                <button
-                  type="button"
-                  onClick={() => setEditing(true)}
-                  className="flex shrink-0 items-center gap-1.5 rounded-md border border-app-border px-2.5 py-1.5 text-xs font-medium text-ds-ink hover:bg-ds-cream"
-                >
-                  <Pencil className="h-3.5 w-3.5" aria-hidden />
-                  Editar
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setConfirmDelete(true)}
-                  className="flex shrink-0 items-center gap-1.5 rounded-md border border-red-200 px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 hover:border-red-300"
-                >
-                  <Trash2 className="h-3.5 w-3.5" aria-hidden />
-                  Excluir
-                </button>
-              </div>
-            )}
-          </div>
         </div>
       )}
     </Modal>

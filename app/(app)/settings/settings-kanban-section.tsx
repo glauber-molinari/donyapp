@@ -424,9 +424,19 @@ export function SettingsKanbanSection({ stages, plan, isAdmin }: SettingsKanbanS
         onClose={() => setRenameStage(null)}
         title="Editar etapa"
         size="md"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="ghost" onClick={() => setRenameStage(null)}>
+              Fechar
+            </Button>
+            <Button type="button" onClick={handleRenameSave} disabled={pending}>
+              Salvar
+            </Button>
+          </div>
+        }
       >
         {renameStage ? (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 p-5">
             <Input
               id="rename-stage"
               label="Nome"
@@ -474,14 +484,6 @@ export function SettingsKanbanSection({ stages, plan, isAdmin }: SettingsKanbanS
                 <StageColorSwatch color={renameColor} className="h-10 w-10" title="Prévia" />
               </div>
             </fieldset>
-            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <Button type="button" variant="secondary" onClick={() => setRenameStage(null)}>
-                Cancelar
-              </Button>
-              <Button type="button" onClick={handleRenameSave} disabled={pending}>
-                Salvar
-              </Button>
-            </div>
           </div>
         ) : null}
       </Modal>
@@ -491,22 +493,24 @@ export function SettingsKanbanSection({ stages, plan, isAdmin }: SettingsKanbanS
         onClose={() => setDeleteStage(null)}
         title="Excluir etapa"
         size="sm"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="ghost" onClick={() => setDeleteStage(null)}>
+              Fechar
+            </Button>
+            <Button type="button" variant="danger" onClick={handleDelete} disabled={pending}>
+              Excluir
+            </Button>
+          </div>
+        }
       >
         {deleteStage ? (
-          <div className="flex flex-col gap-4">
+          <div className="p-5">
             <p className="text-sm text-ds-muted">
               Tem certeza que deseja excluir{" "}
               <span className="font-medium text-ds-ink">{deleteStage.name}</span>? Não pode haver
               jobs nesta etapa.
             </p>
-            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <Button type="button" variant="secondary" onClick={() => setDeleteStage(null)}>
-                Cancelar
-              </Button>
-              <Button type="button" variant="danger" onClick={handleDelete} disabled={pending}>
-                Excluir
-              </Button>
-            </div>
           </div>
         ) : null}
       </Modal>

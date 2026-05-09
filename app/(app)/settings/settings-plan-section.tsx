@@ -303,7 +303,7 @@ export function SettingsPlanSection({
       ) : null}
 
       <Modal open={cancelOpen} onClose={closeCancel} title="Cancelar assinatura Pro" size="md">
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 p-5">
           <p className="text-sm text-ds-muted">
             A renovação automática será desativada. Você continua com todos os recursos Pro até o fim do
             período já pago
@@ -332,7 +332,7 @@ export function SettingsPlanSection({
       </Modal>
 
       <Modal open={upgradeOpen} onClose={closeUpgrade} title="Assinar Pro" size="md">
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 p-5">
           <p className="text-sm text-ds-muted">
             Escolha entre mensal ou anual, você será redirecionado ao checkout seguro para pagar.
             Após a confirmação, o plano Pro é ativado automaticamente.

@@ -139,8 +139,34 @@ export function DeliveryEmailModal({
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Enviar material ao cliente" size="lg">
-      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Enviar material ao cliente"
+      size="lg"
+      footer={
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="ghost" onClick={onClose} disabled={loading}>
+            Fechar
+          </Button>
+          <Button
+            form="delivery-email-form"
+            type="submit"
+            disabled={loading || !isPro || !canConfigureReply}
+            title={
+              !isPro
+                ? "Requer plano Pro"
+                : !canConfigureReply
+                  ? "Defina seu e-mail em Configurações"
+                  : undefined
+            }
+          >
+            {loading ? "Enviando…" : "Enviar e-mail"}
+          </Button>
+        </div>
+      }
+    >
+      <form id="delivery-email-form" className="flex flex-col gap-4 p-5" onSubmit={handleSubmit}>
         <p className="text-sm text-ds-muted">
           Job: <span className="font-medium text-ds-ink">{jobName}</span>
         </p>
@@ -236,24 +262,6 @@ export function DeliveryEmailModal({
           </p>
         ) : null}
 
-        <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-          <Button type="button" variant="secondary" onClick={onClose} disabled={loading}>
-            Cancelar
-          </Button>
-          <Button
-            type="submit"
-            disabled={loading || !isPro || !canConfigureReply}
-            title={
-              !isPro
-                ? "Requer plano Pro"
-                : !canConfigureReply
-                  ? "Defina seu e-mail em Configurações"
-                  : undefined
-            }
-          >
-            {loading ? "Enviando…" : "Enviar e-mail"}
-          </Button>
-        </div>
       </form>
     </Modal>
   );

@@ -20,10 +20,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
-import { Textarea } from "@/components/ui/textarea";
+import { PanelField, PanelFieldCard, panelInputCls } from "@/components/ui/side-panel";
 import { toast } from "@/lib/toast";
+import { cn } from "@/lib/utils";
 import type { Database, JobType } from "@/types/database";
 
 type Contact = Database["public"]["Tables"]["contacts"]["Row"];
@@ -365,53 +365,60 @@ export function ContactDetailView({ contact, jobs, notes }: ContactDetailViewPro
         open={editOpen}
         onClose={() => setEditOpen(false)}
         title="Editar contato"
-        size="lg"
-      >
-        <form key={contact.id} className="flex flex-col gap-4" onSubmit={handleEdit}>
-          <Input
-            id="detail-edit-name"
-            name="name"
-            label="Nome completo"
-            required
-            defaultValue={contact.name}
-          />
-          <Input
-            id="detail-edit-email"
-            name="email"
-            type="email"
-            label="E-mail"
-            required
-            defaultValue={contact.email}
-            autoComplete="email"
-          />
-          <Input
-            id="detail-edit-phone"
-            name="phone"
-            label="Telefone / WhatsApp"
-            placeholder="Opcional"
-            defaultValue={contact.phone ?? ""}
-          />
-          <Textarea
-            id="detail-edit-notes"
-            name="notes"
-            label="Observações"
-            placeholder="Opcional"
-            rows={3}
-            defaultValue={contact.notes ?? ""}
-          />
-          <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => setEditOpen(false)}
-              disabled={isPending}
-            >
-              Cancelar
+        size="md"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="ghost" size="sm" onClick={() => setEditOpen(false)} disabled={isPending}>
+              Fechar
             </Button>
-            <Button type="submit" disabled={isPending}>
+            <Button type="submit" form="detail-edit-form" size="sm" disabled={isPending}>
               {isPending ? "Salvando…" : "Salvar"}
             </Button>
           </div>
+        }
+      >
+        <form id="detail-edit-form" key={contact.id} className="p-5" onSubmit={handleEdit}>
+          <PanelFieldCard>
+            <PanelField label="Nome" htmlFor="detail-edit-name" required>
+              <input
+                id="detail-edit-name"
+                name="name"
+                required
+                defaultValue={contact.name}
+                className={panelInputCls}
+              />
+            </PanelField>
+            <PanelField label="E-mail" htmlFor="detail-edit-email" required>
+              <input
+                id="detail-edit-email"
+                name="email"
+                type="email"
+                required
+                autoComplete="email"
+                defaultValue={contact.email}
+                className={panelInputCls}
+              />
+            </PanelField>
+            <PanelField label="Telefone" htmlFor="detail-edit-phone">
+              <input
+                id="detail-edit-phone"
+                name="phone"
+                defaultValue={contact.phone ?? ""}
+                placeholder="Opcional"
+                className={panelInputCls}
+              />
+            </PanelField>
+            <PanelField label="Observações" htmlFor="detail-edit-notes" align="start">
+              <textarea
+                id="detail-edit-notes"
+                name="notes"
+                rows={3}
+                defaultValue={contact.notes ?? ""}
+                placeholder="Opcional"
+                className={cn(panelInputCls, "resize-none")}
+              />
+            </PanelField>
+          </PanelFieldCard>
         </form>
       </Modal>
 
@@ -420,34 +427,26 @@ export function ContactDetailView({ contact, jobs, notes }: ContactDetailViewPro
         onClose={() => setDeleteOpen(false)}
         title="Excluir contato"
         size="sm"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="ghost" size="sm" onClick={() => setDeleteOpen(false)} disabled={isPending}>
+              Fechar
+            </Button>
+            <Button type="button" variant="danger" size="sm" onClick={handleDelete} disabled={isPending}>
+              {isPending ? "Excluindo…" : "Excluir"}
+            </Button>
+          </div>
+        }
       >
-        <div className="flex flex-col gap-4">
+        <div className="p-5">
           <p className="text-sm text-ds-muted">
             Tem certeza que deseja excluir{" "}
             <span className="font-medium text-ds-ink">{contact.name}</span>? Esta ação não
             pode ser desfeita.
           </p>
           {errorMessage ? (
-            <p className="text-sm text-red-700">{errorMessage}</p>
+            <p className="mt-2 text-sm text-red-700">{errorMessage}</p>
           ) : null}
-          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => setDeleteOpen(false)}
-              disabled={isPending}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="button"
-              variant="danger"
-              onClick={handleDelete}
-              disabled={isPending}
-            >
-              {isPending ? "Excluindo…" : "Excluir"}
-            </Button>
-          </div>
         </div>
       </Modal>
     </div>

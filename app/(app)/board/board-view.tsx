@@ -985,19 +985,46 @@ export function BoardView({
         onClose={() => setDetailJob(null)}
       />
 
-      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="Novo job" size="lg">
-        <NewJobForm
-          fieldIdPrefix="board-job-create"
-          contacts={contacts}
-          stageOptions={stageOptions}
-          workTypeOptions={workTypeOptions}
-          memberOptions={memberOptions}
-          manualAssigneeOptions={manualAssigneeOptions}
-          useManualAssigneeDirectory={useManualAssigneeDirectory}
-          isPending={isPending}
-          onCancel={() => setCreateOpen(false)}
-          onSubmit={handleCreate}
-        />
+      <Modal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        title="Novo job"
+        size="lg"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setCreateOpen(false)}
+              disabled={isPending}
+            >
+              Fechar
+            </Button>
+            <Button
+              form="board-job-create-form"
+              type="submit"
+              size="sm"
+              disabled={isPending || workTypeOptions.length === 0}
+            >
+              {isPending ? "Salvando…" : "Salvar"}
+            </Button>
+          </div>
+        }
+      >
+        <div className="p-5">
+          <NewJobForm
+            formId="board-job-create-form"
+            fieldIdPrefix="board-job-create"
+            contacts={contacts}
+            stageOptions={stageOptions}
+            workTypeOptions={workTypeOptions}
+            memberOptions={memberOptions}
+            manualAssigneeOptions={manualAssigneeOptions}
+            useManualAssigneeDirectory={useManualAssigneeDirectory}
+            onSubmit={handleCreate}
+          />
+        </div>
       </Modal>
 
       <DeliveryEmailModal

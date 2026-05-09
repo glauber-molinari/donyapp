@@ -168,16 +168,18 @@ export function ModelosView({ templates }: Props) {
         title="Excluir modelo"
         size="sm"
       >
-        <p className="mb-6 text-sm text-ds-muted">
-          Tem certeza que deseja excluir este modelo? As submissões existentes não serão apagadas.
-        </p>
-        <div className="flex justify-end gap-3">
-          <Button variant="ghost" onClick={() => setDeletingId(null)}>
-            Cancelar
-          </Button>
-          <Button variant="danger" onClick={handleDelete} disabled={isPending}>
-            {isPending ? "Excluindo…" : "Excluir"}
-          </Button>
+        <div className="flex flex-col gap-4 p-5">
+          <p className="text-sm text-ds-muted">
+            Tem certeza que deseja excluir este modelo? As submissões existentes não serão apagadas.
+          </p>
+          <div className="flex justify-end gap-3">
+            <Button variant="ghost" onClick={() => setDeletingId(null)}>
+              Cancelar
+            </Button>
+            <Button variant="danger" onClick={handleDelete} disabled={isPending}>
+              {isPending ? "Excluindo…" : "Excluir"}
+            </Button>
+          </div>
         </div>
       </Modal>
     </div>

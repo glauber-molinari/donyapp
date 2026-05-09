@@ -124,7 +124,7 @@ export function FeedbackView({ suggestions }: FeedbackViewProps) {
         title="Enviar sugestão"
         size="md"
       >
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-5">
           <div className="flex flex-col gap-1.5">
             <label htmlFor="fb-title" className="text-sm font-medium text-ds-ink">
               Título <span className="text-red-500">*</span>

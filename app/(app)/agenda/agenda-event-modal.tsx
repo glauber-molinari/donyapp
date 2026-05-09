@@ -66,7 +66,7 @@ export function AgendaEventModal({
 
   return (
     <Modal open={open} onClose={onClose} title={event.title} size="xl">
-      <div className="flex flex-col gap-4 text-sm text-ds-muted">
+      <div className="flex flex-col gap-4 p-5 text-sm text-ds-muted">
         <div className="flex gap-3">
           <Calendar className="mt-0.5 h-5 w-5 shrink-0 text-ds-subtle" aria-hidden />
           <div>

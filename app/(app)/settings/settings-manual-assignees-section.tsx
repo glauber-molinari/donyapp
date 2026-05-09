@@ -219,9 +219,19 @@ export function SettingsManualAssigneesSection({
         onClose={() => setEditRow(null)}
         title="Editar responsável"
         size="md"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="ghost" onClick={() => setEditRow(null)}>
+              Fechar
+            </Button>
+            <Button form="manual-assignee-edit-form" type="submit" disabled={pending}>
+              Salvar
+            </Button>
+          </div>
+        }
       >
         {editRow ? (
-          <form className="flex flex-col gap-4" onSubmit={handleEditSave}>
+          <form id="manual-assignee-edit-form" className="flex flex-col gap-4 p-5" onSubmit={handleEditSave}>
             <Input
               id="edit-manual-name"
               name="name"
@@ -244,14 +254,6 @@ export function SettingsManualAssigneesSection({
               showClearHidden
               disabled={pending}
             />
-            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <Button type="button" variant="secondary" onClick={() => setEditRow(null)}>
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={pending}>
-                Salvar
-              </Button>
-            </div>
           </form>
         ) : null}
       </Modal>
@@ -261,21 +263,23 @@ export function SettingsManualAssigneesSection({
         onClose={() => setDeleteRow(null)}
         title="Excluir responsável"
         size="sm"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="ghost" onClick={() => setDeleteRow(null)}>
+              Fechar
+            </Button>
+            <Button type="button" variant="danger" onClick={handleDelete} disabled={pending}>
+              Excluir
+            </Button>
+          </div>
+        }
       >
         {deleteRow ? (
-          <div className="flex flex-col gap-4">
+          <div className="p-5">
             <p className="text-sm text-ds-muted">
               Remover <span className="font-medium text-ds-ink">{deleteRow.name}</span> da lista? Jobs
               que usam este responsável perderão essa atribuição.
             </p>
-            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <Button type="button" variant="secondary" onClick={() => setDeleteRow(null)}>
-                Cancelar
-              </Button>
-              <Button type="button" variant="danger" onClick={handleDelete} disabled={pending}>
-                Excluir
-              </Button>
-            </div>
           </div>
         ) : null}
       </Modal>

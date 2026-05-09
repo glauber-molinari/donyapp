@@ -8,10 +8,10 @@ import { createContact, deleteContact, updateContact } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
-import { Textarea } from "@/components/ui/textarea";
+import { PanelField, PanelFieldCard, panelInputCls } from "@/components/ui/side-panel";
 import { toast } from "@/lib/toast";
+import { cn } from "@/lib/utils";
 import type { Database } from "@/types/database";
 
 export type Contact = Database["public"]["Tables"]["contacts"]["Row"];
@@ -354,44 +354,59 @@ export function ContactsView({ contacts }: ContactsViewProps) {
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         title="Novo contato"
-        size="lg"
-      >
-        <form className="flex flex-col gap-4 p-5" onSubmit={handleCreate}>
-          <Input id="contact-create-name" name="name" label="Nome completo" required />
-          <Input
-            id="contact-create-email"
-            name="email"
-            type="email"
-            label="E-mail"
-            required
-            autoComplete="email"
-          />
-          <Input
-            id="contact-create-phone"
-            name="phone"
-            label="Telefone / WhatsApp"
-            placeholder="Opcional"
-          />
-          <Textarea
-            id="contact-create-notes"
-            name="notes"
-            label="Observações"
-            placeholder="Opcional"
-            rows={3}
-          />
-          <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => setCreateOpen(false)}
-              disabled={isPending}
-            >
-              Cancelar
+        size="md"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="ghost" size="sm" onClick={() => setCreateOpen(false)} disabled={isPending}>
+              Fechar
             </Button>
-            <Button type="submit" disabled={isPending}>
+            <Button type="submit" form="contact-create-form" size="sm" disabled={isPending}>
               {isPending ? "Salvando…" : "Salvar"}
             </Button>
           </div>
+        }
+      >
+        <form id="contact-create-form" className="p-5" onSubmit={handleCreate}>
+          <PanelFieldCard>
+            <PanelField label="Nome" htmlFor="contact-create-name" required>
+              <input
+                id="contact-create-name"
+                name="name"
+                required
+                autoComplete="name"
+                placeholder="Nome completo"
+                className={panelInputCls}
+              />
+            </PanelField>
+            <PanelField label="E-mail" htmlFor="contact-create-email" required>
+              <input
+                id="contact-create-email"
+                name="email"
+                type="email"
+                required
+                autoComplete="email"
+                placeholder="email@exemplo.com"
+                className={panelInputCls}
+              />
+            </PanelField>
+            <PanelField label="Telefone" htmlFor="contact-create-phone">
+              <input
+                id="contact-create-phone"
+                name="phone"
+                placeholder="Opcional"
+                className={panelInputCls}
+              />
+            </PanelField>
+            <PanelField label="Observações" htmlFor="contact-create-notes" align="start">
+              <textarea
+                id="contact-create-notes"
+                name="notes"
+                rows={3}
+                placeholder="Opcional"
+                className={cn(panelInputCls, "resize-none")}
+              />
+            </PanelField>
+          </PanelFieldCard>
         </form>
       </Modal>
 
@@ -399,58 +414,61 @@ export function ContactsView({ contacts }: ContactsViewProps) {
         open={Boolean(editContact)}
         onClose={() => setEditContact(null)}
         title="Editar contato"
-        size="lg"
+        size="md"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="ghost" size="sm" onClick={() => setEditContact(null)} disabled={isPending}>
+              Fechar
+            </Button>
+            <Button type="submit" form="contact-edit-form" size="sm" disabled={isPending}>
+              {isPending ? "Salvando…" : "Salvar"}
+            </Button>
+          </div>
+        }
       >
         {editContact ? (
-          <form
-            key={editContact.id}
-            className="flex flex-col gap-4 p-5"
-            onSubmit={handleEdit}
-          >
-            <Input
-              id="contact-edit-name"
-              name="name"
-              label="Nome completo"
-              required
-              defaultValue={editContact.name}
-            />
-            <Input
-              id="contact-edit-email"
-              name="email"
-              type="email"
-              label="E-mail"
-              required
-              defaultValue={editContact.email}
-              autoComplete="email"
-            />
-            <Input
-              id="contact-edit-phone"
-              name="phone"
-              label="Telefone / WhatsApp"
-              placeholder="Opcional"
-              defaultValue={editContact.phone ?? ""}
-            />
-            <Textarea
-              id="contact-edit-notes"
-              name="notes"
-              label="Observações"
-              placeholder="Opcional"
-              rows={3}
-              defaultValue={editContact.notes ?? ""}
-            />
-            <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => setEditContact(null)}
-                disabled={isPending}
-              >
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={isPending}>
-                {isPending ? "Salvando…" : "Salvar"}
-              </Button>
-            </div>
+          <form id="contact-edit-form" key={editContact.id} className="p-5" onSubmit={handleEdit}>
+            <PanelFieldCard>
+              <PanelField label="Nome" htmlFor="contact-edit-name" required>
+                <input
+                  id="contact-edit-name"
+                  name="name"
+                  required
+                  defaultValue={editContact.name}
+                  className={panelInputCls}
+                />
+              </PanelField>
+              <PanelField label="E-mail" htmlFor="contact-edit-email" required>
+                <input
+                  id="contact-edit-email"
+                  name="email"
+                  type="email"
+                  required
+                  autoComplete="email"
+                  defaultValue={editContact.email}
+                  className={panelInputCls}
+                />
+              </PanelField>
+              <PanelField label="Telefone" htmlFor="contact-edit-phone">
+                <input
+                  id="contact-edit-phone"
+                  name="phone"
+                  defaultValue={editContact.phone ?? ""}
+                  placeholder="Opcional"
+                  className={panelInputCls}
+                />
+              </PanelField>
+              <PanelField label="Observações" htmlFor="contact-edit-notes" align="start">
+                <textarea
+                  id="contact-edit-notes"
+                  name="notes"
+                  rows={3}
+                  defaultValue={editContact.notes ?? ""}
+                  placeholder="Opcional"
+                  className={cn(panelInputCls, "resize-none")}
+                />
+              </PanelField>
+            </PanelFieldCard>
           </form>
         ) : null}
       </Modal>
@@ -460,33 +478,25 @@ export function ContactsView({ contacts }: ContactsViewProps) {
         onClose={() => setDeleteContactRow(null)}
         title="Excluir contato"
         size="sm"
-      >
-        {deleteContactRow ? (
-          <div className="flex flex-col gap-4 p-5">
-            <p className="text-sm text-ds-muted">
-              Tem certeza que deseja excluir{" "}
-              <span className="font-medium text-ds-ink">{deleteContactRow.name}</span>
-              ? Esta ação não pode ser desfeita.
-            </p>
-            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => setDeleteContactRow(null)}
-                disabled={isPending}
-              >
-                Cancelar
+        footer={
+          deleteContactRow ? (
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="ghost" size="sm" onClick={() => setDeleteContactRow(null)} disabled={isPending}>
+                Fechar
               </Button>
-              <Button
-                type="button"
-                variant="danger"
-                onClick={handleDelete}
-                disabled={isPending}
-              >
+              <Button type="button" variant="danger" size="sm" onClick={handleDelete} disabled={isPending}>
                 {isPending ? "Excluindo…" : "Excluir"}
               </Button>
             </div>
-          </div>
+          ) : undefined
+        }
+      >
+        {deleteContactRow ? (
+          <p className="p-5 text-sm text-ds-muted">
+            Tem certeza que deseja excluir{" "}
+            <span className="font-medium text-ds-ink">{deleteContactRow.name}</span>
+            ? Esta ação não pode ser desfeita.
+          </p>
         ) : null}
       </Modal>
     </div>

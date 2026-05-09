@@ -292,19 +292,15 @@ export function InlineNoteEditor({
         onClose={() => setShowDeleteModal(false)}
         title="Excluir nota"
         size="sm"
-      >
-        <div className="flex flex-col gap-4">
-          <p className="text-sm text-ds-muted">
-            Tem certeza que deseja excluir esta nota? Esta ação não pode ser desfeita.
-          </p>
-          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        footer={
+          <div className="flex justify-end gap-2">
             <Button
               type="button"
-              variant="secondary"
+              variant="ghost"
               onClick={() => setShowDeleteModal(false)}
               disabled={isDeletePending}
             >
-              Cancelar
+              Fechar
             </Button>
             <Button
               type="button"
@@ -315,6 +311,12 @@ export function InlineNoteEditor({
               {isDeletePending ? "Excluindo…" : "Excluir"}
             </Button>
           </div>
+        }
+      >
+        <div className="p-5">
+          <p className="text-sm text-ds-muted">
+            Tem certeza que deseja excluir esta nota? Esta ação não pode ser desfeita.
+          </p>
         </div>
       </Modal>
     </div>
