@@ -49,7 +49,7 @@ import type { Database, Plan } from "@/types/database";
 
 type StageRow = Database["public"]["Tables"]["kanban_stages"]["Row"];
 type WorkTypeRow = Database["public"]["Tables"]["job_work_types"]["Row"];
-type ContactPick = Pick<Database["public"]["Tables"]["contacts"]["Row"], "id" | "name" | "email" | "phone">;
+type ContactPick = Pick<Database["public"]["Tables"]["contacts"]["Row"], "id" | "name" | "email">;
 
 const JobDetailModal = dynamic(
   () => import("@/components/app/job-detail-modal").then((m) => ({ default: m.JobDetailModal })),
@@ -295,7 +295,6 @@ interface BoardViewProps {
   replyToEmail: string | null;
   accountSubjectTemplate: string | null;
   accountBodyTemplate: string | null;
-  whatsappClientDeliveryEnabled: boolean;
 }
 
 const AvatarStack = memo(function AvatarStack({
@@ -637,7 +636,6 @@ export function BoardView({
   replyToEmail,
   accountSubjectTemplate,
   accountBodyTemplate,
-  whatsappClientDeliveryEnabled,
 }: BoardViewProps) {
   const router = useRouter();
 
@@ -1008,18 +1006,15 @@ export function BoardView({
         onSuccess={() => {
           toast.success("E-mail enviado ao cliente.");
         }}
-        jobId={emailStub?.id ?? ""}
         jobName={emailStub?.name ?? ""}
         contactName={emailStub?.contacts?.name ?? null}
         contactEmail={emailStub?.contacts?.email ?? null}
-        contactPhone={(emailStub?.contacts as { phone?: string | null } | null | undefined)?.phone ?? null}
         deliveryLink={emailStub?.delivery_link ?? null}
         plan={plan}
         senderName={senderName}
         replyToEmail={replyToEmail}
         accountSubjectTemplate={accountSubjectTemplate}
         accountBodyTemplate={accountBodyTemplate}
-        whatsappClientDeliveryEnabled={whatsappClientDeliveryEnabled}
       />
     </div>
   );
