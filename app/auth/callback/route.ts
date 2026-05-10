@@ -12,6 +12,8 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const origin = publicAppOrigin(request);
   const code = searchParams.get("code");
+  const type = searchParams.get("type");
+
   let nextPath = searchParams.get("next") ?? "/dashboard";
   if (!nextPath.startsWith("/") || nextPath.startsWith("//")) {
     nextPath = "/dashboard";
@@ -28,7 +30,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/login?error=auth`);
   }
 
-  let response = NextResponse.redirect(`${origin}${nextPath}`);
+  // Destino final: recovery vai para redefinição de senha; demais fluxos seguem nextPath.
+  const finalPath = type === "recovery" ? "/auth/reset-password" : nextPath;
+
+  let response = NextResponse.redirect(`${origin}${finalPath}`);
 
   const supabase = createServerClient<Database>(url, key, {
     cookies: {
@@ -36,7 +41,7 @@ export async function GET(request: NextRequest) {
         return request.cookies.getAll();
       },
       setAll(cookiesToSet) {
-        response = NextResponse.redirect(`${origin}${nextPath}`);
+        response = NextResponse.redirect(`${origin}${finalPath}`);
         cookiesToSet.forEach(({ name, value, options }) => {
           response.cookies.set(name, value, options);
         });
@@ -48,6 +53,12 @@ export async function GET(request: NextRequest) {
 
   if (exchangeError) {
     return NextResponse.redirect(`${origin}/login?error=auth`);
+  }
+
+  // Fluxo de recuperação de senha: sessão estabelecida, redireciona para redefinir senha.
+  // Não provisionar — o usuário já existe.
+  if (type === "recovery") {
+    return response;
   }
 
   const {

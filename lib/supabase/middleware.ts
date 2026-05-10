@@ -64,6 +64,8 @@ export async function updateSession(request: NextRequest) {
   const isPublic =
     path === "/" ||
     path === "/login" ||
+    path === "/signup" ||
+    path === "/forgot-password" ||
     path === "/sitemap.xml" ||
     path === "/robots.txt" ||
     path.startsWith("/auth/") ||
@@ -82,7 +84,9 @@ export async function updateSession(request: NextRequest) {
     return redirect;
   }
 
-  if (user && path === "/login") {
+  // Redireciona usuários autenticados que tentam acessar páginas de autenticação pública.
+  const isAuthPage = path === "/login" || path === "/signup" || path === "/forgot-password";
+  if (user && isAuthPage) {
     const next = request.nextUrl.searchParams.get("next");
     if (next?.startsWith("/invite/")) {
       return response;
