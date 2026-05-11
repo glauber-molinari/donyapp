@@ -35,7 +35,7 @@ export default async function SettingsTeamPage() {
     );
   }
 
-  const [teamRes, subRes] = await Promise.all([
+  const [teamRes, subRes, invRes] = await Promise.all([
     supabase
       .from("users")
       .select("id, name, email, role, created_at")
@@ -46,6 +46,11 @@ export default async function SettingsTeamPage() {
       .select("plan")
       .eq("account_id", profile.account_id)
       .maybeSingle(),
+    supabase
+      .from("invitations")
+      .select("id, email, expires_at, accepted_at, created_at")
+      .eq("account_id", profile.account_id)
+      .order("created_at", { ascending: false }),
   ]);
 
   if (teamRes.error) {
@@ -61,10 +66,13 @@ export default async function SettingsTeamPage() {
   const plan = subRes.data?.plan ?? "free";
   const isAdmin = profile.role === "admin";
 
+  const invitations = (invRes.data ?? []).filter((inv) => !inv.accepted_at);
+
   return (
     <div className="flex max-w-2xl flex-col gap-6">
       <SettingsTeamSection
         members={teamRes.data ?? []}
+        invitations={invitations}
         plan={plan}
         isAdmin={isAdmin}
         currentUserId={user.id}

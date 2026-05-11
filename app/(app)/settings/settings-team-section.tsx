@@ -4,7 +4,7 @@ import { UserMinus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { removeTeamMember } from "./team-actions";
+import { removeTeamMember, cancelInvitation } from "./team-actions";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast";
 import { Card } from "@/components/ui/card";
@@ -23,6 +23,14 @@ export type TeamMemberRow = {
   created_at: string;
 };
 
+export type InvitationRow = {
+  id: string;
+  email: string;
+  expires_at: string;
+  accepted_at: string | null;
+  created_at: string;
+};
+
 function formatDatePt(iso: string): string {
   try {
     return new Date(iso).toLocaleDateString("pt-BR", {
@@ -35,13 +43,19 @@ function formatDatePt(iso: string): string {
   }
 }
 
+function getInvitationStatus(expiresAt: string): "expired" | "pending" {
+  return new Date(expiresAt) <= new Date() ? "expired" : "pending";
+}
+
 export function SettingsTeamSection({
   members,
+  invitations,
   plan,
   isAdmin,
   currentUserId,
 }: {
   members: TeamMemberRow[];
+  invitations: InvitationRow[];
   plan: Plan;
   isAdmin: boolean;
   currentUserId: string;
@@ -54,6 +68,10 @@ export function SettingsTeamSection({
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [removeId, setRemoveId] = useState<string | null>(null);
   const [removeBusy, setRemoveBusy] = useState(false);
+  const [resendId, setResendId] = useState<string | null>(null);
+  const [resendBusy, setResendBusy] = useState(false);
+  const [cancelInvId, setCancelInvId] = useState<string | null>(null);
+  const [cancelInvBusy, setCancelInvBusy] = useState(false);
 
   async function handleSendInvite(e: React.FormEvent) {
     e.preventDefault();
@@ -90,6 +108,44 @@ export function SettingsTeamSection({
       return;
     }
     toast.success("Membro removido da equipe.");
+    router.refresh();
+  }
+
+  async function handleResendInvite() {
+    if (!resendId) return;
+    const inv = invitations.find((i) => i.id === resendId);
+    if (!inv) return;
+    setResendBusy(true);
+    try {
+      const res = await fetch("/api/invitations/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: inv.email }),
+      });
+      const data = (await res.json()) as { ok?: boolean; error?: string };
+      if (!res.ok || !data.ok) {
+        toast.error(data.error ?? "Não foi possível reenviar o convite.");
+        return;
+      }
+      toast.success("Convite reenviado por e-mail.");
+      setResendId(null);
+      router.refresh();
+    } finally {
+      setResendBusy(false);
+    }
+  }
+
+  async function handleCancelInvitation() {
+    if (!cancelInvId) return;
+    setCancelInvBusy(true);
+    const res = await cancelInvitation(cancelInvId);
+    setCancelInvBusy(false);
+    setCancelInvId(null);
+    if (!res.ok) {
+      toast.error(res.error);
+      return;
+    }
+    toast.success("Convite cancelado.");
     router.refresh();
   }
 
@@ -163,48 +219,121 @@ export function SettingsTeamSection({
       ) : null}
 
       <Card className="overflow-hidden p-0">
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-left text-sm">
-            <thead>
-              <tr className="border-b border-app-border bg-ds-cream/90">
-                <th className="px-4 py-3 font-medium text-ds-muted">Nome</th>
-                <th className="px-4 py-3 font-medium text-ds-muted">E-mail</th>
-                <th className="px-4 py-3 font-medium text-ds-muted">Papel</th>
-                <th className="px-4 py-3 font-medium text-ds-muted">Desde</th>
-                <th className="w-24 px-4 py-3 text-right font-medium text-ds-muted"> </th>
+        <table className="w-full border-collapse text-left text-sm">
+          <thead>
+            <tr className="border-b border-app-border bg-ds-cream/90">
+              <th className="px-3 py-2 font-medium text-ds-muted text-xs">Nome</th>
+              <th className="px-3 py-2 font-medium text-ds-muted text-xs">E-mail</th>
+              <th className="px-3 py-2 font-medium text-ds-muted text-xs">Papel</th>
+              <th className="px-3 py-2 font-medium text-ds-muted text-xs">Desde</th>
+              <th className="px-3 py-2 text-right font-medium text-ds-muted text-xs"> </th>
+            </tr>
+          </thead>
+          <tbody>
+            {members.map((m) => (
+              <tr key={m.id} className="border-b border-ds-border last:border-0">
+                <td className="px-3 py-2 font-medium text-ds-ink text-xs truncate">{m.name ?? "—"}</td>
+                <td className="px-3 py-2 text-ds-muted text-xs truncate">{m.email ?? "—"}</td>
+                <td className="px-3 py-2 capitalize text-ds-muted text-xs whitespace-nowrap">
+                  {m.role === "admin" ? "Admin" : "Membro"}
+                </td>
+                <td className="px-3 py-2 text-ds-muted text-xs whitespace-nowrap">{formatDatePt(m.created_at)}</td>
+                <td className="px-3 py-2 text-right">
+                  {m.id !== currentUserId && isPro ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 text-red-600 hover:bg-red-50"
+                      aria-label={`Remover ${m.name ?? m.email ?? "membro"}`}
+                      onClick={() => {
+                        setRemoveId(m.id);
+                      }}
+                    >
+                      <UserMinus className="h-4 w-4" />
+                    </Button>
+                  ) : null}
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {members.map((m) => (
-                <tr key={m.id} className="border-b border-ds-border last:border-0">
-                  <td className="px-4 py-3 font-medium text-ds-ink">{m.name ?? "—"}</td>
-                  <td className="px-4 py-3 text-ds-muted">{m.email ?? "—"}</td>
-                  <td className="px-4 py-3 capitalize text-ds-muted">
-                    {m.role === "admin" ? "Administrador" : "Membro"}
-                  </td>
-                  <td className="px-4 py-3 text-ds-muted">{formatDatePt(m.created_at)}</td>
-                  <td className="px-4 py-3 text-right">
-                    {m.id !== currentUserId && isPro ? (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 text-red-600 hover:bg-red-50"
-                        aria-label={`Remover ${m.name ?? m.email ?? "membro"}`}
-                        onClick={() => {
-                          setRemoveId(m.id);
-                        }}
-                      >
-                        <UserMinus className="h-4 w-4" />
-                      </Button>
-                    ) : null}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </Card>
+
+      {invitations.length > 0 && (
+        <div className="mt-8 flex flex-col gap-2">
+          <div>
+            <h3 className="text-lg font-semibold text-ds-ink">Convites Pendentes</h3>
+            <p className="mt-1 text-sm text-ds-muted">
+              Convites enviados e aguardando aceitação. Expiram em 48 horas.
+            </p>
+          </div>
+
+          <Card className="overflow-hidden p-0">
+            <table className="w-full border-collapse text-left text-sm">
+              <thead>
+                <tr className="border-b border-app-border bg-ds-cream/90">
+                  <th className="px-3 py-2 font-medium text-ds-muted text-xs">E-mail</th>
+                  <th className="px-3 py-2 font-medium text-ds-muted text-xs">Status</th>
+                  <th className="px-3 py-2 font-medium text-ds-muted text-xs">Enviado</th>
+                  <th className="px-3 py-2 font-medium text-ds-muted text-xs">Expira</th>
+                  <th className="px-3 py-2 text-right font-medium text-ds-muted text-xs"> </th>
+                </tr>
+              </thead>
+              <tbody>
+                {invitations.map((inv) => {
+                  const status = getInvitationStatus(inv.expires_at);
+                  return (
+                    <tr key={inv.id} className="border-b border-ds-border last:border-0">
+                      <td className="px-3 py-2 font-medium text-ds-ink text-xs truncate">{inv.email}</td>
+                      <td className="px-3 py-2">
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${status === "expired"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-yellow-100 text-yellow-700"
+                            }`}
+                        >
+                          {status === "expired" ? "Exp." : "Pend."}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 text-ds-muted text-xs whitespace-nowrap">{formatDatePt(inv.created_at)}</td>
+                      <td className="px-3 py-2 text-ds-muted text-xs whitespace-nowrap">{formatDatePt(inv.expires_at)}</td>
+                      <td className="px-3 py-2">
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-0 text-xs text-ds-accent hover:bg-orange-50"
+                            onClick={() => {
+                              setResendId(inv.id);
+                            }}
+                            disabled={resendBusy}
+                          >
+                            Reenviar
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-1 text-xs text-red-600 hover:bg-red-50"
+                            onClick={() => {
+                              setCancelInvId(inv.id);
+                            }}
+                            disabled={cancelInvBusy}
+                          >
+                            Cancelar
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </Card>
+        </div>
+      )}
 
       <Modal
         open={inviteOpen}
@@ -280,6 +409,71 @@ export function SettingsTeamSection({
         <div className="p-5">
           <p className="text-sm text-ds-muted">
             O acesso à conta será revogado. Os dados do estúdio permanecem na conta.
+          </p>
+        </div>
+      </Modal>
+
+      <Modal
+        open={Boolean(resendId)}
+        onClose={() => setResendId(null)}
+        title="Reenviar convite"
+        size="sm"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setResendId(null)}
+              disabled={resendBusy}
+            >
+              Fechar
+            </Button>
+            <Button
+              type="button"
+              onClick={() => void handleResendInvite()}
+              disabled={resendBusy}
+            >
+              {resendBusy ? "Reenviando…" : "Reenviar"}
+            </Button>
+          </div>
+        }
+      >
+        <div className="p-5">
+          <p className="text-sm text-ds-muted">
+            Enviaremos um novo link de convite válido por 48 horas.
+          </p>
+        </div>
+      </Modal>
+
+      <Modal
+        open={Boolean(cancelInvId)}
+        onClose={() => setCancelInvId(null)}
+        title="Cancelar convite"
+        size="sm"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setCancelInvId(null)}
+              disabled={cancelInvBusy}
+            >
+              Fechar
+            </Button>
+            <Button
+              type="button"
+              variant="danger"
+              onClick={() => void handleCancelInvitation()}
+              disabled={cancelInvBusy}
+            >
+              {cancelInvBusy ? "Cancelando…" : "Cancelar"}
+            </Button>
+          </div>
+        }
+      >
+        <div className="p-5">
+          <p className="text-sm text-ds-muted">
+            O convite será removido e não poderá mais ser aceito. A pessoa precisará de um novo convite.
           </p>
         </div>
       </Modal>

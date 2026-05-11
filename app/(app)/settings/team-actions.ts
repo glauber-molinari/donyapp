@@ -75,3 +75,52 @@ export async function removeTeamMember(memberUserId: string): Promise<{ ok: true
   revalidatePath("/dashboard");
   return { ok: true };
 }
+
+export async function cancelInvitation(
+  invitationId: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { ok: false, error: "Não autenticado." };
+  }
+
+  const { data: adminRow } = await supabase
+    .from("users")
+    .select("account_id, role")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (!adminRow?.account_id || adminRow.role !== "admin") {
+    return { ok: false, error: "Apenas administradores podem cancelar convites." };
+  }
+
+  const { data: invitation } = await supabase
+    .from("invitations")
+    .select("id, account_id, accepted_at")
+    .eq("id", invitationId)
+    .maybeSingle();
+
+  if (!invitation || invitation.account_id !== adminRow.account_id) {
+    return { ok: false, error: "Convite não encontrado." };
+  }
+
+  if (invitation.accepted_at) {
+    return { ok: false, error: "Não é possível cancelar um convite já aceito." };
+  }
+
+  const { error: delErr } = await supabase
+    .from("invitations")
+    .delete()
+    .eq("id", invitationId);
+
+  if (delErr) {
+    return { ok: false, error: "Não foi possível cancelar o convite." };
+  }
+
+  revalidatePath("/settings");
+  return { ok: true };
+}
