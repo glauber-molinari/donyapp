@@ -140,14 +140,21 @@ export async function POST(req: Request) {
     );
   }
 
+  const { data: inviter } = await supabase
+    .from("users")
+    .select("name")
+    .eq("account_id", me.account_id)
+    .eq("role", "admin")
+    .maybeSingle();
+
   const inviteUrl = `${origin}/invite/${token}`;
-  const html = buildInviteEmailHtml({ accountName, inviteUrl });
+  const html = buildInviteEmailHtml({ accountName, inviteUrl, adminName: inviter?.name });
 
   const resend = new Resend(apiKey);
   const { error: sendErr } = await resend.emails.send({
     from,
     to: [raw],
-    subject: `Convite para equipe — ${accountName}`,
+    subject: `Convite para colaborar no Dony.app — ${accountName}`,
     html,
   });
 
