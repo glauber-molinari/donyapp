@@ -71,16 +71,16 @@ export default async function InvitePage({ params }: { params: { token: string }
           Entre na conta <span className="font-semibold text-ds-ink">{accountName}</span> no dony.
         </p>
         <p className="mt-2 text-xs text-ds-subtle">
-          Use a conta Google do e-mail <span className="font-medium text-ds-muted">{inv.email}</span>.
+          Use o e-mail <span className="font-medium text-ds-muted">{inv.email}</span> para entrar.
         </p>
         <Link
           href={loginHref}
           className="mt-8 inline-flex w-full items-center justify-center rounded-ds-xl bg-app-primary px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:brightness-95"
         >
-          Entrar com Google
+          Continuar
         </Link>
         <p className="mt-4 text-xs text-ds-subtle">
-          Primeiro acesso? Após o Google, você entra direto na equipe.
+          Você pode entrar com Google ou criar uma conta com email e senha.
         </p>
       </div>
       <div className="mt-6 text-center text-xs text-ds-subtle">
