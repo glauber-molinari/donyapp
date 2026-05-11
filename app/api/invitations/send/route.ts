@@ -5,6 +5,7 @@ import { Resend } from "resend";
 
 import { buildInviteEmailHtml } from "@/lib/email/invite-email-html";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceRoleClient } from "@/lib/supabase/service-role";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -81,7 +82,15 @@ export async function POST(req: Request) {
 
   const accountName = account?.name ?? "Estúdio";
 
-  const { data: existingUser } = await supabase
+  const svc = createServiceRoleClient();
+  if (!svc) {
+    return NextResponse.json(
+      { ok: false, error: "Servidor não está configurado para validar emails." },
+      { status: 503 }
+    );
+  }
+
+  const { data: existingUser } = await svc
     .from("users")
     .select("id, account_id")
     .ilike("email", raw)
