@@ -148,7 +148,7 @@ export async function POST(req: Request) {
     .maybeSingle();
 
   const inviteUrl = `${origin}/invite/${token}`;
-  const html = buildInviteEmailHtml({ accountName, inviteUrl, adminName: inviter?.name });
+  const html = buildInviteEmailHtml({ accountName, inviteUrl, adminName: inviter?.name ?? undefined });
 
   const resend = new Resend(apiKey);
   const { error: sendErr } = await resend.emails.send({
