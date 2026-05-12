@@ -55,7 +55,10 @@ export const metadata: Metadata = {
     title: "Donyapp",
   },
   icons: {
-    icon: "/brand/icon-dony-laranja.png",
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
     apple: "/brand/icon-dony-laranja.png",
   },
 };
