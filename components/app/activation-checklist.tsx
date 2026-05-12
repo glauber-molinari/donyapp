@@ -13,22 +13,28 @@ const DISMISS_KEY = "donyapp_activation_checklist_dismissed";
 type Step = {
   id: string;
   label: string;
+  hint?: string;
   done: boolean;
   href: string;
 };
 
+/** Conta provisionada com um único tipo «Geral» — pedimos que ajustem em Kanban antes de seguir. */
+function jobTypesLookConfigured(workTypes: { name: string }[]): boolean {
+  if (workTypes.length === 0) return false;
+  if (workTypes.length > 1) return true;
+  return workTypes[0].name.trim().toLowerCase() !== "geral";
+}
+
 export function ActivationChecklist({
+  workTypes,
   contactsCount,
   jobsCount,
-  stagesSorted,
-  jobs,
   agendaConnected,
   tourCompleted,
 }: {
+  workTypes: { name: string }[];
   contactsCount: number;
   jobsCount: number;
-  stagesSorted: { id: string; position: number }[];
-  jobs: { stage_id: string | null; job_kind: string | null }[];
   agendaConnected: boolean;
   tourCompleted: boolean;
 }) {
@@ -43,37 +49,34 @@ export function ActivationChecklist({
     }
   }, []);
 
-  const firstStageId = useMemo(() => {
-    const s = [...stagesSorted].sort((a, b) => a.position - b.position);
-    return s[0]?.id ?? null;
-  }, [stagesSorted]);
-
-  const hasMovedOnBoard = useMemo(() => {
-    const relevant = jobs.filter((j) => j.job_kind !== "video_edit");
-    if (relevant.length === 0) return false;
-    if (!firstStageId || stagesSorted.length <= 1) return true;
-    return relevant.some((j) => j.stage_id && j.stage_id !== firstStageId);
-  }, [jobs, firstStageId, stagesSorted.length]);
+  const jobTypesConfigured = useMemo(() => jobTypesLookConfigured(workTypes), [workTypes]);
 
   const steps: Step[] = useMemo(
     () => [
       {
+        id: "work_types",
+        label: "Configurar tipos de job",
+        hint: !jobTypesConfigured
+          ? "Em Configurações → Kanban: renomeie «Geral» ou crie os tipos que o estúdio usa de verdade."
+          : undefined,
+        done: jobTypesConfigured,
+        href: "/settings/kanban",
+      },
+      {
         id: "contact",
-        label: "Cadastrar um contato",
+        label: "Cadastrar um ou mais contatos",
+        hint:
+          contactsCount < 1
+            ? "Vários de uma vez: Configurações → Importar aceita planilha .csv."
+            : undefined,
         done: contactsCount >= 1,
         href: "/contacts",
       },
       {
         id: "job",
-        label: "Criar seu primeiro job",
+        label: "Cadastrar um job",
         done: jobsCount >= 1,
         href: "/dashboard#btn-novo-job",
-      },
-      {
-        id: "board",
-        label: "Avançar um card no quadro",
-        done: hasMovedOnBoard,
-        href: "/board",
       },
       {
         id: "agenda",
@@ -82,7 +85,7 @@ export function ActivationChecklist({
         href: "/settings/agenda",
       },
     ],
-    [contactsCount, jobsCount, hasMovedOnBoard, agendaConnected],
+    [contactsCount, jobsCount, jobTypesConfigured, agendaConnected],
   );
 
   const doneCount = steps.filter((s) => s.done).length;
@@ -118,7 +121,7 @@ export function ActivationChecklist({
             Primeiros passos
           </h2>
           <p className="mt-1 text-xs text-ds-muted">
-            {doneCount}/{steps.length} concluídos. Em poucos minutos o fluxo aparece de verdade no app.
+            {doneCount}/{steps.length} concluídos. Ordem sugerida: tipos de job → contatos → job → agenda.
           </p>
         </div>
         <button
@@ -161,8 +164,15 @@ export function ActivationChecklist({
               >
                 {step.done ? <Check className="h-4 w-4" strokeWidth={2.5} /> : null}
               </span>
-              <span className={cn("min-w-0 flex-1 font-medium", step.done && "line-through opacity-80")}>
-                {step.label}
+              <span className="min-w-0 flex-1">
+                <span className={cn("block font-medium", step.done && "line-through opacity-80")}>
+                  {step.label}
+                </span>
+                {step.hint ? (
+                  <span className="mt-1 block text-xs font-normal leading-snug text-ds-muted">
+                    {step.hint}
+                  </span>
+                ) : null}
               </span>
               {!step.done ? (
                 <ChevronRight className="h-4 w-4 shrink-0 text-ds-subtle" aria-hidden />

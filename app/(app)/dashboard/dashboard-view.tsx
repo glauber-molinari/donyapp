@@ -470,10 +470,9 @@ export function DashboardView({
       </div>
 
       <ActivationChecklist
+        workTypes={workTypes}
         contactsCount={contacts.length}
         jobsCount={jobsForChecklist.length}
-        stagesSorted={stages.map((s) => ({ id: s.id, position: s.position }))}
-        jobs={jobs.map((j) => ({ stage_id: j.stage_id, job_kind: j.job_kind }))}
         agendaConnected={agendaConnected}
         tourCompleted={tourCompleted}
       />
