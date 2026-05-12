@@ -3,7 +3,7 @@ import { randomBytes } from "crypto";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
-import { buildInviteEmailHtml } from "@/lib/email/invite-email-html";
+import { buildInviteEmailHtml, buildInviteEmailText } from "@/lib/email/invite-email-html";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 
@@ -157,7 +157,9 @@ export async function POST(req: Request) {
     .maybeSingle();
 
   const inviteUrl = `${origin}/invite/${token}`;
-  const html = buildInviteEmailHtml({ accountName, inviteUrl, adminName: inviter?.name ?? undefined });
+  const inviteParams = { accountName, inviteUrl, adminName: inviter?.name ?? undefined };
+  const html = buildInviteEmailHtml(inviteParams);
+  const text = buildInviteEmailText(inviteParams);
 
   const resend = new Resend(apiKey);
   const { error: sendErr } = await resend.emails.send({
@@ -165,6 +167,7 @@ export async function POST(req: Request) {
     to: [raw],
     subject: `Convite para colaborar no Dony.app — ${accountName}`,
     html,
+    text,
   });
 
   if (sendErr) {

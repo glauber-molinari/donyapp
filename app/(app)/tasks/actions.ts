@@ -410,6 +410,7 @@ export async function addTaskAssignee(
       const [d, m, y] = task.deadline.split("-").reverse();
       const deadlineFormatted = `${d}/${m}/${y}`;
 
+      const taskText = `${ctx.userName} adicionou você à tarefa: ${task.name}\n\n${task.description ? task.description + "\n\n" : ""}Prazo: ${deadlineFormatted}\n\nVer tarefa no Dony:\n${appUrl}/tasks`;
       await resend.emails.send({
         from,
         to: [trimmedEmail],
@@ -421,6 +422,7 @@ export async function addTaskAssignee(
           deadline: deadlineFormatted,
           appUrl: `${appUrl}/tasks`,
         }),
+        text: taskText,
       });
     } catch {
       // swallow email error — assignee already added

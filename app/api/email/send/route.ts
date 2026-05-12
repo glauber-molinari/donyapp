@@ -101,6 +101,7 @@ export async function POST(req: Request) {
     replyTo,
     subject,
     html,
+    text: bodyText,
   });
 
   if (error) {

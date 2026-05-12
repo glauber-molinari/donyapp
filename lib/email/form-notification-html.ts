@@ -46,7 +46,7 @@ export function buildFormNotificationHtml(params: {
             </td>
           </tr>
         </table>
-        <p style="margin:16px 0 0;font-size:12px;color:#888888;text-align:center;">
+        <p style="margin:16px 0 0;font-size:12px;color:#555555;text-align:center;">
           Mensagem enviada pelo dony
         </p>
       </td>

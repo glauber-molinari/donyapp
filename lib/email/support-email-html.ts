@@ -52,7 +52,7 @@ export function buildNewTicketEmailHtml(params: {
           <p style="margin:0 0 24px;">
             <a href="${adminUrl}" style="display:inline-block;background:#ea580c;color:#fff;text-decoration:none;padding:12px 20px;border-radius:10px;font-weight:600;font-size:15px;">Ver e responder ticket</a>
           </p>
-          <p style="margin:0;font-size:12px;color:#999;">ID do ticket: ${escapeHtml(params.ticketId)}</p>
+          <p style="margin:0;font-size:12px;color:#666666;">ID do ticket: ${escapeHtml(params.ticketId)}</p>
         </td></tr>
       </table>
     </td></tr>
@@ -91,7 +91,7 @@ export function buildTicketReplyEmailHtml(params: {
           <p style="margin:0 0 24px;">
             <a href="${ticketUrl}" style="display:inline-block;background:#ea580c;color:#fff;text-decoration:none;padding:12px 20px;border-radius:10px;font-weight:600;font-size:15px;">Ver ticket no Donyapp</a>
           </p>
-          <p style="margin:0;font-size:13px;color:#999;">
+          <p style="margin:0;font-size:13px;color:#666666;">
             Se o botão não funcionar, acesse: <span style="word-break:break-all;color:#444;">${ticketUrl}</span>
           </p>
         </td></tr>

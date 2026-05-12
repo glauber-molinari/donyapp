@@ -37,7 +37,7 @@ export function buildDeliveryEmailHtml(bodyText: string): string {
             </td>
           </tr>
         </table>
-        <p style="margin:16px 0 0;font-size:12px;color:#888888;text-align:center;font-family:system-ui,sans-serif;">
+        <p style="margin:16px 0 0;font-size:12px;color:#555555;text-align:center;font-family:system-ui,sans-serif;">
           Mensagem enviada pelo dony
         </p>
       </td>

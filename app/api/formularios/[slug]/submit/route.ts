@@ -99,12 +99,29 @@ export async function POST(req: Request, { params }: { params: { slug: string } 
         today,
       });
 
+      const formTextLines = [
+        `Novo formulário recebido: ${template.title}`,
+        `Data: ${today}`,
+        ``,
+        ...fields
+          .map((f) => {
+            const val = labeledAnswers[f.label];
+            if (!val) return null;
+            const display = Array.isArray(val) ? val.join(", ") : val;
+            return `${f.label}: ${display}`;
+          })
+          .filter(Boolean),
+        ``,
+        `Ver formulário completo: ${submissionUrl}`,
+      ];
+
       const resend = new Resend(apiKey);
       await resend.emails.send({
         from,
         to: [teamEmail],
         subject: `Novo formulário recebido: ${template.title}`,
         html,
+        text: formTextLines.join("\n"),
       });
     } catch (err) {
       console.error("[form notify email]", err);

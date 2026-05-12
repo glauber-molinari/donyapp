@@ -77,11 +77,13 @@ export async function replyToTicket(ticketId: string, content: string): Promise<
       ticketUrl,
     });
 
+    const replyText = `Olá, ${userName}!\n\nSeu ticket de suporte foi respondido:\n\n${trimmed}\n\nAcesse o link para ver o ticket:\n${ticketUrl}`;
     await resend.emails.send({
       from,
       to: [userEmail],
       subject: "Seu ticket de suporte foi respondido — Donyapp",
       html,
+      text: replyText,
     });
   }
 

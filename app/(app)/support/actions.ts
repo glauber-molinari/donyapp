@@ -93,12 +93,14 @@ export async function createSupportTicket(formData: FormData): Promise<ActionRes
       adminUrl,
     });
 
+    const supportText = `Novo ticket de suporte\nCategoria: ${SUPPORT_CATEGORIES.find((c) => c.value === category)?.label ?? category}\n\nUsuário: ${profile.name ?? user.email ?? "Usuário"} <${profile.email ?? user.email ?? ""}>\n\nMensagem:\n${description}\n\nID do ticket: ${ticket.id}\nAdministrar: ${appUrl}/admin/support/${ticket.id}`;
     await resend.emails.send({
       from,
       to: [getSupportEmail()],
       replyTo: profile.email ?? user.email ?? undefined,
       subject: `[Suporte] ${SUPPORT_CATEGORIES.find((c) => c.value === category)?.label ?? category}`,
       html,
+      text: supportText,
     });
   }
 
