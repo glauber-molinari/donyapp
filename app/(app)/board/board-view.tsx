@@ -36,6 +36,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { Modal } from "@/components/ui/modal";
+import type { NewJobTab } from "@/components/app/new-job-form";
 import { kanbanStageAccentHex } from "@/lib/kanban-stage-accent";
 import { assigneesForJobCard } from "@/lib/job-assignees";
 import {
@@ -718,10 +719,15 @@ export function BoardView({
   );
 
   const [createOpen, setCreateOpen] = useState(false);
+  const [createJobTab, setCreateJobTab] = useState<NewJobTab>("info");
   const [detailJob, setDetailJob] = useState<JobWithRelations | null>(null);
   const [isPending, setIsPending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [emailStub, setEmailStub] = useState<JobWithRelations | null>(null);
+
+  useEffect(() => {
+    if (createOpen) setCreateJobTab("info");
+  }, [createOpen]);
 
   const stageOptions = useMemo(
     () =>
@@ -1001,14 +1007,30 @@ export function BoardView({
             >
               Fechar
             </Button>
-            <Button
-              form="board-job-create-form"
-              type="submit"
-              size="sm"
-              disabled={isPending || workTypeOptions.length === 0}
-            >
-              {isPending ? "Salvando…" : "Salvar"}
-            </Button>
+            {createJobTab === "info" ? (
+              <Button
+                type="button"
+                size="sm"
+                disabled={isPending || workTypeOptions.length === 0}
+                onClick={(e) => {
+                  e.preventDefault();
+                  const el = document.getElementById("board-job-create-form");
+                  if (!(el instanceof HTMLFormElement) || !el.reportValidity()) return;
+                  window.setTimeout(() => setCreateJobTab("prazos"), 0);
+                }}
+              >
+                Próximo
+              </Button>
+            ) : (
+              <Button
+                form="board-job-create-form"
+                type="submit"
+                size="sm"
+                disabled={isPending || workTypeOptions.length === 0}
+              >
+                {isPending ? "Salvando…" : "Salvar"}
+              </Button>
+            )}
           </div>
         }
       >
@@ -1022,6 +1044,8 @@ export function BoardView({
             memberOptions={memberOptions}
             manualAssigneeOptions={manualAssigneeOptions}
             useManualAssigneeDirectory={useManualAssigneeDirectory}
+            tab={createJobTab}
+            onTabChange={setCreateJobTab}
             onSubmit={handleCreate}
           />
         </div>

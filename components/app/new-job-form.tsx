@@ -27,7 +27,7 @@ function todayYmd(): string {
   return `${y}-${m}-${day}`;
 }
 
-type NewJobTab = "info" | "prazos";
+export type NewJobTab = "info" | "prazos";
 
 export type InitialJobValues = {
   name?: string | null;
@@ -63,6 +63,12 @@ export type NewJobFormProps = {
   /** Valores iniciais para pré-preencher o formulário (modo edição). */
   initialValues?: InitialJobValues;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  /**
+   * Aba ativa (modo controlado). Use junto de `onTabChange` no modal de criação:
+   * prazos ficam inativos no HTML até a aba Prazos, para `reportValidity` na etapa Informações.
+   */
+  tab?: NewJobTab;
+  onTabChange?: (tab: NewJobTab) => void;
 };
 
 export function NewJobForm({
@@ -76,8 +82,16 @@ export function NewJobForm({
   useManualAssigneeDirectory = false,
   initialValues,
   onSubmit,
+  tab: tabControlled,
+  onTabChange,
 }: NewJobFormProps) {
-  const [tab, setTab] = useState<NewJobTab>("info");
+  const [tabInternal, setTabInternal] = useState<NewJobTab>("info");
+  const tab = tabControlled ?? tabInternal;
+  const setTab = (next: NewJobTab) => {
+    onTabChange?.(next);
+    if (tabControlled === undefined) setTabInternal(next);
+  };
+  const twoStepCreate = tabControlled !== undefined && onTabChange !== undefined;
   const [deliveryType, setDeliveryType] = useState<JobRow["type"]>(
     initialValues?.type ?? "foto"
   );
@@ -201,6 +215,10 @@ export function NewJobForm({
         role="tabpanel"
         aria-hidden={tab !== "prazos"}
       >
+        <fieldset
+          disabled={twoStepCreate && tab !== "prazos"}
+          className="m-0 flex min-w-0 flex-col gap-3 border-0 p-0 disabled:[&_button]:pointer-events-none"
+        >
         <PanelFieldCard>
           <Input
             id={`${fieldIdPrefix}-internal`}
@@ -375,6 +393,7 @@ export function NewJobForm({
             </p>
           </div>
         ) : null}
+        </fieldset>
       </div>
 
     </form>

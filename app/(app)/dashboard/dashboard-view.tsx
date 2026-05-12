@@ -22,7 +22,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { ActivationChecklist } from "@/components/app/activation-checklist";
 import { ContactSearchField } from "@/components/app/contact-search-field";
-import { NewJobForm } from "@/components/app/new-job-form";
+import { NewJobForm, type NewJobTab } from "@/components/app/new-job-form";
 import { SdCardTagsField } from "@/components/app/sd-card-tags-field";
 import { KanbanMiniPreview } from "@/components/app/kanban-mini-preview";
 import { useOnboardingTour } from "@/components/app/onboarding-tour";
@@ -203,6 +203,7 @@ export function DashboardView({
 
   const [query, setQuery] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
+  const [createJobTab, setCreateJobTab] = useState<NewJobTab>("info");
   const [editJob, setEditJob] = useState<JobWithRelations | null>(null);
   const [editJobTab, setEditJobTab] = useState<EditJobTabId>("geral");
   const [deleteJobRow, setDeleteJobRow] = useState<JobWithRelations | null>(null);
@@ -358,6 +359,10 @@ export function DashboardView({
   useEffect(() => {
     if (editJob?.id) setEditJobTab("geral");
   }, [editJob?.id]);
+
+  useEffect(() => {
+    if (createOpen) setCreateJobTab("info");
+  }, [createOpen]);
 
   const editJobTabsVisible = useMemo(() => {
     const showEquipe = members.length > 1 || useManualDirectory;
@@ -1106,14 +1111,30 @@ export function DashboardView({
             >
               Fechar
             </Button>
-            <Button
-              form="dashboard-job-create-form"
-              type="submit"
-              size="sm"
-              disabled={isPending || workTypeOptions.length === 0}
-            >
-              {isPending ? "Salvando…" : "Salvar"}
-            </Button>
+            {createJobTab === "info" ? (
+              <Button
+                type="button"
+                size="sm"
+                disabled={isPending || workTypeOptions.length === 0}
+                onClick={(e) => {
+                  e.preventDefault();
+                  const el = document.getElementById("dashboard-job-create-form");
+                  if (!(el instanceof HTMLFormElement) || !el.reportValidity()) return;
+                  window.setTimeout(() => setCreateJobTab("prazos"), 0);
+                }}
+              >
+                Próximo
+              </Button>
+            ) : (
+              <Button
+                form="dashboard-job-create-form"
+                type="submit"
+                size="sm"
+                disabled={isPending || workTypeOptions.length === 0}
+              >
+                {isPending ? "Salvando…" : "Salvar"}
+              </Button>
+            )}
           </div>
         }
       >
@@ -1127,6 +1148,8 @@ export function DashboardView({
             memberOptions={memberOptions}
             manualAssigneeOptions={manualAssigneeOptions}
             useManualAssigneeDirectory={plan === "pro" && members.length === 1}
+            tab={createJobTab}
+            onTabChange={setCreateJobTab}
             onSubmit={handleCreate}
           />
         </div>
