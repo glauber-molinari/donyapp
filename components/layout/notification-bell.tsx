@@ -2,12 +2,13 @@
 
 import { Bell } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
+import { markTicketRead } from "@/app/(app)/support/actions";
+import { NOTIFICATION_KIND_LABEL, fetchAppNotifications } from "@/lib/notifications";
+import type { Notification } from "@/lib/notifications";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
-import type { Notification } from "@/lib/notifications";
-import { fetchDeadlineNotifications } from "@/lib/notifications";
 
 const NOTIFICATION_STORAGE_KEY = "donyapp-notifications-read";
 
@@ -16,56 +17,58 @@ export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [markingAll, setMarkingAll] = useState(false);
 
-  useEffect(() => {
-    const loadNotifications = async () => {
-      try {
-        const supabase = createClient();
-        const deadlineNotifs = await fetchDeadlineNotifications(supabase);
-        
-        const readIds = getReadNotifications();
-        const notificationsWithReadState = deadlineNotifs.map(n => ({
-          ...n,
-          read: readIds.includes(n.id),
-        }));
-        
-        setNotifications(notificationsWithReadState);
-      } catch (error) {
-        console.error("Erro ao carregar notificações:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadNotifications();
-    
-    const interval = setInterval(loadNotifications, 60000);
-    
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (!target.closest('[data-notification-container]')) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [isOpen]);
-
-  const getReadNotifications = (): string[] => {
+  const getReadNotifications = useCallback((): string[] => {
     try {
       const stored = localStorage.getItem(NOTIFICATION_STORAGE_KEY);
       return stored ? JSON.parse(stored) : [];
     } catch {
       return [];
     }
-  };
+  }, []);
+
+  const loadNotifications = useCallback(async () => {
+    try {
+      const supabase = createClient();
+      const items = await fetchAppNotifications(supabase);
+
+      const readIds = getReadNotifications();
+      const withRead = items.map((n) => ({
+        ...n,
+        read:
+          n.kind === "support_reply" || n.kind === "form_new"
+            ? false
+            : readIds.includes(n.id),
+      }));
+
+      setNotifications(withRead);
+    } catch (error) {
+      console.error("Erro ao carregar notificações:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [getReadNotifications]);
+
+  useEffect(() => {
+    void loadNotifications();
+    const interval = setInterval(() => void loadNotifications(), 60000);
+    return () => clearInterval(interval);
+  }, [loadNotifications]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest("[data-notification-container]")) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isOpen]);
 
   const saveReadNotifications = (ids: string[]) => {
     try {
@@ -75,32 +78,74 @@ export function NotificationBell() {
     }
   };
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter((n) => !n.read).length;
+  const badgeText = unreadCount > 99 ? "99+" : String(unreadCount);
 
-  const handleMarkAsRead = (id: string) => {
-    setNotifications(prev =>
-      prev.map(n => (n.id === id ? { ...n, read: true } : n))
-    );
-    const readIds = getReadNotifications();
-    if (!readIds.includes(id)) {
-      saveReadNotifications([...readIds, id]);
+  const handleMarkAllAsRead = async () => {
+    if (notifications.length === 0 || markingAll) return;
+    setMarkingAll(true);
+    try {
+      const supabase = createClient();
+      const readIds = getReadNotifications();
+      const deadlineIds = notifications
+        .filter((n) => n.kind !== "support_reply" && n.kind !== "form_new")
+        .map((n) => n.id);
+      const ticketIds = notifications
+        .filter((n) => n.kind === "support_reply" && n.ticketId)
+        .map((n) => n.ticketId as string);
+      const submissionIds = notifications
+        .filter((n) => n.kind === "form_new" && n.submissionId)
+        .map((n) => n.submissionId as string);
+
+      await Promise.all(ticketIds.map((tid) => markTicketRead(tid)));
+      if (submissionIds.length > 0) {
+        const { error: formErr } = await supabase
+          .from("form_submissions")
+          .update({ viewed: true })
+          .in("id", submissionIds);
+        if (formErr) console.error("[notifications] marcar formulários:", formErr);
+      }
+
+      const merged = Array.from(new Set([...readIds, ...deadlineIds]));
+      saveReadNotifications(merged);
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      await loadNotifications();
+    } finally {
+      setMarkingAll(false);
     }
   };
 
-  const handleMarkAllAsRead = () => {
-    const allIds = notifications.map(n => n.id);
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    saveReadNotifications(allIds);
-  };
+  const handleNotificationClick = async (notification: Notification) => {
+    const supabase = createClient();
 
-  const handleNotificationClick = (notification: Notification) => {
-    handleMarkAsRead(notification.id);
+    if (notification.kind === "support_reply" && notification.ticketId) {
+      await markTicketRead(notification.ticketId);
+    } else if (notification.kind === "form_new" && notification.submissionId) {
+      await supabase
+        .from("form_submissions")
+        .update({ viewed: true })
+        .eq("id", notification.submissionId);
+    } else {
+      const readIds = getReadNotifications();
+      if (!readIds.includes(notification.id)) {
+        saveReadNotifications([...readIds, notification.id]);
+      }
+    }
+
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n))
+    );
+
     setIsOpen(false);
-    
-    if (notification.jobId) {
-      router.push('/board');
+
+    if (notification.ticketId) {
+      router.push(`/support/${notification.ticketId}`);
+    } else if (notification.submissionId) {
+      router.push("/formularios/recebidos");
+    } else if (notification.jobId) {
+      router.push("/board");
     } else if (notification.taskId) {
-      router.push('/tasks');
+      router.push("/tasks");
     }
   };
 
@@ -111,11 +156,11 @@ export function NotificationBell() {
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
 
-    if (minutes < 1) return 'Agora';
+    if (minutes < 1) return "Agora";
     if (minutes < 60) return `${minutes}m atrás`;
     if (hours < 24) return `${hours}h atrás`;
     if (days < 7) return `${days}d atrás`;
-    return date.toLocaleDateString('pt-BR');
+    return date.toLocaleDateString("pt-BR");
   };
 
   return (
@@ -129,14 +174,19 @@ export function NotificationBell() {
             ? "bg-ds-cream text-ds-ink"
             : "text-ds-muted hover:bg-ds-cream/80 hover:text-ds-ink"
         )}
-        aria-label={`Notificações${unreadCount > 0 ? ` (${unreadCount} não lidas)` : ''}`}
+        aria-label={`Notificações${unreadCount > 0 ? ` (${unreadCount} não lidas)` : ""}`}
         aria-expanded={isOpen}
       >
         <Bell className="h-5 w-5" aria-hidden />
         {unreadCount > 0 && (
-          <span className="absolute right-1 top-1 flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-ds-accent opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-ds-accent" />
+          <span
+            className={cn(
+              "absolute -right-0.5 -top-0.5 flex min-h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full bg-ds-accent px-1 text-[10px] font-semibold leading-none text-white tabular-nums",
+              badgeText.length >= 2 && "px-1.5"
+            )}
+            aria-hidden
+          >
+            {badgeText}
           </span>
         )}
       </button>
@@ -148,10 +198,11 @@ export function NotificationBell() {
             {unreadCount > 0 && (
               <button
                 type="button"
-                onClick={handleMarkAllAsRead}
-                className="text-xs font-medium text-ds-accent hover:text-ds-accent/80 transition-colors"
+                onClick={() => void handleMarkAllAsRead()}
+                disabled={markingAll}
+                className="text-xs font-medium text-ds-accent transition-colors hover:text-ds-accent/80 disabled:opacity-50"
               >
-                Marcar todas como lidas
+                {markingAll ? "Marcando…" : "Marcar todas como lidas"}
               </button>
             )}
           </div>
@@ -165,12 +216,8 @@ export function NotificationBell() {
             ) : notifications.length === 0 ? (
               <div className="px-4 py-8 text-center">
                 <Bell className="mx-auto h-8 w-8 text-ds-subtle opacity-50" aria-hidden />
-                <p className="mt-2 text-sm font-medium text-ds-muted">
-                  Nenhuma notificação
-                </p>
-                <p className="mt-1 text-xs text-ds-subtle">
-                  Você está em dia!
-                </p>
+                <p className="mt-2 text-sm font-medium text-ds-muted">Nenhuma notificação</p>
+                <p className="mt-1 text-xs text-ds-subtle">Prazos em dia e caixa zerada.</p>
               </div>
             ) : (
               <div className="divide-y divide-app-border">
@@ -178,7 +225,7 @@ export function NotificationBell() {
                   <button
                     key={notification.id}
                     type="button"
-                    onClick={() => handleNotificationClick(notification)}
+                    onClick={() => void handleNotificationClick(notification)}
                     className={cn(
                       "w-full px-4 py-3 text-left transition-colors hover:bg-ds-cream/50",
                       !notification.read && "bg-ds-cream/30"
@@ -186,13 +233,21 @@ export function NotificationBell() {
                   >
                     <div className="flex items-start gap-3">
                       {!notification.read && (
-                        <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-ds-accent" aria-hidden />
+                        <span
+                          className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-ds-accent"
+                          aria-hidden
+                        />
                       )}
-                      <div className="flex-1 space-y-1">
-                        <p className={cn(
-                          "text-sm",
-                          notification.read ? "text-ds-muted" : "font-medium text-ds-ink"
-                        )}>
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <p className="text-[10px] font-medium uppercase tracking-wide text-ds-subtle">
+                          {NOTIFICATION_KIND_LABEL[notification.kind]}
+                        </p>
+                        <p
+                          className={cn(
+                            "text-sm",
+                            notification.read ? "text-ds-muted" : "font-medium text-ds-ink"
+                          )}
+                        >
                           {notification.title}
                         </p>
                         {notification.description && (
