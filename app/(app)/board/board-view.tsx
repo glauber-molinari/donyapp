@@ -23,7 +23,16 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Plus, Search } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { memo, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 
 import type { JobWithRelations } from "../dashboard/dashboard-view";
 import {
@@ -148,14 +157,20 @@ const ClientRevisionSelect = memo(function ClientRevisionSelect({ job }: { job: 
           const num = Number(next);
           setValue(next);
           setPending(true);
-          const res = await updateJobClientRevision(job.id, num);
-          setPending(false);
-          if (!res.ok) {
+          try {
+            const res = await updateJobClientRevision(job.id, num);
+            if (!res.ok) {
+              setValue(String(job.client_revision ?? 0));
+              toast.error(res.error);
+              return;
+            }
+            router.refresh();
+          } catch {
             setValue(String(job.client_revision ?? 0));
-            toast.error(res.error);
-            return;
+            toast.error("Não foi possível salvar. Tente de novo.");
+          } finally {
+            setPending(false);
           }
-          router.refresh();
         }}
         className="w-full rounded-md border border-app-border bg-app-sidebar px-2 py-1 text-[11px] text-ds-ink shadow-sm focus:border-app-primary/50 focus:outline-none focus:ring-2 focus:ring-app-primary/20 disabled:opacity-60"
       >
@@ -363,7 +378,7 @@ const DeadlineTimelineBar = memo(function DeadlineTimelineBar({
     >
       <span
         className={cn("block h-full max-w-full rounded-full transition-[width]", barClass)}
-        style={{ inline-size: `${fillPct}%` }}
+        style={{ width: `${fillPct}%` }}
       />
     </div>
   );
@@ -855,7 +870,7 @@ export function BoardView({
 
   const noStages = sortedStages.length === 0;
 
-  async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
+  async function handleCreate(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
     const fd = new FormData(form);
