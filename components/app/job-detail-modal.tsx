@@ -12,6 +12,11 @@ import { NewJobForm } from "@/components/app/new-job-form";
 import type { ContactSearchOption } from "@/components/app/contact-search-field";
 import type { JobAssigneePickerOption } from "@/lib/build-job-assignee-picker-options";
 import { initialAssigneeTokensForJob } from "@/lib/job-assignee-form";
+import {
+  editFormDeliveryType,
+  jobTypeBadgeForList,
+  videoAssigneeSourceForSplitEdit,
+} from "@/lib/job-foto-video-split";
 import { formatDeadlinePt } from "@/lib/job-display";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -260,7 +265,10 @@ export function JobDetailModal({
             workTypeOptions={workTypeOptions}
             assigneePickerOptions={assigneePickerOptions}
             initialAssigneePhotoTokens={initialAssigneeTokensForJob(job, "photo")}
-            initialAssigneeVideoTokens={initialAssigneeTokensForJob(job, "video")}
+            initialAssigneeVideoTokens={initialAssigneeTokensForJob(
+              videoAssigneeSourceForSplitEdit(job, allJobs),
+              "video"
+            )}
             initialValues={{
               name: job.name,
               stage_id: job.stage_id,
@@ -271,7 +279,7 @@ export function JobDetailModal({
               notes: job.notes,
               internal_deadline: job.internal_deadline,
               deadline: job.deadline,
-              type: job.type,
+              type: editFormDeliveryType(job, allJobs),
               delivery_link: job.delivery_link,
               photo_editor_id: job.photo_editor_id,
               video_editor_id: job.video_editor_id,
@@ -327,7 +335,7 @@ export function JobDetailModal({
                 </DetailRow>
                 <DetailRow label="Tipo do job">{job.job_work_types?.name ?? "—"}</DetailRow>
                 <DetailRow label="Tipo de entrega">
-                  <Badge kind="job-type" value={job.type} />
+                  <Badge kind="job-type" value={jobTypeBadgeForList(job, allJobs)} />
                 </DetailRow>
                 <DetailRow label="Cartão SD">
                   {(job.sd_card_tags ?? []).length > 0 ? (

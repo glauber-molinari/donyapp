@@ -168,13 +168,13 @@ export function JobAssigneesMultiField({
   }
 
   return (
-    <fieldset disabled={disabled} className="m-0 min-w-0 border-0 p-0">
+    <fieldset disabled={disabled} className="m-0 min-w-0 w-full border-0 p-0">
       <legend className="sr-only">{label}</legend>
       {selectedArr.map((token) => (
         <input key={token} type="hidden" name={name} value={token} />
       ))}
 
-      <div className="flex items-start gap-3">
+      <div className="flex min-w-0 items-start gap-3">
         <div className="shrink-0 max-w-[13rem] min-w-[7rem] pt-1 pr-2 text-sm font-medium leading-snug text-ds-ink">
           {label}
           {requireSelection ? (

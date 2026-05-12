@@ -36,7 +36,7 @@ export function Badge(props: BadgeProps) {
     return (
       <span
         className={cn(
-          "inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium",
+          "inline-flex w-fit max-w-max items-center self-start rounded-md px-2 py-0.5 text-xs font-medium",
           jobTypeClass[props.value],
           props.className
         )}
@@ -51,7 +51,7 @@ export function Badge(props: BadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium",
+        "inline-flex w-fit max-w-max items-center gap-1 self-start rounded-md px-2 py-0.5 text-xs font-medium",
         isUpcoming ? "bg-amber-100 text-amber-800" : "bg-red-100 text-red-800",
         props.className
       )}

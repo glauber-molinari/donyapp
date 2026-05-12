@@ -393,7 +393,7 @@ async function insertVideoEditChildJob(
       contact_id: parsed.contact_id,
       stage_id: stageId,
       position: nextPos,
-      name: `Edição de vídeo — ${parsed.name}`,
+      name: `${parsed.name} - Vídeo`,
       type: "video",
       internal_deadline: parsed.internal_deadline,
       deadline: parsed.deadline,
@@ -482,11 +482,13 @@ export async function createJob(formData: FormData): Promise<ActionResult> {
   const valVideo = await validateAssigneeTokens(supabase, ctx.accountId, videoTok);
   if (!valVideo.ok) return valVideo;
 
-  const legacy = deriveLegacyFromTokens(photoTok, videoTok);
-  const photo_editor_id = legacy.photo_editor_id;
-  const video_editor_id = legacy.video_editor_id;
-  const photo_manual_assignee_id = legacy.photo_manual_assignee_id;
-  const video_manual_assignee_id = legacy.video_manual_assignee_id;
+  const legacyFull = deriveLegacyFromTokens(photoTok, videoTok);
+  const splitFotoVideoCombo = parsed.type === "foto_video";
+  const parentLegacy = splitFotoVideoCombo ? deriveLegacyFromTokens(photoTok, []) : legacyFull;
+  const photo_editor_id = parentLegacy.photo_editor_id;
+  const video_editor_id = parentLegacy.video_editor_id;
+  const photo_manual_assignee_id = parentLegacy.photo_manual_assignee_id;
+  const video_manual_assignee_id = parentLegacy.video_manual_assignee_id;
 
   const { data: sub } = await supabase
     .from("subscriptions")
@@ -513,7 +515,7 @@ export async function createJob(formData: FormData): Promise<ActionResult> {
     stage_id: stageId,
     position: nextPos,
     name: parsed.name,
-    type: parsed.type,
+    type: splitFotoVideoCombo ? ("foto" as const) : parsed.type,
     internal_deadline: parsed.internal_deadline,
     deadline: parsed.deadline,
     job_date: parsed.job_date,
@@ -543,7 +545,12 @@ export async function createJob(formData: FormData): Promise<ActionResult> {
     return { ok: false, error: "Não foi possível criar o job." };
   }
 
-  const syncParent = await replaceJobAssigneesForJob(supabase, inserted.id, photoTok, videoTok);
+  const syncParent = await replaceJobAssigneesForJob(
+    supabase,
+    inserted.id,
+    photoTok,
+    splitFotoVideoCombo ? [] : videoTok
+  );
   if (!syncParent.ok) return syncParent;
 
   if (parsed.type === "foto_video") {
@@ -552,8 +559,8 @@ export async function createJob(formData: FormData): Promise<ActionResult> {
       ctx,
       inserted.id,
       parsed,
-      video_editor_id,
-      video_manual_assignee_id,
+      legacyFull.video_editor_id,
+      legacyFull.video_manual_assignee_id,
       stageId
     );
     if (!childRes.ok) return childRes;
@@ -623,11 +630,13 @@ export async function updateJob(jobId: string, formData: FormData): Promise<Acti
   const valVideo = await validateAssigneeTokens(supabase, ctx.accountId, videoTok);
   if (!valVideo.ok) return valVideo;
 
-  const legacy = deriveLegacyFromTokens(photoTok, videoTok);
-  let photo_editor_id = legacy.photo_editor_id;
-  let video_editor_id = legacy.video_editor_id;
-  let photo_manual_assignee_id = legacy.photo_manual_assignee_id;
-  let video_manual_assignee_id = legacy.video_manual_assignee_id;
+  const legacyFull = deriveLegacyFromTokens(photoTok, videoTok);
+  const splitFotoVideoCombo = parsed.type === "foto_video";
+  const parentLegacy = splitFotoVideoCombo ? deriveLegacyFromTokens(photoTok, []) : legacyFull;
+  let photo_editor_id = parentLegacy.photo_editor_id;
+  let video_editor_id = parentLegacy.video_editor_id;
+  let photo_manual_assignee_id = parentLegacy.photo_manual_assignee_id;
+  let video_manual_assignee_id = parentLegacy.video_manual_assignee_id;
 
   const stageChanged = existing.stage_id !== parsed.stage_id;
   const nextPos = stageChanged
@@ -641,7 +650,7 @@ export async function updateJob(jobId: string, formData: FormData): Promise<Acti
       stage_id: parsed.stage_id,
       ...(stageChanged && nextPos !== undefined ? { position: nextPos } : {}),
       name: parsed.name,
-      type: parsed.type,
+      type: splitFotoVideoCombo ? ("foto" as const) : parsed.type,
       internal_deadline: parsed.internal_deadline,
       deadline: parsed.deadline,
       job_date: parsed.job_date,
@@ -678,8 +687,8 @@ export async function updateJob(jobId: string, formData: FormData): Promise<Acti
           ctx,
           jobId,
           parsed,
-          video_editor_id,
-          video_manual_assignee_id,
+          legacyFull.video_editor_id,
+          legacyFull.video_manual_assignee_id,
           parsed.stage_id!
         );
         if (!childRes.ok) return childRes;
@@ -694,8 +703,9 @@ export async function updateJob(jobId: string, formData: FormData): Promise<Acti
         await supabase
           .from("jobs")
           .update({
-            video_editor_id,
-            video_manual_assignee_id,
+            name: `${parsed.name} - Vídeo`,
+            video_editor_id: legacyFull.video_editor_id,
+            video_manual_assignee_id: legacyFull.video_manual_assignee_id,
             photo_manual_assignee_id: null,
           })
           .eq("id", children[0]!.id)
@@ -723,7 +733,12 @@ export async function updateJob(jobId: string, formData: FormData): Promise<Acti
     }
   }
 
-  const syncMain = await replaceJobAssigneesForJob(supabase, jobId, photoTok, videoTok);
+  const syncMain = await replaceJobAssigneesForJob(
+    supabase,
+    jobId,
+    photoTok,
+    splitFotoVideoCombo ? [] : videoTok
+  );
   if (!syncMain.ok) return syncMain;
 
   revalidatePath("/dashboard");

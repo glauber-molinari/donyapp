@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { JobAssigneesMultiField } from "@/components/app/job-assignees-multi-field";
 import { ContactSearchField, type ContactSearchOption } from "@/components/app/contact-search-field";
@@ -113,6 +113,10 @@ export function NewJobForm({
   const [deliveryType, setDeliveryType] = useState<JobRow["type"]>(
     initialValues?.type ?? "foto"
   );
+
+  useEffect(() => {
+    setDeliveryType(initialValues?.type ?? "foto");
+  }, [formId, initialValues?.type]);
 
   /** Valores iniciais fixos por montagem do formulário (datas independentes entre si). */
   const initialYmd = useMemo(() => todayYmd(), []);
@@ -304,7 +308,7 @@ export function NewJobForm({
             />
 
             {deliveryType === "foto_video" ? (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="flex min-w-0 flex-col gap-5">
                 <JobAssigneesMultiField
                   id={`${fieldIdPrefix}-assign-photo`}
                   name="assignee_photo"

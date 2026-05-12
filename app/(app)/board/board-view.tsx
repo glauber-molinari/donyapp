@@ -45,6 +45,7 @@ import {
   deadlineTimelineVisual,
   formatDeadlinePt,
 } from "@/lib/job-display";
+import { jobTypeBadgeForList, type JobFotoVideoListPick } from "@/lib/job-foto-video-split";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import type { Database, Plan, UserRole } from "@/types/database";
@@ -362,7 +363,7 @@ const DeadlineTimelineBar = memo(function DeadlineTimelineBar({
     >
       <span
         className={cn("block h-full max-w-full rounded-full transition-[width]", barClass)}
-        style={{ width: `${fillPct}%` }}
+        style={{ inline-size: `${fillPct}%` }}
       />
     </div>
   );
@@ -370,6 +371,7 @@ const DeadlineTimelineBar = memo(function DeadlineTimelineBar({
 
 const JobCardContent = memo(function JobCardContent({
   job,
+  jobsForBadgeList,
   stageFinal,
   accentHex,
   isDragging,
@@ -380,6 +382,7 @@ const JobCardContent = memo(function JobCardContent({
   onOpen,
 }: {
   job: JobWithRelations;
+  jobsForBadgeList: JobFotoVideoListPick[];
   stageFinal: boolean;
   accentHex: string;
   isDragging?: boolean;
@@ -403,7 +406,7 @@ const JobCardContent = memo(function JobCardContent({
         <p className="mt-0.5 text-[11px] text-ds-muted">{job.job_work_types.name}</p>
       ) : null}
       <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-        <Badge kind="job-type" value={job.type} className="text-[10px] font-medium" />
+        <Badge kind="job-type" value={jobTypeBadgeForList(job, jobsForBadgeList)} className="text-[10px] font-medium" />
         {overlay || !revisionInteractive ? (
           <span className="inline-flex items-center rounded-full border border-ds-border/60 bg-stone-50 px-1.5 py-px text-[10px] font-medium text-ds-muted">
             Alt. {rev}
@@ -462,6 +465,7 @@ const JobCardContent = memo(function JobCardContent({
 
 const SortableJobCard = memo(function SortableJobCard({
   job,
+  jobsForBadgeList,
   stageFinal,
   accentHex,
   dragDisabled,
@@ -470,6 +474,7 @@ const SortableJobCard = memo(function SortableJobCard({
   onOpenJob,
 }: {
   job: JobWithRelations;
+  jobsForBadgeList: JobFotoVideoListPick[];
   stageFinal: boolean;
   accentHex: string;
   dragDisabled: boolean;
@@ -503,6 +508,7 @@ const SortableJobCard = memo(function SortableJobCard({
     <div ref={setNodeRef} style={style} className="touch-none">
       <JobCardContent
         job={job}
+        jobsForBadgeList={jobsForBadgeList}
         stageFinal={stageFinal}
         accentHex={accentHex}
         isDragging={isDragging}
@@ -519,6 +525,7 @@ const KanbanColumn = memo(function KanbanColumn({
   stage,
   jobIds,
   jobsById,
+  jobsForBadgeList,
   dragDisabled,
   searchQuery,
   assigneesByJobId,
@@ -527,6 +534,7 @@ const KanbanColumn = memo(function KanbanColumn({
   stage: StageRow;
   jobIds: string[];
   jobsById: Map<string, JobWithRelations>;
+  jobsForBadgeList: JobFotoVideoListPick[];
   dragDisabled: boolean;
   searchQuery: string;
   assigneesByJobId: Map<string, { id: string; name: string; avatarUrl: string | null }[]>;
@@ -588,6 +596,7 @@ const KanbanColumn = memo(function KanbanColumn({
               <JobCardContent
                 key={id}
                 job={job}
+                jobsForBadgeList={jobsForBadgeList}
                 stageFinal={stage.is_final}
                 accentHex={accentHex}
                 revisionInteractive
@@ -610,6 +619,7 @@ const KanbanColumn = memo(function KanbanColumn({
                 <SortableJobCard
                   key={id}
                   job={job}
+                  jobsForBadgeList={jobsForBadgeList}
                   stageFinal={stage.is_final}
                   accentHex={accentHex}
                   dragDisabled={false}
@@ -659,6 +669,17 @@ export function BoardView({
     for (const j of filteredJobs) m.set(j.id, j);
     return m;
   }, [filteredJobs]);
+
+  const jobsForTypeBadge = useMemo<JobFotoVideoListPick[]>(
+    () =>
+      filteredJobs.map((j) => ({
+        id: j.id,
+        type: j.type,
+        job_kind: j.job_kind,
+        parent_job_id: j.parent_job_id,
+      })),
+    [filteredJobs]
+  );
 
   const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
   const singleMemberId = members.length === 1 ? members[0]!.id : null;
@@ -963,6 +984,7 @@ export function BoardView({
                   stage={stage}
                   jobIds={columnItems[stage.id] ?? []}
                   jobsById={jobsById}
+                  jobsForBadgeList={jobsForTypeBadge}
                   dragDisabled={dragDisabled}
                   searchQuery={searchQuery}
                   assigneesByJobId={assigneesByJobId}
@@ -976,6 +998,7 @@ export function BoardView({
             {activeJob && activeStage ? (
               <JobCardContent
                 job={activeJob}
+                jobsForBadgeList={jobsForTypeBadge}
                 stageFinal={activeStage.is_final}
                 accentHex={kanbanStageAccentHex(activeStage.color)}
                 overlay

@@ -41,6 +41,11 @@ import type { JobAssigneeRowPick } from "@/lib/job-assignees";
 import { assigneesForJobCard } from "@/lib/job-assignees";
 import { buildJobAssigneePickerOptions } from "@/lib/build-job-assignee-picker-options";
 import { initialAssigneeTokensForJob } from "@/lib/job-assignee-form";
+import {
+  editFormDeliveryType,
+  jobTypeBadgeForList,
+  videoAssigneeSourceForSplitEdit,
+} from "@/lib/job-foto-video-split";
 import { deadlineBadge, formatDeadlinePt } from "@/lib/job-display";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -210,6 +215,8 @@ export function DashboardView({
   const [createOpen, setCreateOpen] = useState(false);
   const [createJobTab, setCreateJobTab] = useState<NewJobTab>("info");
   const [editJob, setEditJob] = useState<JobWithRelations | null>(null);
+  /** Tipo de entrega escolhido no formulário (pode divergir do salvo até salvar). */
+  const [editDeliveryType, setEditDeliveryType] = useState<JobRow["type"]>("foto");
   const [editJobTab, setEditJobTab] = useState<EditJobTabId>("geral");
   const [deleteJobRow, setDeleteJobRow] = useState<JobWithRelations | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -366,6 +373,11 @@ export function DashboardView({
 
   useEffect(() => {
     if (editJob?.id) setEditJobTab("geral");
+  }, [editJob?.id]);
+
+  useEffect(() => {
+    if (!editJob) return;
+    setEditDeliveryType(editFormDeliveryType(editJob, jobs));
   }, [editJob?.id]);
 
   useEffect(() => {
@@ -901,7 +913,7 @@ export function DashboardView({
                                   <span className="text-xs text-ds-muted">
                                     {j.job_work_types?.name ?? "—"}
                                   </span>
-                                  <Badge kind="job-type" value={j.type} />
+                                  <Badge kind="job-type" value={jobTypeBadgeForList(j, jobs)} />
                                 </div>
                               </td>
                               <td className="px-4 py-3">
@@ -991,7 +1003,7 @@ export function DashboardView({
                                 <span className="text-xs text-ds-subtle">
                                   {j.job_work_types?.name ?? "—"}
                                 </span>
-                                <Badge kind="job-type" value={j.type} />
+                                <Badge kind="job-type" value={jobTypeBadgeForList(j, jobs)} />
                                 {dlBadge ? <Badge kind="deadline" value={dlBadge} /> : null}
                               </div>
                               <div className="flex flex-wrap items-center gap-2">
@@ -1182,7 +1194,7 @@ export function DashboardView({
           <form
             id="dashboard-edit-job-form"
             key={editJob.id}
-            className="flex flex-col gap-3 p-5"
+            className="flex min-w-0 flex-col gap-3 p-5"
             onSubmit={handleEdit}
           >
             <input type="hidden" name="assignee_picker_option_count" value={assigneePickerOptions.length} />
@@ -1211,7 +1223,7 @@ export function DashboardView({
               ))}
             </div>
 
-            <div className="flex-1">
+            <div className="min-w-0 flex-1">
               {/* Todas as seções permanecem no DOM para FormData e validação HTML5 ao salvar. */}
               <div role="tabpanel" hidden={editJobTab !== "geral"} className="space-y-4">
                 <Input
@@ -1248,7 +1260,8 @@ export function DashboardView({
                   name="type"
                   label="Tipo de entrega"
                   required
-                  defaultValue={editJob.type}
+                  value={editDeliveryType}
+                  onChange={(e) => setEditDeliveryType(e.target.value as JobRow["type"])}
                   options={JOB_DELIVERY_OPTIONS}
                 />
                 <ContactSearchField
@@ -1288,8 +1301,8 @@ export function DashboardView({
                     defaultSelectedTokens={initialAssigneeTokensForJob(editJob, "video")}
                     requireSelection={assigneePickerOptions.length > 1}
                   />
-                ) : editJob.type === "foto_video" ? (
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                ) : editDeliveryType === "foto_video" ? (
+                  <div className="flex min-w-0 flex-col gap-5">
                     <JobAssigneesMultiField
                       id={`job-edit-${editJob.id}-assign-photo`}
                       name="assignee_photo"
@@ -1303,19 +1316,22 @@ export function DashboardView({
                       name="assignee_video"
                       label="Responsáveis pelo vídeo"
                       options={assigneePickerOptions}
-                      defaultSelectedTokens={initialAssigneeTokensForJob(editJob, "video")}
+                      defaultSelectedTokens={initialAssigneeTokensForJob(
+                        videoAssigneeSourceForSplitEdit(editJob, jobs),
+                        "video"
+                      )}
                       requireSelection={assigneePickerOptions.length > 1}
                     />
                   </div>
                 ) : (
                   <JobAssigneesMultiField
                     id={`job-edit-${editJob.id}-assign`}
-                    name={editJob.type === "video" ? "assignee_video" : "assignee_photo"}
+                    name={editDeliveryType === "video" ? "assignee_video" : "assignee_photo"}
                     label="Responsáveis"
                     options={assigneePickerOptions}
                     defaultSelectedTokens={initialAssigneeTokensForJob(
                       editJob,
-                      editJob.type === "video" ? "video" : "photo"
+                      editDeliveryType === "video" ? "video" : "photo"
                     )}
                     requireSelection={assigneePickerOptions.length > 1}
                   />
