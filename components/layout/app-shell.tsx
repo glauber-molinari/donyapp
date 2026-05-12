@@ -12,7 +12,6 @@ import {
   Lightbulb,
   NotebookPen,
   LogOut,
-  Menu,
   MessageCircle,
   Settings,
   Users,
@@ -26,6 +25,7 @@ import { useCallback, useEffect, useLayoutEffect, useState, type ReactNode } fro
 
 import { OnboardingTourProvider } from "@/components/app/onboarding-tour";
 import { SidebarCollapsedContext } from "@/components/layout/sidebar-collapsed-context";
+import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 import { NotificationBell } from "@/components/layout/notification-bell";
 import { Avatar } from "@/components/ui/avatar";
 import { createClient } from "@/lib/supabase/client";
@@ -435,16 +435,26 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
       <SidebarCollapsedContext.Provider value={sidebarCollapsed}>
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           {/* Header mobile */}
-          <header className="sticky top-0 z-30 flex min-h-[48px] shrink-0 items-center gap-3 border-b border-app-border bg-app-sidebar px-4 md:hidden">
-            <button
-              type="button"
-              onClick={() => setMobileOpen(true)}
-              className="rounded-ds-xl p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-ds-muted hover:bg-ds-cream"
-              aria-label="Abrir menu"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
-            <span className="text-base font-semibold text-ds-ink">Donyapp</span>
+          <header className="sticky top-0 z-30 flex min-h-[52px] shrink-0 items-center justify-between gap-2 border-b border-app-border bg-app-sidebar px-3 md:hidden">
+            <div className="flex items-center gap-2">
+              <Link
+                href="/dashboard"
+                className="flex items-center"
+                aria-label="Donyapp, início"
+              >
+                <Image
+                  src="/brand/logo-dony-png.png"
+                  alt="Donyapp"
+                  width={108}
+                  height={28}
+                  className="h-7 w-auto object-contain"
+                  priority
+                />
+              </Link>
+            </div>
+            <div className="flex items-center gap-1">
+              <NotificationBell />
+            </div>
           </header>
 
           {/* Header desktop */}
@@ -452,11 +462,13 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
             <NotificationBell />
           </header>
 
-          <main className="min-w-0 flex-1 overflow-auto px-4 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom,0px))] sm:px-6 sm:pt-6 sm:pb-8">
+          <main className="min-w-0 flex-1 overflow-auto px-4 pt-4 pb-[max(5.5rem,calc(env(safe-area-inset-bottom,0px)+5rem))] sm:px-6 sm:pt-6 md:pb-8">
             {children}
           </main>
         </div>
       </SidebarCollapsedContext.Provider>
+
+      <MobileBottomNav onOpenMore={() => setMobileOpen(true)} />
     </div>
     </OnboardingTourProvider>
   );

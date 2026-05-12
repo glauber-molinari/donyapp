@@ -393,6 +393,9 @@ export function ContactsView({ contacts }: ContactsViewProps) {
               <input
                 id="contact-create-phone"
                 name="phone"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
                 placeholder="Opcional"
                 className={panelInputCls}
               />
@@ -453,6 +456,9 @@ export function ContactsView({ contacts }: ContactsViewProps) {
                 <input
                   id="contact-edit-phone"
                   name="phone"
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
                   defaultValue={editContact.phone ?? ""}
                   placeholder="Opcional"
                   className={panelInputCls}

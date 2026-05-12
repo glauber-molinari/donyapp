@@ -81,12 +81,15 @@ export function SignupForm() {
       />
       <input
         type="email"
+        inputMode="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="Email"
         required
         disabled={loading}
         autoComplete="email"
+        autoCapitalize="off"
+        spellCheck={false}
         className={inputCls}
       />
       <div className="flex flex-col gap-1">

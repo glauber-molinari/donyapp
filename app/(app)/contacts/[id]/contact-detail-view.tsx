@@ -403,6 +403,9 @@ export function ContactDetailView({ contact, jobs, notes }: ContactDetailViewPro
               <input
                 id="detail-edit-phone"
                 name="phone"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
                 defaultValue={contact.phone ?? ""}
                 placeholder="Opcional"
                 className={panelInputCls}

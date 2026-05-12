@@ -95,12 +95,15 @@ export function LoginForm({ next = "/dashboard" }: { next?: string }) {
       <form onSubmit={(e) => void signInWithEmail(e)} className="flex flex-col gap-3">
         <input
           type="email"
+          inputMode="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Email"
           required
           disabled={loading !== null}
           autoComplete="email"
+          autoCapitalize="off"
+          spellCheck={false}
           className={inputCls}
         />
         <input

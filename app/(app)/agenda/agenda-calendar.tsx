@@ -38,9 +38,11 @@ const MESSAGES = {
   month: "Mês",
   week: "Semana",
   day: "Dia",
+  agenda: "Lista",
   date: "Data",
   time: "Hora",
   event: "Evento",
+  noEventsInRange: "Sem eventos nesse período.",
   showMore: (n: number) => `+${n} mais`,
 };
 
@@ -165,6 +167,13 @@ export function AgendaCalendar({ isAdmin }: { isAdmin: boolean }) {
   const [calView, setCalView] = useState<View>("month");
   const [calDate, setCalDate] = useState(() => new Date());
 
+  /** Em mobile (<768px), iniciar na visão "Lista" — mês/semana ficam apertados demais. */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(max-width: 767px)");
+    if (mq.matches) setCalView("agenda");
+  }, []);
+
   return (
     <>
       <Card className="border-app-border bg-app-sidebar p-4 shadow-ds-card sm:p-6">
@@ -176,7 +185,7 @@ export function AgendaCalendar({ isAdmin }: { isAdmin: boolean }) {
             {error}
           </p>
         ) : null}
-        <div className="agenda-rbc relative min-h-[560px]">
+        <div className="agenda-rbc relative min-h-[420px] md:min-h-[560px]">
           {loading ? (
             <div
               className="absolute inset-0 z-10 flex items-center justify-center rounded-ds-xl bg-app-sidebar/70"
@@ -194,9 +203,9 @@ export function AgendaCalendar({ isAdmin }: { isAdmin: boolean }) {
             events={events}
             startAccessor="start"
             endAccessor="end"
-            style={{ minHeight: 560 }}
+            style={{ minHeight: 420 }}
             view={calView}
-            views={["month", "week", "day"]}
+            views={["month", "week", "day", "agenda"]}
             messages={MESSAGES}
             onRangeChange={onRangeChange}
             onSelectEvent={onSelectEvent}

@@ -191,7 +191,7 @@ export function ReportsView() {
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full border-separate border-spacing-x-3 border-spacing-y-0 sm:border-spacing-x-4">
                 <thead>
                   <tr className="border-b border-app-border text-left text-sm font-medium text-ds-muted">
                     <th className="pb-2">Responsável</th>
@@ -245,7 +245,7 @@ export function ReportsView() {
             <h2 className="text-lg font-semibold text-ds-ink">Desempenho por Tipo de Trabalho</h2>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full border-separate border-spacing-x-3 border-spacing-y-0 sm:border-spacing-x-4">
               <thead>
                 <tr className="border-b border-app-border text-left text-sm font-medium text-ds-muted">
                   <th className="pb-2">Tipo de Trabalho</th>

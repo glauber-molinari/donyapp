@@ -48,12 +48,24 @@ export const metadata: Metadata = {
       "Kanban de pós-produção para fotógrafos e videomakers.",
   },
   robots: { index: true, follow: true },
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Donyapp",
+  },
+  icons: {
+    icon: "/brand/icon-dony-laranja.png",
+    apple: "/brand/icon-dony-laranja.png",
+  },
 };
 
 export const viewport: Viewport = {
   themeColor: "#f5f2ef",
   width: "device-width",
   initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
 };
 
 export default async function RootLayout({

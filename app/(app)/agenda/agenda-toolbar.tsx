@@ -9,6 +9,7 @@ const VIEW_TABS: { id: View; label: string }[] = [
   { id: "month", label: "Mês" },
   { id: "week", label: "Semana" },
   { id: "day", label: "Dia" },
+  { id: "agenda", label: "Lista" },
 ];
 
 export function AgendaToolbar(props: ToolbarProps) {

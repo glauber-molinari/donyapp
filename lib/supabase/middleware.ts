@@ -66,6 +66,7 @@ export async function updateSession(request: NextRequest) {
     path === "/login" ||
     path === "/signup" ||
     path === "/forgot-password" ||
+    (process.env.NODE_ENV === "development" && path.startsWith("/dev-mobile-preview")) ||
     path === "/sitemap.xml" ||
     path === "/robots.txt" ||
     path.startsWith("/auth/") ||

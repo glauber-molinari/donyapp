@@ -112,7 +112,7 @@ export function NotesView({ notes, contacts, jobs }: NotesViewProps) {
     <div
       className={cn(
         isOpen
-          ? "flex h-[calc(100dvh-7rem)] overflow-hidden rounded-ds-xl border border-ds-border bg-ds-surface shadow-ds-card"
+          ? "flex h-[calc(100dvh-7rem)] overflow-hidden rounded-ds-xl border border-ds-border bg-ds-surface shadow-ds-card md:h-[calc(100dvh-7rem)]"
           : "flex flex-col gap-6"
       )}
     >
@@ -120,7 +120,7 @@ export function NotesView({ notes, contacts, jobs }: NotesViewProps) {
       <div
         className={cn(
           isOpen
-            ? "flex w-[260px] shrink-0 flex-col overflow-hidden border-r border-ds-border"
+            ? "hidden w-[260px] shrink-0 flex-col overflow-hidden border-r border-ds-border md:flex"
             : "flex flex-col gap-6"
         )}
       >
@@ -137,15 +137,18 @@ export function NotesView({ notes, contacts, jobs }: NotesViewProps) {
           <button
             type="button"
             onClick={handleNewNote}
+            aria-label="Nova nota"
             className={cn(
               "inline-flex shrink-0 items-center justify-center gap-1.5 rounded-ds-xl font-medium transition-colors ease-out",
               "bg-app-primary text-white shadow-sm hover:brightness-95",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/35",
-              isOpen ? "h-8 px-2.5 text-xs" : "h-10 w-full px-4 text-sm sm:w-auto"
+              isOpen
+                ? "h-8 px-2.5 text-xs"
+                : "h-9 px-3 text-xs sm:h-10 sm:px-4 sm:text-sm"
             )}
           >
             <Plus className="h-4 w-4" aria-hidden />
-            {!isOpen && "Nova nota"}
+            {!isOpen && <span className="whitespace-nowrap">Nova nota</span>}
           </button>
         </div>
 
@@ -281,7 +284,9 @@ export function NotesView({ notes, contacts, jobs }: NotesViewProps) {
         )}
       </div>
 
-      {/* ── Right panel: inline editor ───────────────────────── */}
+      {/* ── Right panel: inline editor ─────────────────────────
+           Mobile: ocupa a tela inteira (oculta a lista).
+           Desktop: painel lateral ao lado da lista. */}
       {isOpen && (
         <div className="flex flex-1 flex-col overflow-hidden">
           <InlineNoteEditor

@@ -32,10 +32,18 @@
   --space-2xl: clamp(3rem, 2rem + 5vw, 5rem);
 }
 
+html {
+  /** Evita que conteúdo largo (Kanban com muitas colunas) provoque scroll
+      horizontal do viewport — o que arrastaria o bottom nav `fixed` junto. */
+  overflow-x: hidden;
+}
+
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: var(--font-inter), system-ui, sans-serif;
+  /** Idem html — defesa em profundidade. */
+  overflow-x: hidden;
 }
 
 /* Landing: entrada suave (CSS only) — legado, opcional */

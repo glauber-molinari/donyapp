@@ -549,8 +549,8 @@ const KanbanColumn = memo(function KanbanColumn({
     <div
       className={cn(
         "flex min-h-0 flex-col overflow-hidden rounded-xl border border-ds-border/60 shadow-sm transition-[box-shadow,colors]",
-        /* Mobile/tablet: colunas com largura legível + scroll horizontal */
-        "max-lg:w-[min(92vw,20rem)] max-lg:max-w-[20rem] max-lg:shrink-0 max-lg:flex-none",
+        /* Mobile/tablet: colunas com largura legível + scroll-snap pra "travar" em uma coluna por vez */
+        "max-lg:w-[min(92vw,20rem)] max-lg:max-w-[20rem] max-lg:shrink-0 max-lg:flex-none max-lg:snap-start",
         "lg:min-w-[128px] lg:max-w-[260px] lg:flex-1 lg:basis-0"
       )}
       style={{
@@ -877,7 +877,7 @@ export function BoardView({
             id="btn-novo-job"
             type="button"
             size="md"
-            className="w-full sm:w-auto"
+            className="hidden w-full sm:inline-flex sm:w-auto"
             disabled={noStages}
             onClick={() => {
               setErrorMessage(null);
@@ -933,7 +933,7 @@ export function BoardView({
           onDragCancel={handleDragCancel}
         >
           <div
-            className="w-full min-w-0 overflow-x-auto scroll-smooth pb-4 pt-1 [scrollbar-width:thin] overscroll-x-contain touch-pan-x"
+            className="w-full min-w-0 overflow-x-auto scroll-smooth pb-4 pt-1 [scrollbar-width:thin] overscroll-x-contain touch-pan-x snap-x snap-mandatory scroll-pl-1 lg:snap-none"
             role="region"
             aria-label="Colunas do quadro — em telas pequenas, deslize horizontalmente para ver todas as etapas"
           >
@@ -1043,6 +1043,22 @@ export function BoardView({
         accountSubjectTemplate={accountSubjectTemplate}
         accountBodyTemplate={accountBodyTemplate}
       />
+
+      <button
+        type="button"
+        aria-label="Novo job"
+        disabled={noStages}
+        onClick={() => {
+          setErrorMessage(null);
+          setCreateOpen(true);
+        }}
+        className="fixed right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-app-primary text-white shadow-lg shadow-app-primary/30 transition-transform duration-150 ease-out hover:brightness-95 active:scale-95 disabled:opacity-50 disabled:pointer-events-none md:hidden"
+        style={{
+          bottom: "calc(env(safe-area-inset-bottom, 0px) + 5rem)",
+        }}
+      >
+        <Plus className="h-6 w-6" aria-hidden />
+      </button>
     </div>
   );
 }
