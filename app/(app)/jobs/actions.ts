@@ -650,10 +650,10 @@ export async function updateJob(jobId: string, formData: FormData): Promise<Acti
   const legacyFull = deriveLegacyFromTokens(photoTok, videoTok);
   const splitFotoVideoCombo = parsed.type === "foto_video";
   const parentLegacy = splitFotoVideoCombo ? deriveLegacyFromTokens(photoTok, []) : legacyFull;
-  let photo_editor_id = parentLegacy.photo_editor_id;
-  let video_editor_id = parentLegacy.video_editor_id;
-  let photo_manual_assignee_id = parentLegacy.photo_manual_assignee_id;
-  let video_manual_assignee_id = parentLegacy.video_manual_assignee_id;
+  const photo_editor_id = parentLegacy.photo_editor_id;
+  const video_editor_id = parentLegacy.video_editor_id;
+  const photo_manual_assignee_id = parentLegacy.photo_manual_assignee_id;
+  const video_manual_assignee_id = parentLegacy.video_manual_assignee_id;
 
   const stageChanged = existing.stage_id !== parsed.stage_id;
   const nextPos = stageChanged
