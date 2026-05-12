@@ -55,6 +55,8 @@ export type InitialJobValues = {
   work_type_id?: string | null;
   sd_card_tags?: string[];
   notes?: string | null;
+  professional_photo_tags?: string[];
+  professional_video_tags?: string[];
   internal_deadline?: string | null;
   deadline?: string | null;
   type?: JobRow["type"] | null;
@@ -298,6 +300,24 @@ export function NewJobForm({
               onChange={(e) => setDeliveryType(e.target.value as JobRow["type"])}
               options={JOB_DELIVERY_OPTIONS}
             />
+            <div className={cn(deliveryType === "video" && "hidden")}>
+              <SdCardTagsField
+                id={`${fieldIdPrefix}-prof-photo`}
+                name="professional_photo_tags"
+                label={deliveryType === "foto_video" ? "Quem fotografou" : "Profissional"}
+                hint="Opcional. Vários nomes: vírgula, ponto e vírgula ou Enter para cada um."
+                initialTags={initialValues?.professional_photo_tags ?? []}
+              />
+            </div>
+            <div className={cn(deliveryType === "foto" && "hidden")}>
+              <SdCardTagsField
+                id={`${fieldIdPrefix}-prof-video`}
+                name="professional_video_tags"
+                label={deliveryType === "foto_video" ? "Quem filmou" : "Profissional"}
+                hint="Opcional. Vários nomes: vírgula, ponto e vírgula ou Enter para cada um."
+                initialTags={initialValues?.professional_video_tags ?? []}
+              />
+            </div>
             <Input
               id={`${fieldIdPrefix}-delivery-link`}
               name="delivery_link"

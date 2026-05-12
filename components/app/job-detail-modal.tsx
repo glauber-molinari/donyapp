@@ -277,6 +277,8 @@ export function JobDetailModal({
               work_type_id: job.work_type_id,
               sd_card_tags: job.sd_card_tags ?? [],
               notes: job.notes,
+              professional_photo_tags: job.professional_photo_tags ?? [],
+              professional_video_tags: job.professional_video_tags ?? [],
               internal_deadline: job.internal_deadline,
               deadline: job.deadline,
               type: editFormDeliveryType(job, allJobs),
@@ -321,6 +323,38 @@ export function JobDetailModal({
                 <DetailRow label="Nome">{job.name}</DetailRow>
                 <DetailRow label="Coluna">{job.kanban_stages?.name ?? "—"}</DetailRow>
                 <DetailRow label="Data job">{formatOptionalDate(job.job_date)}</DetailRow>
+                {(job.professional_photo_tags?.length ?? 0) > 0 ? (
+                  <DetailRow label="Quem fotografou">
+                    <span className="flex flex-wrap gap-1.5">
+                      {(job.professional_photo_tags ?? []).map((t, i) => (
+                        <span
+                          key={`${i}-ph`}
+                          className="rounded-md bg-ds-cream px-2 py-0.5 text-xs font-medium text-ds-ink"
+                        >
+                          {t}
+                        </span>
+                      ))}
+                    </span>
+                  </DetailRow>
+                ) : null}
+                {(job.professional_video_tags?.length ?? 0) > 0 ? (
+                  <DetailRow label="Quem filmou">
+                    <span className="flex flex-wrap gap-1.5">
+                      {(job.professional_video_tags ?? []).map((t, i) => (
+                        <span
+                          key={`${i}-vi`}
+                          className="rounded-md bg-ds-cream px-2 py-0.5 text-xs font-medium text-ds-ink"
+                        >
+                          {t}
+                        </span>
+                      ))}
+                    </span>
+                  </DetailRow>
+                ) : null}
+                {(job.professional_photo_tags?.length ?? 0) === 0 &&
+                (job.professional_video_tags?.length ?? 0) === 0 ? (
+                  <DetailRow label="Captação">—</DetailRow>
+                ) : null}
                 <DetailRow label="Cliente">
                   {job.contacts ? (
                     <>

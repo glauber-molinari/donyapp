@@ -770,6 +770,8 @@ export interface Database {
           parent_job_id: string | null;
           job_kind: JobKind;
           notes: string | null;
+          professional_photo_tags: string[];
+          professional_video_tags: string[];
           sd_card_tags: string[];
           delivery_link: string | null;
           client_revision: number;
@@ -796,6 +798,8 @@ export interface Database {
           parent_job_id?: string | null;
           job_kind?: JobKind;
           notes?: string | null;
+          professional_photo_tags?: string[];
+          professional_video_tags?: string[];
           sd_card_tags?: string[];
           delivery_link?: string | null;
           client_revision?: number;
@@ -822,6 +826,8 @@ export interface Database {
           parent_job_id?: string | null;
           job_kind?: JobKind;
           notes?: string | null;
+          professional_photo_tags?: string[];
+          professional_video_tags?: string[];
           sd_card_tags?: string[];
           delivery_link?: string | null;
           client_revision?: number;

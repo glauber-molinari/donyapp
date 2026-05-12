@@ -73,3 +73,34 @@ export function parseSdCardTagsFromFormData(
   }
   return out;
 }
+
+const PROF_TAG_MAX_LEN = 80;
+const PROF_TAG_MAX_COUNT = 20;
+
+/** Vários hidden `name="professional_photo_tags"` ou `professional_video_tags`. */
+export function parseProfessionalTagsFromFormData(
+  formData: FormData,
+  fieldName: "professional_photo_tags" | "professional_video_tags"
+): string[] | { error: string } {
+  const raw = formData.getAll(fieldName);
+  const seen = new Set<string>();
+  const out: string[] = [];
+  const label = fieldName === "professional_photo_tags" ? "Fotógrafo" : "Filmagem";
+  for (const e of raw) {
+    if (typeof e !== "string") continue;
+    const t = e.trim();
+    if (!t) continue;
+    if (t.length > PROF_TAG_MAX_LEN) {
+      return {
+        error: `Cada nome em ${label} pode ter no máximo ${PROF_TAG_MAX_LEN} caracteres.`,
+      };
+    }
+    if (seen.has(t)) continue;
+    seen.add(t);
+    out.push(t);
+    if (out.length > PROF_TAG_MAX_COUNT) {
+      return { error: `No máximo ${PROF_TAG_MAX_COUNT} nomes em ${label} por job.` };
+    }
+  }
+  return out;
+}

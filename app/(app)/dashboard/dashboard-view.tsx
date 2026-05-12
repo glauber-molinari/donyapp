@@ -301,12 +301,16 @@ export function DashboardView({
         const workTypeName = j.job_work_types?.name?.toLowerCase() ?? "";
         const tagHit =
           j.sd_card_tags?.some((tag) => tag.toLowerCase().includes(q)) ?? false;
+        const profHit =
+          (j.professional_photo_tags?.some((tag) => tag.toLowerCase().includes(q)) ?? false) ||
+          (j.professional_video_tags?.some((tag) => tag.toLowerCase().includes(q)) ?? false);
         return (
           j.name.toLowerCase().includes(q) ||
           contactName.includes(q) ||
           stageName.includes(q) ||
           workTypeName.includes(q) ||
-          tagHit
+          tagHit ||
+          profHit
         );
       })
       .filter((j) => {

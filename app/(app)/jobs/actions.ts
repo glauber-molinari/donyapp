@@ -13,6 +13,7 @@ import {
   parseJobType,
   parseOptionalContactId,
   parseRequiredId,
+  parseProfessionalTagsFromFormData,
   parseSdCardTagsFromFormData,
 } from "@/lib/validation/job";
 import { FREE_MAX_ACTIVE_JOBS } from "@/lib/plan-limits";
@@ -300,6 +301,8 @@ type ParsedJobFields = {
   work_type_id: string;
   contact_id: string | null;
   notes: string | null;
+  professional_photo_tags: string[];
+  professional_video_tags: string[];
   delivery_link: string | null;
   stage_id: string | null;
   photo_editor_id: string | null;
@@ -347,6 +350,14 @@ function parseJobForm(formData: FormData): { error: string } | ParsedJobFields {
   if (!internal_deadline) return { error: "Prazo interno inválido." };
   if (!deadline) return { error: "Prazo final inválido." };
 
+  const rawProfPhoto = parseProfessionalTagsFromFormData(formData, "professional_photo_tags");
+  if ("error" in rawProfPhoto) return rawProfPhoto;
+  const rawProfVideo = parseProfessionalTagsFromFormData(formData, "professional_video_tags");
+  if ("error" in rawProfVideo) return rawProfVideo;
+
+  const professional_photo_tags = type === "video" ? [] : rawProfPhoto;
+  const professional_video_tags = type === "foto" ? [] : rawProfVideo;
+
   const photo_editor_id = parseOptionalUserId(formData.get("photo_editor_id"));
   const video_editor_id = parseOptionalUserId(formData.get("video_editor_id"));
   const photo_manual_assignee_id = parseOptionalUserId(formData.get("photo_manual_assignee_id"));
@@ -365,6 +376,8 @@ function parseJobForm(formData: FormData): { error: string } | ParsedJobFields {
     work_type_id,
     contact_id: contactId,
     notes,
+    professional_photo_tags,
+    professional_video_tags,
     delivery_link,
     stage_id,
     photo_editor_id,
@@ -400,6 +413,8 @@ async function insertVideoEditChildJob(
       job_date: parsed.job_date,
       work_type_id: parsed.work_type_id,
       notes: null,
+      professional_photo_tags: [],
+      professional_video_tags: [],
       delivery_link: null,
       sd_card_tags: [],
       created_by: ctx.userId,
@@ -521,6 +536,8 @@ export async function createJob(formData: FormData): Promise<ActionResult> {
     job_date: parsed.job_date,
     work_type_id: parsed.work_type_id,
     notes: parsed.notes,
+    professional_photo_tags: parsed.professional_photo_tags,
+    professional_video_tags: parsed.professional_video_tags,
     sd_card_tags: parsed.sd_card_tags,
     delivery_link: parsed.delivery_link,
     created_by: ctx.userId,
@@ -656,6 +673,8 @@ export async function updateJob(jobId: string, formData: FormData): Promise<Acti
       job_date: parsed.job_date,
       work_type_id: parsed.work_type_id,
       notes: parsed.notes,
+      professional_photo_tags: parsed.professional_photo_tags,
+      professional_video_tags: parsed.professional_video_tags,
       sd_card_tags: parsed.sd_card_tags,
       delivery_link: parsed.delivery_link,
       photo_editor_id,
