@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 
 import { createNote, updateNote } from "./actions";
 import { ContactSearchField } from "@/components/app/contact-search-field";
+import { JobSearchField } from "@/components/app/job-search-field";
 import { NoteBodyEditor } from "@/components/app/note-body-editor";
 import { NoteCategoryInput } from "@/components/app/note-category-input";
 import { Button } from "@/components/ui/button";
@@ -196,24 +197,14 @@ export function NoteEditorClient({ mode, noteId, initial, contacts, jobs }: Note
                 }}
               />
 
-              <label htmlFor="note-editor-job" className="flex flex-col gap-1.5 text-sm font-medium text-ds-ink">
-                Job (opcional)
-                <select
-                  id="note-editor-job"
-                  name="job_id"
-                  value={jobId ?? ""}
-                  onChange={(e) => setJobId(e.target.value ? e.target.value : null)}
-                  disabled={!contactId}
-                  className="w-full rounded-ds-xl border border-app-border bg-app-sidebar px-3 py-2.5 text-sm text-ds-ink shadow-sm focus:border-app-primary/50 focus:outline-none focus:ring-2 focus:ring-app-primary/20 disabled:cursor-not-allowed disabled:bg-ds-cream disabled:text-ds-subtle"
-                >
-                  <option value="">Sem job</option>
-                  {jobsForContact.map((j) => (
-                    <option key={j.id} value={j.id}>
-                      {j.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <JobSearchField
+                key={`${editorKey}-${contactId ?? "none"}`}
+                id="note-editor-job"
+                jobs={jobsForContact}
+                disabled={!contactId}
+                initialSelectedJobId={jobId}
+                onChangeSelectedJobId={setJobId}
+              />
             </div>
 
             <div className="grid gap-5 lg:grid-cols-2">

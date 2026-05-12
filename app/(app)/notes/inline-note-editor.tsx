@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 
 import { createNote, deleteNote, updateNote } from "./actions";
 import { ContactSearchField } from "@/components/app/contact-search-field";
+import { JobSearchField } from "@/components/app/job-search-field";
 import { NoteBodyEditor } from "@/components/app/note-body-editor";
 import { NoteCategoryInput } from "@/components/app/note-category-input";
 import { Button } from "@/components/ui/button";
@@ -212,26 +213,14 @@ export function InlineNoteEditor({
                 setJobId(null);
               }}
             />
-            <label
-              htmlFor="inline-note-job"
-              className="flex flex-col gap-1.5 text-sm font-medium text-ds-ink"
-            >
-              Job (opcional)
-              <select
-                id="inline-note-job"
-                value={jobId ?? ""}
-                onChange={(e) => setJobId(e.target.value || null)}
-                disabled={!contactId}
-                className="w-full rounded-ds-xl border border-app-border bg-app-sidebar px-3 py-2 text-sm text-ds-ink focus:border-app-primary/50 focus:outline-none focus:ring-2 focus:ring-app-primary/20 disabled:cursor-not-allowed disabled:bg-ds-cream disabled:text-ds-subtle"
-              >
-                <option value="">Sem job</option>
-                {jobsForContact.map((j) => (
-                  <option key={j.id} value={j.id}>
-                    {j.name}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <JobSearchField
+              key={`${editorKey}-${contactId ?? "none"}`}
+              id="inline-note-job"
+              jobs={jobsForContact}
+              disabled={!contactId}
+              initialSelectedJobId={jobId}
+              onChangeSelectedJobId={setJobId}
+            />
           </div>
 
           <div className="border-b border-ds-border py-4">

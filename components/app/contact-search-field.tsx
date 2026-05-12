@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -42,9 +42,11 @@ export function ContactSearchField({
     setQuery(c ? `${c.name} (${c.email})` : "");
   }, [defaultContactId, contacts, resetKey]);
 
+  const onChangeRef = useRef(onChangeSelectedId);
+  onChangeRef.current = onChangeSelectedId;
   useEffect(() => {
-    onChangeSelectedId?.(selectedId);
-  }, [onChangeSelectedId, selectedId]);
+    onChangeRef.current?.(selectedId);
+  }, [selectedId]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
