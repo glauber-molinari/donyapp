@@ -24,6 +24,7 @@ import { ActivationChecklist } from "@/components/app/activation-checklist";
 import { ContactSearchField } from "@/components/app/contact-search-field";
 import { NewJobForm, type NewJobTab } from "@/components/app/new-job-form";
 import { SdCardTagsField } from "@/components/app/sd-card-tags-field";
+import { JobAssigneesMultiField } from "@/components/app/job-assignees-multi-field";
 import { KanbanMiniPreview } from "@/components/app/kanban-mini-preview";
 import { useOnboardingTour } from "@/components/app/onboarding-tour";
 import { Avatar } from "@/components/ui/avatar";
@@ -36,11 +37,14 @@ import { Modal } from "@/components/ui/modal";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { DashboardMetrics } from "@/lib/dashboard-metrics";
+import type { JobAssigneeRowPick } from "@/lib/job-assignees";
 import { assigneesForJobCard } from "@/lib/job-assignees";
+import { buildJobAssigneePickerOptions } from "@/lib/build-job-assignee-picker-options";
+import { initialAssigneeTokensForJob } from "@/lib/job-assignee-form";
 import { deadlineBadge, formatDeadlinePt } from "@/lib/job-display";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import type { Database, Plan } from "@/types/database";
+import type { Database, Plan, UserRole } from "@/types/database";
 import { createJob, deleteJob, updateJob } from "../jobs/actions";
 
 type JobRow = Database["public"]["Tables"]["jobs"]["Row"];
@@ -55,6 +59,7 @@ export type JobWithRelations = JobRow & {
   contacts: ContactPick | null;
   kanban_stages: StagePick | null;
   job_work_types: Pick<WorkTypeRow, "id" | "name"> | null;
+  job_assignees?: JobAssigneeRowPick[] | null;
 };
 
 const JOB_DELIVERY_OPTIONS: { value: JobRow["type"]; label: string }[] = [
@@ -73,7 +78,7 @@ const EDIT_JOB_TABS = [
 type EditJobTabId = (typeof EDIT_JOB_TABS)[number]["id"];
 
 interface DashboardViewProps {
-  members: { id: string; name: string; email: string | null; avatarUrl: string | null }[];
+  members: { id: string; name: string; email: string | null; avatarUrl: string | null; role: UserRole }[];
   manualAssignees: { id: string; name: string; email: string | null; photo_url: string | null }[];
   jobs: JobWithRelations[];
   contacts: ContactPick[];
@@ -240,20 +245,26 @@ export function DashboardView({
 
   const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
 
-  const memberOptions = useMemo(
-    () =>
-      members.map((m) => ({
-        value: m.id,
-        label: m.name,
-      })),
-    [members]
-  );
-
   const singleMemberId = members.length === 1 ? members[0]!.id : null;
 
-  const manualAssigneeOptions = useMemo(
-    () => manualAssignees.map((m) => ({ value: m.id, label: m.name })),
-    [manualAssignees]
+  const assigneePickerOptions = useMemo(
+    () =>
+      buildJobAssigneePickerOptions(
+        members.map((m) => ({
+          id: m.id,
+          name: m.name,
+          role: m.role,
+          email: m.email,
+          avatarUrl: m.avatarUrl,
+        })),
+        manualAssignees.map((m) => ({
+          id: m.id,
+          name: m.name,
+          email: m.email,
+          photoUrl: m.photo_url,
+        }))
+      ),
+    [members, manualAssignees]
   );
 
   const manualById = useMemo(() => {
@@ -263,9 +274,6 @@ export function DashboardView({
     }
     return map;
   }, [manualAssignees]);
-
-  const useManualDirectory =
-    plan === "pro" && members.length === 1 && manualAssignees.length > 0;
 
   function assigneesForJob(j: JobWithRelations) {
     return assigneesForJobCard(j, membersById, singleMemberId, manualById);
@@ -364,10 +372,7 @@ export function DashboardView({
     if (createOpen) setCreateJobTab("info");
   }, [createOpen]);
 
-  const editJobTabsVisible = useMemo(() => {
-    const showEquipe = members.length > 1 || useManualDirectory;
-    return showEquipe ? EDIT_JOB_TABS : EDIT_JOB_TABS.filter((t) => t.id !== "equipe");
-  }, [members.length, useManualDirectory]);
+  const editJobTabsVisible = EDIT_JOB_TABS;
 
   function refresh() {
     router.refresh();
@@ -1144,9 +1149,7 @@ export function DashboardView({
             contacts={contacts}
             stageOptions={stageOptions}
             workTypeOptions={workTypeOptions}
-            memberOptions={memberOptions}
-            manualAssigneeOptions={manualAssigneeOptions}
-            useManualAssigneeDirectory={plan === "pro" && members.length === 1}
+            assigneePickerOptions={assigneePickerOptions}
             tab={createJobTab}
             onTabChange={setCreateJobTab}
             onSubmit={handleCreate}
@@ -1182,21 +1185,7 @@ export function DashboardView({
             className="flex flex-col gap-3 p-5"
             onSubmit={handleEdit}
           >
-            {members.length <= 1 ? (
-              <>
-                {useManualDirectory ? (
-                  <>
-                    <input type="hidden" name="photo_editor_id" value="" />
-                    <input type="hidden" name="video_editor_id" value="" />
-                  </>
-                ) : (
-                  <>
-                    <input type="hidden" name="photo_editor_id" value={singleMemberId ?? ""} />
-                    <input type="hidden" name="video_editor_id" value={singleMemberId ?? ""} />
-                  </>
-                )}
-              </>
-            ) : null}
+            <input type="hidden" name="assignee_picker_option_count" value={assigneePickerOptions.length} />
 
             <div
               role="tablist"
@@ -1289,100 +1278,49 @@ export function DashboardView({
                 />
               </div>
 
-              {useManualDirectory ? (
-                <div role="tabpanel" hidden={editJobTab !== "equipe"} className="space-y-4">
-                  {editJob.job_kind === "video_edit" ? (
-                    <>
-                      <input type="hidden" name="photo_manual_assignee_id" value="" />
-                      <Select
-                        id="job-edit-video-manual"
-                        name="video_manual_assignee_id"
-                        label="Responsável pelo vídeo"
-                        placeholder="Selecione"
-                        defaultValue={editJob.video_manual_assignee_id ?? ""}
-                        options={manualAssigneeOptions}
-                      />
-                    </>
-                  ) : editJob.type === "foto_video" ? (
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      <Select
-                        id="job-edit-photo-manual"
-                        name="photo_manual_assignee_id"
-                        label="Responsável pela foto"
-                        placeholder="Selecione"
-                        defaultValue={editJob.photo_manual_assignee_id ?? ""}
-                        options={manualAssigneeOptions}
-                      />
-                      <Select
-                        id="job-edit-video-manual"
-                        name="video_manual_assignee_id"
-                        label="Responsável pelo vídeo"
-                        placeholder="Selecione"
-                        defaultValue={editJob.video_manual_assignee_id ?? ""}
-                        options={manualAssigneeOptions}
-                      />
-                    </div>
-                  ) : (
-                    <>
-                      <input
-                        type="hidden"
-                        name={editJob.type === "video" ? "photo_manual_assignee_id" : "video_manual_assignee_id"}
-                        value=""
-                      />
-                      <Select
-                        id="job-edit-manual-single"
-                        name={
-                          editJob.type === "video" ? "video_manual_assignee_id" : "photo_manual_assignee_id"
-                        }
-                        label="Responsável"
-                        placeholder="Selecione"
-                        defaultValue={
-                          editJob.type === "video"
-                            ? (editJob.video_manual_assignee_id ?? "")
-                            : (editJob.photo_manual_assignee_id ?? "")
-                        }
-                        options={manualAssigneeOptions}
-                      />
-                    </>
-                  )}
-                </div>
-              ) : members.length > 1 ? (
-                <div role="tabpanel" hidden={editJobTab !== "equipe"} className="space-y-4">
-                  {editJob.type === "foto_video" ? (
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      <Select
-                        id="job-edit-photo-editor"
-                        name="photo_editor_id"
-                        label="Responsável pela foto"
-                        placeholder="Selecione"
-                        defaultValue={editJob.photo_editor_id ?? ""}
-                        options={memberOptions}
-                      />
-                      <Select
-                        id="job-edit-video-editor"
-                        name="video_editor_id"
-                        label="Responsável pelo vídeo"
-                        placeholder="Selecione"
-                        defaultValue={editJob.video_editor_id ?? ""}
-                        options={memberOptions}
-                      />
-                    </div>
-                  ) : (
-                    <Select
-                      id="job-edit-editor"
-                      name={editJob.type === "video" ? "video_editor_id" : "photo_editor_id"}
-                      label="Responsável"
-                      placeholder="Selecione"
-                      defaultValue={
-                        editJob.type === "video"
-                          ? (editJob.video_editor_id ?? "")
-                          : (editJob.photo_editor_id ?? "")
-                      }
-                      options={memberOptions}
+              <div role="tabpanel" hidden={editJobTab !== "equipe"} className="space-y-4">
+                {editJob.job_kind === "video_edit" ? (
+                  <JobAssigneesMultiField
+                    id={`job-edit-${editJob.id}-assign-video`}
+                    name="assignee_video"
+                    label="Responsáveis pelo vídeo"
+                    options={assigneePickerOptions}
+                    defaultSelectedTokens={initialAssigneeTokensForJob(editJob, "video")}
+                    requireSelection={assigneePickerOptions.length > 1}
+                  />
+                ) : editJob.type === "foto_video" ? (
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <JobAssigneesMultiField
+                      id={`job-edit-${editJob.id}-assign-photo`}
+                      name="assignee_photo"
+                      label="Responsáveis pela foto"
+                      options={assigneePickerOptions}
+                      defaultSelectedTokens={initialAssigneeTokensForJob(editJob, "photo")}
+                      requireSelection={assigneePickerOptions.length > 1}
                     />
-                  )}
-                </div>
-              ) : null}
+                    <JobAssigneesMultiField
+                      id={`job-edit-${editJob.id}-assign-video`}
+                      name="assignee_video"
+                      label="Responsáveis pelo vídeo"
+                      options={assigneePickerOptions}
+                      defaultSelectedTokens={initialAssigneeTokensForJob(editJob, "video")}
+                      requireSelection={assigneePickerOptions.length > 1}
+                    />
+                  </div>
+                ) : (
+                  <JobAssigneesMultiField
+                    id={`job-edit-${editJob.id}-assign`}
+                    name={editJob.type === "video" ? "assignee_video" : "assignee_photo"}
+                    label="Responsáveis"
+                    options={assigneePickerOptions}
+                    defaultSelectedTokens={initialAssigneeTokensForJob(
+                      editJob,
+                      editJob.type === "video" ? "video" : "photo"
+                    )}
+                    requireSelection={assigneePickerOptions.length > 1}
+                  />
+                )}
+              </div>
 
               <div role="tabpanel" hidden={editJobTab !== "etapa"} className="space-y-4">
                 <Select

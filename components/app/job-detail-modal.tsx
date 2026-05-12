@@ -9,14 +9,16 @@ type ManualLite = { id: string; name: string; email: string | null };
 import type { JobWithRelations } from "@/app/(app)/dashboard/dashboard-view";
 import { deleteJob, updateJob } from "@/app/(app)/jobs/actions";
 import { NewJobForm } from "@/components/app/new-job-form";
+import type { ContactSearchOption } from "@/components/app/contact-search-field";
+import type { JobAssigneePickerOption } from "@/lib/build-job-assignee-picker-options";
+import { initialAssigneeTokensForJob } from "@/lib/job-assignee-form";
+import { formatDeadlinePt } from "@/lib/job-display";
+import { toast } from "@/lib/toast";
+import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import type { SelectOption } from "@/components/ui/select";
-import type { ContactSearchOption } from "@/components/app/contact-search-field";
-import { formatDeadlinePt } from "@/lib/job-display";
-import { toast } from "@/lib/toast";
-import { cn } from "@/lib/utils";
 
 function formatOptionalDate(ymd: string | null | undefined): string {
   if (!ymd) return "—";
@@ -39,6 +41,41 @@ function DetailRow({ label, children }: { label: string; children: React.ReactNo
 
 type MemberLite = { id: string; name: string; email: string | null; avatarUrl: string | null };
 
+function assigneeNamesForRole(
+  job: JobWithRelations,
+  role: "photo" | "video",
+  membersById: Map<string, MemberLite>,
+  manualById: Map<string, ManualLite>,
+  single: MemberLite | null
+): string {
+  const rows = job.job_assignees?.filter((r) => r.role === role) ?? [];
+  const names: string[] = [];
+  for (const r of rows) {
+    if (r.user_id) {
+      const m = membersById.get(r.user_id);
+      if (m) names.push(m.name);
+    } else if (r.manual_job_assignee_id) {
+      const m = manualById.get(r.manual_job_assignee_id);
+      if (m) names.push(m.name);
+    }
+  }
+  if (names.length > 0) return names.join(", ");
+
+  const photoManual = job.photo_manual_assignee_id
+    ? manualById.get(job.photo_manual_assignee_id)
+    : null;
+  const videoManual = job.video_manual_assignee_id
+    ? manualById.get(job.video_manual_assignee_id)
+    : null;
+  const photoMember = job.photo_editor_id ? membersById.get(job.photo_editor_id) : null;
+  const videoMember = job.video_editor_id ? membersById.get(job.video_editor_id) : null;
+
+  if (role === "photo") {
+    return photoManual?.name ?? photoMember?.name ?? single?.name ?? "—";
+  }
+  return videoManual?.name ?? videoMember?.name ?? single?.name ?? "—";
+}
+
 const DETAIL_TABS = [
   { id: "geral" as const, label: "Informações gerais" },
   { id: "prazos" as const, label: "Prazos" },
@@ -56,9 +93,7 @@ export function JobDetailModal({
   contacts,
   stageOptions,
   workTypeOptions,
-  memberOptions,
-  manualAssigneeOptions,
-  useManualAssigneeDirectory,
+  assigneePickerOptions,
   open,
   onClose,
 }: {
@@ -69,9 +104,7 @@ export function JobDetailModal({
   contacts: ContactSearchOption[];
   stageOptions: SelectOption[];
   workTypeOptions: SelectOption[];
-  memberOptions: SelectOption[];
-  manualAssigneeOptions: SelectOption[];
-  useManualAssigneeDirectory: boolean;
+  assigneePickerOptions: JobAssigneePickerOption[];
   open: boolean;
   onClose: () => void;
 }) {
@@ -94,16 +127,7 @@ export function JobDetailModal({
 
   if (!open || !job) return null;
 
-  const photoMember = job.photo_editor_id ? membersById.get(job.photo_editor_id) : null;
-  const videoMember = job.video_editor_id ? membersById.get(job.video_editor_id) : null;
   const single = members.length === 1 ? members[0]! : null;
-
-  const photoManual = job.photo_manual_assignee_id
-    ? manualById.get(job.photo_manual_assignee_id)
-    : null;
-  const videoManual = job.video_manual_assignee_id
-    ? manualById.get(job.video_manual_assignee_id)
-    : null;
 
   const parentJob = job.parent_job_id
     ? allJobs.find((j) => j.id === job.parent_job_id)
@@ -117,13 +141,13 @@ export function JobDetailModal({
       ? "—"
       : job.type === "video"
         ? "—"
-        : (photoManual?.name ?? photoMember?.name ?? single?.name ?? "—");
+        : assigneeNamesForRole(job, "photo", membersById, manualById, single);
   const videoLine =
     job.job_kind === "video_edit"
-      ? (videoManual?.name ?? videoMember?.name ?? single?.name ?? "—")
+      ? assigneeNamesForRole(job, "video", membersById, manualById, single)
       : job.type === "foto"
         ? "—"
-        : (videoManual?.name ?? videoMember?.name ?? single?.name ?? "—");
+        : assigneeNamesForRole(job, "video", membersById, manualById, single);
 
   const jobId = job.id;
 
@@ -234,9 +258,9 @@ export function JobDetailModal({
             contacts={contacts}
             stageOptions={stageOptions}
             workTypeOptions={workTypeOptions}
-            memberOptions={memberOptions}
-            manualAssigneeOptions={manualAssigneeOptions}
-            useManualAssigneeDirectory={useManualAssigneeDirectory}
+            assigneePickerOptions={assigneePickerOptions}
+            initialAssigneePhotoTokens={initialAssigneeTokensForJob(job, "photo")}
+            initialAssigneeVideoTokens={initialAssigneeTokensForJob(job, "video")}
             initialValues={{
               name: job.name,
               stage_id: job.stage_id,
@@ -339,8 +363,8 @@ export function JobDetailModal({
 
             {tab === "equipe" ? (
               <dl>
-                <DetailRow label="Responsável (foto)">{photoLine}</DetailRow>
-                <DetailRow label="Responsável (vídeo)">{videoLine}</DetailRow>
+                <DetailRow label="Responsáveis (foto)">{photoLine}</DetailRow>
+                <DetailRow label="Responsáveis (vídeo)">{videoLine}</DetailRow>
               </dl>
             ) : null}
 

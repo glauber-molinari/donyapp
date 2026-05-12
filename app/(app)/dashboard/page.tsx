@@ -58,7 +58,8 @@ export default async function DashboardPage() {
         *,
         contacts ( id, name, email ),
         kanban_stages ( id, name, position, is_final ),
-        job_work_types ( id, name )
+        job_work_types ( id, name ),
+        job_assignees ( id, user_id, manual_job_assignee_id, role )
       `
       )
       .order("deadline", { ascending: true }),
@@ -74,7 +75,7 @@ export default async function DashboardPage() {
       .order("position", { ascending: true }),
     supabase
       .from("users")
-      .select("id, name, email, avatar_url")
+      .select("id, name, email, avatar_url, role")
       .eq("account_id", profile.account_id)
       .order("created_at", { ascending: true }),
     supabase
@@ -122,6 +123,7 @@ export default async function DashboardPage() {
           name: m.name ?? m.email ?? "Usuário",
           email: m.email ?? null,
           avatarUrl: m.avatar_url ?? null,
+          role: m.role,
         }))}
         manualAssignees={manualRes.data ?? []}
         jobs={(jobsRes.data ?? []) as JobWithRelations[]}

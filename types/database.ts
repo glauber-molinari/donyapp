@@ -668,6 +668,52 @@ export interface Database {
           },
         ];
       };
+      job_assignees: {
+        Row: {
+          id: string;
+          job_id: string;
+          user_id: string | null;
+          manual_job_assignee_id: string | null;
+          role: "photo" | "video";
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          job_id: string;
+          user_id?: string | null;
+          manual_job_assignee_id?: string | null;
+          role: "photo" | "video";
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          job_id?: string;
+          user_id?: string | null;
+          manual_job_assignee_id?: string | null;
+          role?: "photo" | "video";
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "job_assignees_job_id_fkey";
+            columns: ["job_id"];
+            referencedRelation: "jobs";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "job_assignees_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "job_assignees_manual_job_assignee_id_fkey";
+            columns: ["manual_job_assignee_id"];
+            referencedRelation: "manual_job_assignees";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       kanban_stages: {
         Row: {
           id: string;

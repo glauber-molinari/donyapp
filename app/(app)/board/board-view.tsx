@@ -38,6 +38,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Modal } from "@/components/ui/modal";
 import type { NewJobTab } from "@/components/app/new-job-form";
 import { kanbanStageAccentHex } from "@/lib/kanban-stage-accent";
+import { buildJobAssigneePickerOptions } from "@/lib/build-job-assignee-picker-options";
 import { assigneesForJobCard } from "@/lib/job-assignees";
 import {
   deadlineTimelineAriaText,
@@ -46,7 +47,7 @@ import {
 } from "@/lib/job-display";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import type { Database, Plan } from "@/types/database";
+import type { Database, Plan, UserRole } from "@/types/database";
 
 type StageRow = Database["public"]["Tables"]["kanban_stages"]["Row"];
 type WorkTypeRow = Database["public"]["Tables"]["job_work_types"]["Row"];
@@ -290,7 +291,7 @@ interface BoardViewProps {
   contacts: ContactPick[];
   workTypes: WorkTypeRow[];
   plan: Plan;
-  members: { id: string; name: string; email: string | null; avatarUrl: string | null }[];
+  members: { id: string; name: string; email: string | null; avatarUrl: string | null; role: UserRole }[];
   manualAssignees: { id: string; name: string; email: string | null; photo_url: string | null }[];
   senderName: string | null;
   replyToEmail: string | null;
@@ -300,7 +301,7 @@ interface BoardViewProps {
 
 const AvatarStack = memo(function AvatarStack({
   people,
-  max = 2,
+  max = 4,
 }: {
   people: { id: string; name: string; avatarUrl: string | null }[];
   max?: number;
@@ -661,14 +662,25 @@ export function BoardView({
 
   const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
   const singleMemberId = members.length === 1 ? members[0]!.id : null;
-  const memberOptions = useMemo(
-    () => members.map((m) => ({ value: m.id, label: m.name })),
-    [members]
-  );
 
-  const manualAssigneeOptions = useMemo(
-    () => manualAssignees.map((m) => ({ value: m.id, label: m.name })),
-    [manualAssignees]
+  const assigneePickerOptions = useMemo(
+    () =>
+      buildJobAssigneePickerOptions(
+        members.map((m) => ({
+          id: m.id,
+          name: m.name,
+          role: m.role,
+          email: m.email,
+          avatarUrl: m.avatarUrl,
+        })),
+        manualAssignees.map((m) => ({
+          id: m.id,
+          name: m.name,
+          email: m.email,
+          photoUrl: m.photo_url,
+        }))
+      ),
+    [members, manualAssignees]
   );
 
   const manualById = useMemo(() => {
@@ -678,8 +690,6 @@ export function BoardView({
     }
     return map;
   }, [manualAssignees]);
-
-  const useManualAssigneeDirectory = plan === "pro" && members.length === 1;
 
   const assigneesByJobId = useMemo(() => {
     const map = new Map<string, { id: string; name: string; avatarUrl: string | null }[]>();
@@ -984,9 +994,7 @@ export function BoardView({
         contacts={contacts}
         stageOptions={stageOptions}
         workTypeOptions={workTypeOptions}
-        memberOptions={memberOptions}
-        manualAssigneeOptions={manualAssigneeOptions}
-        useManualAssigneeDirectory={useManualAssigneeDirectory}
+        assigneePickerOptions={assigneePickerOptions}
         open={Boolean(detailJob)}
         onClose={() => setDetailJob(null)}
       />
@@ -1041,9 +1049,7 @@ export function BoardView({
             contacts={contacts}
             stageOptions={stageOptions}
             workTypeOptions={workTypeOptions}
-            memberOptions={memberOptions}
-            manualAssigneeOptions={manualAssigneeOptions}
-            useManualAssigneeDirectory={useManualAssigneeDirectory}
+            assigneePickerOptions={assigneePickerOptions}
             tab={createJobTab}
             onTabChange={setCreateJobTab}
             onSubmit={handleCreate}
