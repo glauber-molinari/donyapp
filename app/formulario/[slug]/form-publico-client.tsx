@@ -298,12 +298,15 @@ function FieldRenderer({ field, value, onChange, error, inputRef, onKeyDown }: F
         <input
           ref={inputRef as React.RefObject<HTMLInputElement>}
           type="email"
+          inputMode="email"
           className={baseInputClass}
           value={strValue}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={onKeyDown}
           placeholder="seu@email.com"
           autoComplete="email"
+          autoCapitalize="off"
+          spellCheck={false}
         />
         {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
       </div>
@@ -317,6 +320,7 @@ function FieldRenderer({ field, value, onChange, error, inputRef, onKeyDown }: F
         <input
           ref={inputRef as React.RefObject<HTMLInputElement>}
           type="tel"
+          inputMode="tel"
           className={baseInputClass}
           value={strValue}
           onChange={(e) => onChange(maskPhone(e.target.value))}
@@ -336,6 +340,7 @@ function FieldRenderer({ field, value, onChange, error, inputRef, onKeyDown }: F
         <input
           ref={inputRef as React.RefObject<HTMLInputElement>}
           type="number"
+          inputMode="numeric"
           className={baseInputClass}
           value={strValue}
           onChange={(e) => onChange(e.target.value)}
@@ -354,6 +359,24 @@ function FieldRenderer({ field, value, onChange, error, inputRef, onKeyDown }: F
         <input
           ref={inputRef as React.RefObject<HTMLInputElement>}
           type="date"
+          className={baseInputClass}
+          value={strValue}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={onKeyDown}
+        />
+        {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
+      </div>
+    );
+  }
+
+  if (field.type === "time") {
+    return (
+      <div>
+        {labelEl}
+        <input
+          ref={inputRef as React.RefObject<HTMLInputElement>}
+          type="time"
+          step={60}
           className={baseInputClass}
           value={strValue}
           onChange={(e) => onChange(e.target.value)}

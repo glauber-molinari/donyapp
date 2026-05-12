@@ -30,6 +30,7 @@ const FIELD_TYPE_LABELS: Record<FormFieldType, string> = {
   phone: "Telefone",
   number: "Número",
   date: "Data",
+  time: "Horário",
   multiple_choice: "Múltipla escolha",
   checkbox: "Caixas de seleção",
 };
@@ -41,6 +42,7 @@ const FIELD_TYPE_OPTIONS: FormFieldType[] = [
   "phone",
   "number",
   "date",
+  "time",
   "multiple_choice",
   "checkbox",
 ];

@@ -14,6 +14,7 @@ export type FormFieldType =
   | "phone"
   | "number"
   | "date"
+  | "time"
   | "multiple_choice"
   | "checkbox";
 export type JobType = "foto" | "video" | "foto_video";
