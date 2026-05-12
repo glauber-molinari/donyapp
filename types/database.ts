@@ -387,6 +387,7 @@ export interface Database {
           name: string | null;
           email: string | null;
           avatar_url: string | null;
+          avatar_is_custom: boolean;
           role: UserRole;
           tour_completed: boolean;
           created_at: string;
@@ -397,6 +398,7 @@ export interface Database {
           name?: string | null;
           email?: string | null;
           avatar_url?: string | null;
+          avatar_is_custom?: boolean;
           role?: UserRole;
           tour_completed?: boolean;
           created_at?: string;
@@ -407,6 +409,7 @@ export interface Database {
           name?: string | null;
           email?: string | null;
           avatar_url?: string | null;
+          avatar_is_custom?: boolean;
           role?: UserRole;
           tour_completed?: boolean;
           created_at?: string;

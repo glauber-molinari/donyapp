@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { Avatar } from "@/components/ui/avatar";
 import { oauthAvatarUrlFromUser } from "@/lib/auth/oauth-profile";
 import { createClient } from "@/lib/supabase/server";
 
+import { ProfileAvatarSection } from "./profile-avatar-section";
 import { ProfileTourReset } from "./profile-tour-reset";
 
 export const metadata: Metadata = {
@@ -23,34 +23,33 @@ export default async function SettingsProfilePage() {
 
   const { data: profile } = await supabase
     .from("users")
-    .select("name, email, avatar_url")
+    .select("name, email, avatar_url, avatar_is_custom")
     .eq("id", user.id)
     .maybeSingle();
 
   const displayName = profile?.name ?? user.email ?? "Usuário";
   const email = profile?.email ?? user.email ?? "—";
+  const oauthAvatar = oauthAvatarUrlFromUser(user);
+  const avatarSrc = profile?.avatar_url ?? oauthAvatar ?? null;
 
   return (
     <div className="flex flex-col gap-8">
       <div>
         <h2 className="text-lg font-semibold text-ds-ink">Perfil</h2>
         <p className="mt-1 text-sm text-ds-muted">
-          Nome e e-mail vêm da sua conta Google. O e-mail é usado como resposta (reply-to) nos envios ao
-          cliente no plano Pro.
+          Nome e e-mail vêm da sua conta Google. O e-mail entra como resposta (reply-to) nos envios ao
+          cliente no plano Pro. A foto você pode trocar aqui; se enviar uma imagem, ela passa a valer no
+          app em vez da foto do Google (até você voltar atrás).
         </p>
       </div>
 
-      <div className="flex flex-col gap-4 rounded-ds-xl border border-app-border bg-app-sidebar p-5 shadow-sm sm:flex-row sm:items-center sm:gap-6">
-        <Avatar
-          src={profile?.avatar_url ?? oauthAvatarUrlFromUser(user) ?? null}
-          name={displayName}
-          size="lg"
-        />
-        <div className="min-w-0 space-y-1">
-          <p className="text-base font-semibold text-ds-ink">{displayName}</p>
-          <p className="truncate text-sm text-ds-muted">{email}</p>
-        </div>
-      </div>
+      <ProfileAvatarSection
+        displayName={displayName}
+        email={email}
+        avatarSrc={avatarSrc}
+        avatarIsCustom={profile?.avatar_is_custom ?? false}
+        hasOauthAvatar={Boolean(oauthAvatar)}
+      />
 
       <ProfileTourReset />
     </div>

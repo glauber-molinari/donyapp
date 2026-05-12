@@ -113,12 +113,20 @@ export async function GET(request: NextRequest) {
 
   const remoteAvatar = oauthAvatarUrlFromUser(user);
   if (remoteAvatar) {
-    const { error: avatarErr } = await supabase
+    const { data: avatarRow } = await supabase
       .from("users")
-      .update({ avatar_url: remoteAvatar })
-      .eq("id", user.id);
-    if (avatarErr) {
-      console.warn("auth/callback: falha ao sincronizar avatar_url:", avatarErr.message);
+      .select("avatar_is_custom")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (!avatarRow?.avatar_is_custom) {
+      const { error: avatarErr } = await supabase
+        .from("users")
+        .update({ avatar_url: remoteAvatar })
+        .eq("id", user.id);
+      if (avatarErr) {
+        console.warn("auth/callback: falha ao sincronizar avatar_url:", avatarErr.message);
+      }
     }
   }
 
