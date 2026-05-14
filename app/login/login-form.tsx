@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { createClient } from "@/lib/supabase/client";
@@ -12,6 +13,7 @@ const btnPrimaryCls =
   "flex w-full items-center justify-center gap-2 rounded-ds-xl bg-app-primary px-4 py-3 text-sm font-semibold text-white shadow-sm transition duration-ds ease-out hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-app-primary/40 focus:ring-offset-2 focus:ring-offset-app-canvas disabled:opacity-60";
 
 export function LoginForm({ next = "/dashboard" }: { next?: string }) {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState<"google" | "email" | null>(null);
@@ -54,7 +56,10 @@ export function LoginForm({ next = "/dashboard" }: { next?: string }) {
       setLoading(null);
       return;
     }
-    window.location.href = safeNext;
+    await supabase.auth.getSession();
+    setLoading(null);
+    router.refresh();
+    router.replace(safeNext);
   }
 
   return (

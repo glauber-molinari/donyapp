@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { oauthAvatarUrlFromUser } from "@/lib/auth/oauth-profile";
+import { resolveDisplayAvatarUrl } from "@/lib/auth/resolve-display-avatar";
 import { createClient } from "@/lib/supabase/server";
 
 import { ProfileAvatarSection } from "./profile-avatar-section";
@@ -30,7 +31,7 @@ export default async function SettingsProfilePage() {
   const displayName = profile?.name ?? user.email ?? "Usuário";
   const email = profile?.email ?? user.email ?? "—";
   const oauthAvatar = oauthAvatarUrlFromUser(user);
-  const avatarSrc = profile?.avatar_url ?? oauthAvatar ?? null;
+  const avatarSrc = resolveDisplayAvatarUrl(user, profile ?? undefined);
 
   return (
     <div className="flex flex-col gap-8">

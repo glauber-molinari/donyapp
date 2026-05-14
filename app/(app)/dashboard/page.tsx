@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
+import { resolveDisplayAvatarUrl } from "@/lib/auth/resolve-display-avatar";
 import { fetchDashboardMetrics } from "@/lib/dashboard-metrics";
 import { getIntegrationPublicMeta } from "@/lib/google-calendar/integration-db";
 import { createClient } from "@/lib/supabase/server";
@@ -75,7 +76,7 @@ export default async function DashboardPage() {
       .order("position", { ascending: true }),
     supabase
       .from("users")
-      .select("id, name, email, avatar_url, role")
+      .select("id, name, email, avatar_url, avatar_is_custom, role")
       .eq("account_id", profile.account_id)
       .order("created_at", { ascending: true }),
     supabase
@@ -122,7 +123,13 @@ export default async function DashboardPage() {
           id: m.id,
           name: m.name ?? m.email ?? "Usuário",
           email: m.email ?? null,
-          avatarUrl: m.avatar_url ?? null,
+          avatarUrl:
+            m.id === user.id
+              ? resolveDisplayAvatarUrl(user, {
+                  avatar_url: m.avatar_url,
+                  avatar_is_custom: m.avatar_is_custom,
+                })
+              : (m.avatar_url ?? null),
           role: m.role,
         }))}
         manualAssignees={manualRes.data ?? []}

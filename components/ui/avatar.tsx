@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -33,7 +33,10 @@ export interface AvatarProps {
 export function Avatar({ src, name, size = "md", className }: AvatarProps) {
   const [failed, setFailed] = useState(false);
   const showImg = Boolean(src) && !failed;
-  const remoteSrc = typeof src === "string" && /^https?:\/\//i.test(src);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [src]);
 
   return (
     <div
@@ -47,10 +50,10 @@ export function Avatar({ src, name, size = "md", className }: AvatarProps) {
       {showImg ? (
         // eslint-disable-next-line @next/next/no-img-element -- avatar dinâmico de terceiros
         <img
+          key={src ?? ""}
           src={src!}
           alt=""
           className="absolute inset-0 h-full w-full object-cover"
-          referrerPolicy={remoteSrc ? "no-referrer" : undefined}
           onError={() => setFailed(true)}
         />
       ) : (

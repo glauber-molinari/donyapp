@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+import { resolveDisplayAvatarUrl } from "@/lib/auth/resolve-display-avatar";
 import { createClient } from "@/lib/supabase/server";
 
 import type { JobWithRelations } from "../dashboard/dashboard-view";
@@ -71,7 +72,7 @@ export default async function BoardPage() {
     supabase.from("accounts").select("*").eq("id", profile.account_id).single(),
     supabase
       .from("users")
-      .select("id, name, email, avatar_url, role")
+      .select("id, name, email, avatar_url, avatar_is_custom, role")
       .eq("account_id", profile.account_id)
       .order("created_at", { ascending: true }),
     supabase
@@ -116,7 +117,13 @@ export default async function BoardPage() {
         id: m.id,
         name: m.name ?? m.email ?? "Usuário",
         email: m.email ?? null,
-        avatarUrl: m.avatar_url ?? null,
+        avatarUrl:
+          m.id === user.id
+            ? resolveDisplayAvatarUrl(user, {
+                avatar_url: m.avatar_url,
+                avatar_is_custom: m.avatar_is_custom,
+              })
+            : (m.avatar_url ?? null),
         role: m.role,
       }))}
       senderName={profile.name}
