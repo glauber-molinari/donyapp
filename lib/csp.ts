@@ -41,11 +41,11 @@ function collectSupabaseCspOrigins(): { httpsOrigins: string[]; wssOrigins: stri
   const httpsSet = new Set<string>();
   const wssSet = new Set<string>();
 
-  const candidates: string[] = [
+  const candidates = [
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     ...splitOriginsList(process.env[ENV_SUPABASE_CSP_EXTRA]),
     DONYAPP_SUPABASE_API_HTTPS,
-  ];
+  ].filter((value): value is string => typeof value === "string" && value.length > 0);
 
   for (const raw of candidates) {
     const https = parseHttpsOrigin(raw);
@@ -59,8 +59,8 @@ function collectSupabaseCspOrigins(): { httpsOrigins: string[]; wssOrigins: stri
   }
 
   return {
-    httpsOrigins: [...httpsSet],
-    wssOrigins: [...wssSet],
+    httpsOrigins: Array.from(httpsSet),
+    wssOrigins: Array.from(wssSet),
   };
 }
 
