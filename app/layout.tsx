@@ -59,6 +59,12 @@ export const metadata: Metadata = {
     "mobile-web-app-capable": "yes",
   },
   icons: {
+    /** PNG primeiro: favicon SVG ainda falha em alguns browsers / abas. */
+    icon: [
+      { url: "/brand/icon-dony-laranja.png", sizes: "69x73", type: "image/png" },
+      { url: "/logo-dony-icon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/brand/icon-dony-laranja.png",
     apple: "/brand/icon-dony-laranja.png",
   },
 };
