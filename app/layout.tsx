@@ -54,6 +54,10 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "Donyapp",
   },
+  /** Chrome recomenda além de apple-mobile-web-app-capable (gerado por appleWebApp). */
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
   icons: {
     apple: "/brand/icon-dony-laranja.png",
   },

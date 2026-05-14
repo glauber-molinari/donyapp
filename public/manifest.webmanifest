@@ -13,15 +13,9 @@
   "icons": [
     {
       "src": "/brand/icon-dony-laranja.png",
-      "sizes": "192x192",
+      "sizes": "69x73",
       "type": "image/png",
       "purpose": "any"
-    },
-    {
-      "src": "/brand/icon-dony-laranja.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
     }
   ]
 }

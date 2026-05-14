@@ -106,7 +106,8 @@ export function buildContentSecurityPolicy(nonce: string, isDev: boolean): strin
   const directives = [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${scriptExtra}`,
-    `style-src 'self' 'nonce-${nonce}' 'unsafe-inline'`,
+    /** Sem nonce: com nonce + 'unsafe-inline' o Chrome ignora unsafe-inline e bloqueia style="" (React, libs). */
+    "style-src 'self' 'unsafe-inline'",
     `img-src ${imgParts.join(" ")}`,
     "font-src 'self'",
     `connect-src ${connectParts.join(" ")}`,
