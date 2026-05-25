@@ -1,13 +1,13 @@
 "use client";
 
-import { ExternalLink, Pencil, Trash2 } from "lucide-react";
+import { ArrowRight, ExternalLink, Pencil, Send, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type ManualLite = { id: string; name: string; email: string | null };
 
 import type { JobWithRelations } from "@/app/(app)/dashboard/dashboard-view";
-import { deleteJob, updateJob } from "@/app/(app)/jobs/actions";
+import { deleteJob, getJobHistory, updateJob, type JobHistoryEntry } from "@/app/(app)/jobs/actions";
 import { NewJobForm } from "@/components/app/new-job-form";
 import type { ContactSearchOption } from "@/components/app/contact-search-field";
 import type { JobAssigneePickerOption } from "@/lib/build-job-assignee-picker-options";
@@ -41,6 +41,138 @@ function DetailRow({ label, children }: { label: string; children: React.ReactNo
       <dt className="text-xs font-medium uppercase tracking-wide text-ds-subtle">{label}</dt>
       <dd className="text-sm text-ds-ink">{children}</dd>
     </div>
+  );
+}
+
+// ─── History helpers ──────────────────────────────────────────────────────────
+
+function historyLabel(entry: JobHistoryEntry): { icon: string; text: string; sub?: string } {
+  switch (entry.field) {
+    case "created":
+      return { icon: "✦", text: `Job criado: "${entry.new_value ?? ""}"` };
+    case "stage":
+      return {
+        icon: "→",
+        text: "Etapa alterada",
+        sub: `${entry.old_value ?? "—"} → ${entry.new_value ?? "—"}`,
+      };
+    case "name":
+      return {
+        icon: "✎",
+        text: "Nome alterado",
+        sub: `"${entry.old_value ?? ""}" → "${entry.new_value ?? ""}"`,
+      };
+    case "client_revision":
+      return {
+        icon: "#",
+        text: "Alteração do cliente",
+        sub: `${entry.old_value ?? "0"} → ${entry.new_value ?? "0"}`,
+      };
+    case "delivery_link":
+      if (!entry.old_value) return { icon: "🔗", text: "Link de entrega adicionado" };
+      if (!entry.new_value) return { icon: "🔗", text: "Link de entrega removido" };
+      return { icon: "🔗", text: "Link de entrega atualizado" };
+    case "deadline":
+      return {
+        icon: "📅",
+        text: "Prazo final alterado",
+        sub: `${formatOptionalDate(entry.old_value)} → ${formatOptionalDate(entry.new_value)}`,
+      };
+    case "internal_deadline":
+      return {
+        icon: "📅",
+        text: "Prazo interno alterado",
+        sub: `${formatOptionalDate(entry.old_value)} → ${formatOptionalDate(entry.new_value)}`,
+      };
+    case "notes":
+      return { icon: "✎", text: "Observações atualizadas" };
+    default:
+      return { icon: "·", text: entry.field };
+  }
+}
+
+function formatHistoryDate(iso: string): string {
+  try {
+    return new Intl.DateTimeFormat("pt-BR", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(iso));
+  } catch {
+    return iso;
+  }
+}
+
+function JobHistoryTimeline({
+  entries,
+  loading,
+  loaded,
+}: {
+  entries: JobHistoryEntry[];
+  loading: boolean;
+  loaded: boolean;
+}) {
+  if (loading || !loaded) {
+    return (
+      <div className="flex flex-col gap-3 py-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="flex gap-3 animate-pulse">
+            <div className="mt-1 h-6 w-6 shrink-0 rounded-full bg-ds-border/60" />
+            <div className="flex-1 space-y-1.5 pt-1">
+              <div className="h-3 w-2/3 rounded bg-ds-border/60" />
+              <div className="h-2.5 w-1/3 rounded bg-ds-border/40" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (entries.length === 0) {
+    return (
+      <p className="py-8 text-center text-sm text-ds-muted">
+        Nenhuma alteração registrada ainda.
+      </p>
+    );
+  }
+
+  return (
+    <ol className="relative flex flex-col gap-0">
+      {entries.map((entry, i) => {
+        const { icon, text, sub } = historyLabel(entry);
+        const isLast = i === entries.length - 1;
+        return (
+          <li key={entry.id} className="flex gap-3">
+            {/* Timeline spine */}
+            <div className="flex flex-col items-center">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-ds-border bg-ds-cream text-[11px] font-bold text-ds-muted">
+                {icon}
+              </div>
+              {!isLast && <div className="w-px flex-1 bg-ds-border/50 my-1" />}
+            </div>
+
+            {/* Content */}
+            <div className={cn("min-w-0 flex-1 pb-4", isLast && "pb-1")}>
+              <p className="text-sm font-medium leading-snug text-ds-ink">{text}</p>
+              {sub ? (
+                <p className="mt-0.5 flex items-center gap-1 text-xs text-ds-muted">
+                  <ArrowRight className="h-3 w-3 shrink-0" aria-hidden />
+                  {sub}
+                </p>
+              ) : null}
+              <p className="mt-1 text-[11px] text-ds-subtle">
+                {entry.changed_by_name ? (
+                  <span className="font-medium text-ds-muted">{entry.changed_by_name} · </span>
+                ) : null}
+                {formatHistoryDate(entry.created_at)}
+              </p>
+            </div>
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 
@@ -86,6 +218,7 @@ const DETAIL_TABS = [
   { id: "prazos" as const, label: "Prazos" },
   { id: "equipe" as const, label: "Equipe" },
   { id: "extras" as const, label: "Extras" },
+  { id: "historico" as const, label: "Histórico" },
 ];
 
 type DetailTabId = (typeof DETAIL_TABS)[number]["id"];
@@ -101,6 +234,7 @@ export function JobDetailModal({
   assigneePickerOptions,
   open,
   onClose,
+  onSendMaterial,
 }: {
   job: JobWithRelations | null;
   allJobs: JobWithRelations[];
@@ -112,6 +246,7 @@ export function JobDetailModal({
   assigneePickerOptions: JobAssigneePickerOption[];
   open: boolean;
   onClose: () => void;
+  onSendMaterial?: () => void;
 }) {
   const router = useRouter();
   const [tab, setTab] = useState<DetailTabId>("geral");
@@ -119,6 +254,9 @@ export function JobDetailModal({
   const [deleting, setDeleting] = useState(false);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [history, setHistory] = useState<JobHistoryEntry[]>([]);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
   const manualById = useMemo(() => new Map(manualAssignees.map((m) => [m.id, m])), [manualAssignees]);
 
@@ -127,8 +265,21 @@ export function JobDetailModal({
       setTab("geral");
       setConfirmDelete(false);
       setEditing(false);
+      setHistory([]);
+      setHistoryLoaded(false);
     }
   }, [job?.id]);
+
+  useEffect(() => {
+    if (tab === "historico" && job?.id && !historyLoaded && !historyLoading) {
+      setHistoryLoading(true);
+      getJobHistory(job.id).then((res) => {
+        if (res.ok) setHistory(res.entries);
+        setHistoryLoaded(true);
+        setHistoryLoading(false);
+      });
+    }
+  }, [tab, job?.id, historyLoaded, historyLoading]);
 
   if (!open || !job) return null;
 
@@ -226,15 +377,28 @@ export function JobDetailModal({
     </div>
   ) : (
     <div className="flex items-center justify-between gap-3">
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        onClick={() => setEditing(true)}
-      >
-        <Pencil className="h-3.5 w-3.5" aria-hidden />
-        Editar
-      </Button>
+      <div className="flex items-center gap-2">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => setEditing(true)}
+        >
+          <Pencil className="h-3.5 w-3.5" aria-hidden />
+          Editar
+        </Button>
+        {job.kanban_stages?.is_final && onSendMaterial ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => { onClose(); onSendMaterial(); }}
+          >
+            <Send className="h-3.5 w-3.5" aria-hidden />
+            Enviar material
+          </Button>
+        ) : null}
+      </div>
       <Button
         type="button"
         variant="danger"
@@ -436,6 +600,14 @@ export function JobDetailModal({
                   )}
                 </DetailRow>
               </dl>
+            ) : null}
+
+            {tab === "historico" ? (
+              <JobHistoryTimeline
+                entries={history}
+                loading={historyLoading}
+                loaded={historyLoaded}
+              />
             ) : null}
           </div>
 

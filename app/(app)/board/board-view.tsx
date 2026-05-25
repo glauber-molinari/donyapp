@@ -20,7 +20,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Plus, Search } from "lucide-react";
+import { GripVertical, Plus, Search, Send } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import {
@@ -397,6 +397,7 @@ const JobCardContent = memo(function JobCardContent({
   assignees,
   dragHandle,
   onOpen,
+  onSendMaterial,
 }: {
   job: JobWithRelations;
   jobsForBadgeList: JobFotoVideoListPick[];
@@ -411,6 +412,8 @@ const JobCardContent = memo(function JobCardContent({
   dragHandle?: ReactNode;
   /** Abre o modal de detalhes (área do card, sem a alça). */
   onOpen?: () => void;
+  /** Abre o modal de envio de material (visível só na etapa final). */
+  onSendMaterial?: () => void;
 }) {
   const rev = job.client_revision ?? 0;
   const openEnabled = Boolean(onOpen && !overlay);
@@ -447,6 +450,16 @@ const JobCardContent = memo(function JobCardContent({
         {formatDeadlinePt(job.deadline.slice(0, 10))}
       </p>
       <DeadlineTimelineBar job={job} stageFinal={stageFinal} />
+      {stageFinal && onSendMaterial && !overlay ? (
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onSendMaterial(); }}
+          className="mt-2 flex items-center gap-1 text-[10px] font-medium text-ds-accent hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ds-accent rounded"
+        >
+          <Send className="h-3 w-3" aria-hidden />
+          Enviar material ao cliente
+        </button>
+      ) : null}
     </>
   );
 
@@ -489,6 +502,7 @@ const SortableJobCard = memo(function SortableJobCard({
   revisionInteractive,
   assignees,
   onOpenJob,
+  onSendMaterial,
 }: {
   job: JobWithRelations;
   jobsForBadgeList: JobFotoVideoListPick[];
@@ -498,6 +512,7 @@ const SortableJobCard = memo(function SortableJobCard({
   revisionInteractive: boolean;
   assignees: { id: string; name: string; avatarUrl: string | null }[];
   onOpenJob: (j: JobWithRelations) => void;
+  onSendMaterial?: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: job.id,
@@ -533,6 +548,7 @@ const SortableJobCard = memo(function SortableJobCard({
         assignees={assignees}
         dragHandle={dragHandle}
         onOpen={() => onOpenJob(job)}
+        onSendMaterial={onSendMaterial}
       />
     </div>
   );
@@ -547,6 +563,7 @@ const KanbanColumn = memo(function KanbanColumn({
   searchQuery,
   assigneesByJobId,
   onOpenJob,
+  onSendMaterial,
 }: {
   stage: StageRow;
   jobIds: string[];
@@ -556,6 +573,7 @@ const KanbanColumn = memo(function KanbanColumn({
   searchQuery: string;
   assigneesByJobId: Map<string, { id: string; name: string; avatarUrl: string | null }[]>;
   onOpenJob: (j: JobWithRelations) => void;
+  onSendMaterial?: (j: JobWithRelations) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: `stage-${stage.id}`,
@@ -619,6 +637,7 @@ const KanbanColumn = memo(function KanbanColumn({
                 revisionInteractive
                 assignees={assigneesByJobId.get(id) ?? []}
                 onOpen={() => onOpenJob(job)}
+                onSendMaterial={onSendMaterial ? () => onSendMaterial(job) : undefined}
               />
             );
           })}
@@ -643,6 +662,7 @@ const KanbanColumn = memo(function KanbanColumn({
                   revisionInteractive
                   assignees={assigneesByJobId.get(id) ?? []}
                   onOpenJob={onOpenJob}
+                  onSendMaterial={onSendMaterial ? () => onSendMaterial(job) : undefined}
                 />
               );
             })}
@@ -1006,6 +1026,7 @@ export function BoardView({
                   searchQuery={searchQuery}
                   assigneesByJobId={assigneesByJobId}
                   onOpenJob={setDetailJob}
+                  onSendMaterial={setEmailStub}
                 />
               ))}
             </div>
@@ -1037,6 +1058,11 @@ export function BoardView({
         assigneePickerOptions={assigneePickerOptions}
         open={Boolean(detailJob)}
         onClose={() => setDetailJob(null)}
+        onSendMaterial={() => {
+          const job = detailJob;
+          setDetailJob(null);
+          if (job) setEmailStub(job);
+        }}
       />
 
       <Modal
@@ -1106,6 +1132,7 @@ export function BoardView({
         jobName={emailStub?.name ?? ""}
         contactName={emailStub?.contacts?.name ?? null}
         contactEmail={emailStub?.contacts?.email ?? null}
+        contactPhone={emailStub?.contacts?.phone ?? null}
         deliveryLink={emailStub?.delivery_link ?? null}
         plan={plan}
         senderName={senderName}

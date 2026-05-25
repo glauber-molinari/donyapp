@@ -64,7 +64,7 @@ export default async function DashboardPage() {
       `
       )
       .order("deadline", { ascending: true }),
-    supabase.from("contacts").select("id, name, email").order("name", { ascending: true }),
+    supabase.from("contacts").select("id, name, email, phone").order("name", { ascending: true }),
     supabase
       .from("kanban_stages")
       .select("id, name, position")

@@ -53,7 +53,7 @@ import type { Database, Plan, UserRole } from "@/types/database";
 import { createJob, deleteJob, updateJob } from "../jobs/actions";
 
 type JobRow = Database["public"]["Tables"]["jobs"]["Row"];
-type ContactPick = Pick<Database["public"]["Tables"]["contacts"]["Row"], "id" | "name" | "email">;
+type ContactPick = Pick<Database["public"]["Tables"]["contacts"]["Row"], "id" | "name" | "email" | "phone">;
 type StagePick = Pick<
   Database["public"]["Tables"]["kanban_stages"]["Row"],
   "id" | "name" | "position" | "is_final"

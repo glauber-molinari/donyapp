@@ -285,6 +285,7 @@ function TaskDetailPanel({
   const task = panel.mode === "view" ? tasks.find((t) => t.id === panel.taskId) ?? null : null;
 
   const [assignees, setAssignees] = useState<TaskAssigneeRow[]>([]);
+  const [pendingAssignees, setPendingAssignees] = useState<AvailablePerson[]>([]);
   const [comments, setComments] = useState<TaskCommentRow[]>([]);
   const [detailsLoaded, setDetailsLoaded] = useState(false);
 
@@ -337,6 +338,7 @@ function TaskDetailPanel({
       setError(null);
     }
     setAssignees([]);
+    setPendingAssignees([]);
     setComments([]);
     setDetailsLoaded(false);
     setPersonDropdownOpen(false);
@@ -382,6 +384,13 @@ function TaskDetailPanel({
       if (isCreate) {
         const res = await createTask(fd);
         if (!res.ok) { setError(res.error); return; }
+        if (pendingAssignees.length > 0 && res.taskId) {
+          await Promise.all(
+            pendingAssignees.map((p) =>
+              addTaskAssignee(res.taskId!, p.name, p.email, p.avatar_url)
+            )
+          );
+        }
         toast.success("Tarefa criada.");
         onTaskSaved(res.taskId);
       } else if (task) {
@@ -425,6 +434,20 @@ function TaskDetailPanel({
     const res = await removeTaskAssignee(assigneeId, task.id);
     if (!res.ok) { toast.error(res.error); return; }
     setAssignees((prev) => prev.filter((a) => a.id !== assigneeId));
+  }
+
+  function handleAddPending(person: AvailablePerson) {
+    setPendingAssignees((prev) =>
+      prev.some((p) => p.email.toLowerCase() === person.email.toLowerCase())
+        ? prev
+        : [...prev, person]
+    );
+    setPersonDropdownOpen(false);
+    setPersonSearch("");
+  }
+
+  function handleRemovePending(id: string) {
+    setPendingAssignees((prev) => prev.filter((p) => p.id !== id));
   }
 
   async function handleAddComment() {
@@ -533,100 +556,113 @@ function TaskDetailPanel({
             <div className="flex items-start gap-3">
               <span className="w-24 shrink-0 text-xs font-medium text-ds-muted pt-1">Pessoas</span>
               <div className="min-w-0 flex-1">
-                {assignees.length > 0 && (
+                {/* Chips: pending (create) ou saved (view) */}
+                {(isCreate ? pendingAssignees.length > 0 : assignees.length > 0) && (
                   <div className="mb-2 flex flex-wrap gap-2">
-                    {assignees.map((a) => (
-                      <div
-                        key={a.id}
-                        className="flex items-center gap-1.5 rounded-full border border-ds-border bg-white px-2 py-1"
-                      >
-                        <AvatarCircle name={a.name} email={a.email} avatarUrl={a.avatar_url} />
-                        <span className="max-w-[100px] truncate text-xs text-ds-ink">{a.name}</span>
-                        {task && (
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveAssignee(a.id)}
-                            className="ml-0.5 text-ds-subtle hover:text-red-500"
+                    {isCreate
+                      ? pendingAssignees.map((p) => (
+                          <div
+                            key={p.id}
+                            className="flex items-center gap-1.5 rounded-full border border-ds-border bg-white px-2 py-1"
                           >
-                            <X className="h-3 w-3" />
-                          </button>
-                        )}
-                      </div>
-                    ))}
+                            <AvatarCircle name={p.name} email={p.email} avatarUrl={p.avatar_url} />
+                            <span className="max-w-[100px] truncate text-xs text-ds-ink">{p.name}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemovePending(p.id)}
+                              className="ml-0.5 text-ds-subtle hover:text-red-500"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))
+                      : assignees.map((a) => (
+                          <div
+                            key={a.id}
+                            className="flex items-center gap-1.5 rounded-full border border-ds-border bg-white px-2 py-1"
+                          >
+                            <AvatarCircle name={a.name} email={a.email} avatarUrl={a.avatar_url} />
+                            <span className="max-w-[100px] truncate text-xs text-ds-ink">{a.name}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveAssignee(a.id)}
+                              className="ml-0.5 text-ds-subtle hover:text-red-500"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))
+                    }
                   </div>
                 )}
 
-                {task && (
-                  <>
-                    {personDropdownOpen ? (
-                      <div className="flex flex-col gap-2">
-                        <input
-                          autoFocus
-                          type="text"
-                          value={personSearch}
-                          onChange={(e) => setPersonSearch(e.target.value)}
-                          placeholder="Buscar por nome ou e-mail…"
-                          className={inputCls}
-                          onKeyDown={(e) => { if (e.key === "Escape") setPersonDropdownOpen(false); }}
-                        />
-                        <div className="max-h-44 overflow-y-auto rounded-lg border border-ds-border bg-white [scrollbar-width:thin]">
-                          {(() => {
-                            const filtered = availablePeople.filter(
-                              (p) =>
-                                !assignees.some((a) => a.email.toLowerCase() === p.email.toLowerCase()) &&
-                                (personSearch === "" ||
-                                  p.name.toLowerCase().includes(personSearch.toLowerCase()) ||
-                                  p.email.toLowerCase().includes(personSearch.toLowerCase()))
-                            );
-                            if (filtered.length === 0) {
-                              return (
-                                <p className="px-3 py-4 text-center text-xs text-ds-subtle">
-                                  {availablePeople.length === 0
-                                    ? "Nenhum membro ou responsável cadastrado."
-                                    : "Nenhuma pessoa encontrada."}
-                                </p>
-                              );
-                            }
-                            return filtered.map((p) => (
-                              <button
-                                key={p.id}
-                                type="button"
-                                disabled={addingAssignee}
-                                onClick={() => handleAddFromSystem(p)}
-                                className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-ds-cream/80 disabled:opacity-60 border-b border-ds-border/40 last:border-0"
-                              >
-                                <AvatarCircle name={p.name} email={p.email} avatarUrl={p.avatar_url} size="md" />
-                                <div className="min-w-0 flex-1">
-                                  <p className="truncate text-sm font-medium text-ds-ink">{p.name}</p>
-                                  <p className="truncate text-[11px] text-ds-subtle">{p.email}</p>
-                                </div>
-                              </button>
-                            ));
-                          })()}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => { setPersonDropdownOpen(false); setPersonSearch(""); }}
-                          className="self-start text-xs text-ds-subtle hover:text-ds-ink"
-                        >
-                          Cancelar
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => setPersonDropdownOpen(true)}
-                        className="flex items-center gap-1.5 text-xs text-ds-subtle hover:text-ds-accent"
-                      >
-                        <UserPlus className="h-3.5 w-3.5" />
-                        Adicionar pessoa da equipe
-                      </button>
-                    )}
-                  </>
-                )}
-
-                {isCreate && (
-                  <span className="text-xs text-ds-subtle">Salve a tarefa para adicionar pessoas.</span>
+                {/* Dropdown de busca: funciona tanto em criação quanto em edição */}
+                {personDropdownOpen ? (
+                  <div className="flex flex-col gap-2">
+                    <input
+                      autoFocus
+                      type="text"
+                      value={personSearch}
+                      onChange={(e) => setPersonSearch(e.target.value)}
+                      placeholder="Buscar por nome ou e-mail…"
+                      className={inputCls}
+                      onKeyDown={(e) => { if (e.key === "Escape") { setPersonDropdownOpen(false); setPersonSearch(""); } }}
+                    />
+                    <div className="max-h-44 overflow-y-auto rounded-lg border border-ds-border bg-white [scrollbar-width:thin]">
+                      {(() => {
+                        const alreadyAdded = isCreate
+                          ? pendingAssignees.map((p) => p.email.toLowerCase())
+                          : assignees.map((a) => a.email.toLowerCase());
+                        const filtered = availablePeople.filter(
+                          (p) =>
+                            !alreadyAdded.includes(p.email.toLowerCase()) &&
+                            (personSearch === "" ||
+                              p.name.toLowerCase().includes(personSearch.toLowerCase()) ||
+                              p.email.toLowerCase().includes(personSearch.toLowerCase()))
+                        );
+                        if (filtered.length === 0) {
+                          return (
+                            <p className="px-3 py-4 text-center text-xs text-ds-subtle">
+                              {availablePeople.length === 0
+                                ? "Nenhum membro ou responsável cadastrado."
+                                : "Nenhuma pessoa encontrada."}
+                            </p>
+                          );
+                        }
+                        return filtered.map((p) => (
+                          <button
+                            key={p.id}
+                            type="button"
+                            disabled={!isCreate && addingAssignee}
+                            onClick={() => isCreate ? handleAddPending(p) : handleAddFromSystem(p)}
+                            className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-ds-cream/80 disabled:opacity-60 border-b border-ds-border/40 last:border-0"
+                          >
+                            <AvatarCircle name={p.name} email={p.email} avatarUrl={p.avatar_url} size="md" />
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-medium text-ds-ink">{p.name}</p>
+                              <p className="truncate text-[11px] text-ds-subtle">{p.email}</p>
+                            </div>
+                          </button>
+                        ));
+                      })()}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => { setPersonDropdownOpen(false); setPersonSearch(""); }}
+                      className="self-start text-xs text-ds-subtle hover:text-ds-ink"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setPersonDropdownOpen(true)}
+                    className="flex items-center gap-1.5 text-xs text-ds-subtle hover:text-ds-accent"
+                  >
+                    <UserPlus className="h-3.5 w-3.5" />
+                    Adicionar pessoa da equipe
+                  </button>
                 )}
               </div>
             </div>

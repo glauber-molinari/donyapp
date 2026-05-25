@@ -47,7 +47,7 @@ export default async function BoardPage() {
       .select(
         `
         *,
-        contacts ( id, name, email ),
+        contacts ( id, name, email, phone ),
         kanban_stages ( id, name, position, is_final ),
         job_work_types ( id, name ),
         job_assignees ( id, user_id, manual_job_assignee_id, role )

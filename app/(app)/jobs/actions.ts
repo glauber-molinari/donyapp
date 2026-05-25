@@ -863,3 +863,33 @@ export async function updateJobClientRevision(
   revalidatePath("/board");
   return { ok: true };
 }
+
+// ─── Job History ──────────────────────────────────────────────────────────────
+
+export type JobHistoryEntry = {
+  id: string;
+  field: string;
+  old_value: string | null;
+  new_value: string | null;
+  changed_by_name: string | null;
+  created_at: string;
+};
+
+export async function getJobHistory(
+  jobId: string
+): Promise<{ ok: true; entries: JobHistoryEntry[] } | { ok: false; error: string }> {
+  const supabase = createClient();
+  const ctx = await getAccountContext();
+  if ("error" in ctx) return { ok: false, error: ctx.error };
+
+  const { data, error } = await supabase
+    .from("job_history")
+    .select("id, field, old_value, new_value, changed_by_name, created_at")
+    .eq("job_id", jobId)
+    .eq("account_id", ctx.accountId)
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, entries: (data ?? []) as JobHistoryEntry[] };
+}
