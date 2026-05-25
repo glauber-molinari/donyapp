@@ -10,6 +10,8 @@ import {
   FREE_MAX_CONTACTS,
   PRO_PRICE_MONTHLY_CENTS,
   PRO_PRICE_YEARLY_CENTS,
+  PRO_PRICE_ORIGINAL_MONTHLY_CENTS,
+  PRO_PRICE_ORIGINAL_YEARLY_CENTS,
 } from "@/lib/plan-limits";
 
 function ProductPreviewMock() {
@@ -45,6 +47,8 @@ function formatBrl(value: number) {
 export function LandingPage({ displayClassName, bodyClassName }: LandingPageProps) {
   const proMonthly = PRO_PRICE_MONTHLY_CENTS / 100;
   const proYearly = PRO_PRICE_YEARLY_CENTS / 100;
+  const proOriginalMonthly = PRO_PRICE_ORIGINAL_MONTHLY_CENTS / 100;
+  const proOriginalYearly = PRO_PRICE_ORIGINAL_YEARLY_CENTS / 100;
   const yearlySavingsPercent = Math.max(
     0,
     Math.round((1 - proYearly / (proMonthly * 12)) * 100),
@@ -60,7 +64,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
               href="/login"
               className="group mb-8 inline-flex items-center gap-2 rounded-full bg-ds-accent px-1 py-1 pl-1.5 pr-3 text-[0.75rem] font-semibold text-white transition duration-ds ease-out hover:brightness-110 sm:mb-10"
             >
-              <span className="pr-0.6">Pós-produção, sem caos</span>
+              <span className="pr-1">Pós-produção, sem caos</span>
             </Link>
 
             <h1
@@ -86,7 +90,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                 href="/login"
                 className="inline-flex w-full items-center justify-center gap-2 rounded-ds-2xl bg-ds-accent px-7 py-3.5 text-sm font-semibold text-white shadow-sm transition duration-ds ease-out hover:brightness-95 hover:shadow-md sm:w-auto"
               >
-                Entrar com Google
+                Começar grátis
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
@@ -105,6 +109,49 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[min(65%,13rem)] bg-gradient-to-t from-ds-cream via-ds-cream/60 to-transparent from-[25%] via-[55%] sm:h-32 sm:from-10% sm:via-transparent" />
               <ProductPreviewMock />
             </div>
+          </div>
+        </section>
+
+        <section className="border-t border-ds-border bg-ds-surface/60 py-16 lg:py-20">
+          <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
+            <h2
+              className={cn(
+                displayClassName,
+                "mx-auto max-w-2xl text-center text-balance text-2xl font-extrabold tracking-tight text-ds-ink sm:text-3xl",
+              )}
+            >
+              Do caos ao entregue em três passos
+            </h2>
+            <ol className="mt-12 grid gap-6 sm:grid-cols-3">
+              {[
+                {
+                  step: "01",
+                  title: "Cadastre o job",
+                  text: "Nome, cliente, prazo e tipo de entrega. Tudo em segundos, sem campos desnecessários.",
+                },
+                {
+                  step: "02",
+                  title: "Mova pelas etapas",
+                  text: "Arraste o card pelo kanban: Backup, Edição, Aprovação e Entregue. Todos na equipe enxergam o mesmo estado.",
+                },
+                {
+                  step: "03",
+                  title: "Entregue ao cliente",
+                  text: "Cole o link do Drive, Dropbox ou WeTransfer e dispare por e-mail automático ou WhatsApp direto do app.",
+                },
+              ].map(({ step, title, text }) => (
+                <li key={step} className="relative flex flex-col gap-3 rounded-ds-card border border-ds-border bg-white p-6 shadow-ds-sm">
+                  <span className="text-[2.5rem] font-black leading-none tracking-tight text-ds-accent">
+                    {step}
+                  </span>
+                  <h3 className="text-base font-bold text-ds-ink">{title}</h3>
+                  <p className="text-sm leading-relaxed text-ds-muted">{text}</p>
+                </li>
+              ))}
+            </ol>
+            <p className="mt-6 text-center text-xs text-ds-subtle">
+              Funciona com Google Drive, Dropbox, WeTransfer e qualquer link de entrega.
+            </p>
           </div>
         </section>
 
@@ -175,18 +222,39 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
               responsáveis e etapas claras para todos visualizarem.
             </p>
             <div className="mt-10 grid items-stretch gap-6 lg:grid-cols-2 lg:gap-10">
-              <figure className="flex h-full flex-col justify-between rounded-ds-card border border-ds-border-strong bg-ds-cream/60 p-8 shadow-ds-sm">
-                <blockquote className="text-base leading-relaxed text-ds-ink">
-                  <p>
-                    &ldquo;Quando um sistema substitui uma planilha, o cliente sente que tem processo e você
-                    respira na pós.&rdquo;
-                  </p>
-                </blockquote>
-                <figcaption className="mt-4 text-sm font-medium text-ds-muted">
-                  Equipe DonyApp
-                </figcaption>
-              </figure>
-              <ul className="flex h-full flex-col justify-center gap-4 rounded-ds-card border border-ds-border-strong bg-white p-8 shadow-ds-sm">
+              <div className="flex h-full flex-col justify-between rounded-ds-card bg-ds-ink p-8 shadow-ds-sm">
+                <p className="text-base font-bold text-white">Reconhece algum desses?</p>
+                <ul className="mt-6 space-y-4">
+                  {[
+                    '"Quando fica pronto?" no WhatsApp do cliente',
+                    "Planilha desatualizada que ninguém confia",
+                    "Prazo perdido porque estava num post-it",
+                    "Entrega feita sem avisar o cliente",
+                  ].map((pain) => (
+                    <li key={pain} className="flex items-start gap-3 text-sm text-white/65">
+                      <span className="mt-0.5 shrink-0 font-bold text-red-400" aria-hidden>
+                        ✕
+                      </span>
+                      <span>{pain}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-8 text-sm font-semibold text-ds-accent">
+                  O Donyapp resolve cada um deles.
+                </p>
+              </div>
+              <ul className="flex h-full flex-col justify-center gap-6 rounded-ds-card border border-ds-border-strong bg-white p-8 shadow-ds-sm">
+                <li className="flex items-start gap-4">
+                  <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-ds-2xl border border-ds-border bg-ds-cream text-ds-accent-ink">
+                    <Columns3 className="h-5 w-5" aria-hidden />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-ds-ink">Status sempre visível</p>
+                    <p className="mt-1 text-sm leading-relaxed text-ds-muted">
+                      Prazos, etapas e responsáveis no mesmo lugar. Toda a equipe enxerga a mesma realidade, em tempo real.
+                    </p>
+                  </div>
+                </li>
                 <li className="flex items-start gap-4">
                   <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-ds-2xl border border-ds-border bg-ds-cream text-ds-accent-ink">
                     <UsersRound className="h-5 w-5" aria-hidden />
@@ -194,20 +262,18 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-ds-ink">Cresce com seu estúdio</p>
                     <p className="mt-1 text-sm leading-relaxed text-ds-muted">
-                      Comece pequeno e aumente o volume sem virar bagunça: mais jobs, mais contatos e (no Pro) mais
-                      pessoas no fluxo.
+                      Comece sozinho e convide a equipe quando precisar. Mais jobs, mais contatos, sem virar bagunça.
                     </p>
                   </div>
                 </li>
                 <li className="flex items-start gap-4">
                   <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-ds-2xl border border-ds-border bg-ds-cream text-ds-accent-ink">
-                    <Columns3 className="h-5 w-5" aria-hidden />
+                    <Camera className="h-5 w-5" aria-hidden />
                   </span>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-ds-ink">Tudo centralizado em um Kanban</p>
+                    <p className="text-sm font-semibold text-ds-ink">Cliente avisado na hora certa</p>
                     <p className="mt-1 text-sm leading-relaxed text-ds-muted">
-                      Prazos, etapas e responsáveis no mesmo lugar. Todo mundo enxerga a mesma realidade, sem planilhas
-                      em versões diferentes.
+                      Na entrega, dispare e-mail ou WhatsApp direto do app — com o link do material e sem sair do fluxo.
                     </p>
                   </div>
                 </li>
@@ -259,6 +325,8 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                     `Até ${FREE_MAX_ACTIVE_JOBS} jobs ativos no Kanban`,
                     `Até ${FREE_MAX_CONTACTS} contatos`,
                     "Kanban com até 4 etapas (Backup → Em Edição → Em Aprovação → Entregue)",
+                    "Tarefas, Anotações e Agenda",
+                    "Relatórios básicos",
                     "1 usuário por conta",
                   ].map((item) => (
                     <li key={item} className="flex gap-3">
@@ -289,11 +357,18 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                 </span>
               </div>
 
-              <div className="relative mt-6 flex items-end gap-2">
-                <span className="text-5xl font-black tracking-tight text-white">
-                  {formatBrl(proMonthly)}
-                </span>
-                <span className="pb-2 text-sm font-medium text-white/70">/ mês</span>
+              <div className="relative mt-6">
+                <p className="text-sm text-white/50">
+                  de:{" "}
+                  <span className="line-through">{formatBrl(proOriginalMonthly)}</span>{" "}
+                  por
+                </p>
+                <div className="flex items-end gap-2">
+                  <span className="text-5xl font-black tracking-tight text-white">
+                    {formatBrl(proMonthly)}
+                  </span>
+                  <span className="pb-2 text-sm font-medium text-white/70">/ mês</span>
+                </div>
               </div>
 
               <Link
@@ -316,7 +391,9 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                     "Etapas ilimitadas no kanban (reordenar, renomear e definir etapa final)",
                     "Equipe: convites por e-mail (multi-usuário)",
                     "E-mail automático ao enviar material para o cliente",
+                    "Envio de material por WhatsApp direto do app",
                     "Modelos de e-mail de entrega personalizáveis",
+                    "Histórico de alterações dos jobs",
                   ].map((item) => (
                     <li key={item} className="flex gap-3">
                       <span
@@ -345,9 +422,16 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                 ) : null}
               </div>
 
-              <div className="mt-6 flex items-end gap-2">
-                <span className="text-5xl font-black tracking-tight text-ds-ink">{formatBrl(proYearly)}</span>
-                <span className="pb-2 text-sm font-medium text-ds-subtle">/ ano</span>
+              <div className="mt-6">
+                <p className="text-sm text-ds-muted">
+                  de:{" "}
+                  <span className="line-through">{formatBrl(proOriginalYearly)}</span>{" "}
+                  por
+                </p>
+                <div className="flex items-end gap-2">
+                  <span className="text-5xl font-black tracking-tight text-ds-ink">{formatBrl(proYearly)}</span>
+                  <span className="pb-2 text-sm font-medium text-ds-subtle">/ ano</span>
+                </div>
               </div>
 
               <Link
@@ -370,11 +454,10 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                 </p>
                 <ul className="mt-4 space-y-3 text-sm text-ds-muted">
                   {[
-                    "Jobs e contatos ilimitados",
-                    "Etapas ilimitadas no kanban (reordenar, renomear e definir etapa final)",
-                    "Equipe: convites por e-mail (multi-usuário)",
-                    "E-mail automático ao enviar material para o cliente",
-                    "Modelos de e-mail de entrega personalizáveis",
+                    "Todos os recursos do plano Pro",
+                    `Equivale a ${formatBrl(proYearly / 12)}/mês`,
+                    `Economia de ${formatBrl(proMonthly * 12 - proYearly)} por ano`,
+                    "Pagamento único anual",
                   ].map((item) => (
                     <li key={item} className="flex gap-3">
                       <span
@@ -421,15 +504,15 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                 },
                 {
                   q: "Posso personalizar as colunas do kanban?",
-                  a: "Sim. Em Configurações você renomeia, cria e reordena as etapas e define qual é a etapa final. No plano gratuito há até 4 colunas; no avançado, etapas ilimitadas.",
+                  a: "Sim. Em Configurações você renomeia, cria e reordena as etapas e define qual é a etapa final. No plano gratuito há até 4 colunas; no Pro, etapas ilimitadas.",
                 },
                 {
                   q: "Dá para trabalhar em equipe no mesmo estúdio?",
-                  a: "Sim, no plano avançado: você convida por e-mail e todos enxergam os mesmos jobs, contatos e board. Os dados ficam na conta do estúdio, não presos a um único login.",
+                  a: "Sim, no plano Pro: você convida por e-mail e todos enxergam os mesmos jobs, contatos e board. Os dados ficam na conta do estúdio, não presos a um único login.",
                 },
                 {
                   q: "O Donyapp guarda meus arquivos de foto e vídeo?",
-                  a: "Não armazenamos seus arquivos. Você usa o serviço que já utiliza (Drive, Dropbox, WeTransfer etc.) e cola o link de entrega no job. No plano avançado, ao mover o job para a etapa final, você pode enviar um e-mail ao cliente com modelo editável. O envio é opcional e você confirma antes.",
+                  a: "Não armazenamos seus arquivos. Você usa o serviço que já utiliza (Drive, Dropbox, WeTransfer etc.) e cola o link de entrega no job. No plano Pro, ao mover o job para a etapa final, você pode enviar um e-mail ao cliente com modelo editável. O envio é opcional e você confirma antes.",
                 },
               ].map(({ q, a }) => (
                 <details
@@ -454,6 +537,30 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
           </div>
         </section>
       </main>
+
+      <section className="border-t border-ds-border bg-ds-ink py-16 lg:py-20">
+        <div className="mx-auto flex max-w-[720px] flex-col items-center gap-6 px-4 text-center sm:px-6 lg:px-8">
+          <h2
+            className={cn(
+              displayClassName,
+              "text-2xl font-extrabold tracking-tight text-white sm:text-3xl",
+            )}
+          >
+            Organize seu estúdio hoje
+          </h2>
+          <p className="text-sm text-white/60">
+            Comece gratuitamente e sinta a diferença desde o primeiro job.
+          </p>
+          <a
+            href="/login"
+            className="inline-flex items-center gap-2 rounded-ds-2xl bg-white px-7 py-3.5 text-sm font-semibold text-ds-ink shadow-ds-sm transition duration-ds ease-out hover:bg-ds-cream"
+          >
+            Começar grátis
+            <ArrowRight className="h-4 w-4" />
+          </a>
+          <p className="text-xs text-white/40">Sem cartão. Sem compromisso.</p>
+        </div>
+      </section>
 
       <footer className="border-t border-ds-border bg-ds-cream py-8">
         <div className="mx-auto flex max-w-[1200px] flex-col items-center gap-5 px-4 text-center text-xs text-ds-subtle sm:flex-row sm:justify-between sm:gap-4 sm:text-left sm:px-6 lg:px-8">
