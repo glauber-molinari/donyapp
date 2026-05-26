@@ -18,9 +18,9 @@ const STATUS_LABELS: Record<SupportTicketStatus, string> = {
 };
 
 const STATUS_CLASSES: Record<SupportTicketStatus, string> = {
-  open: "bg-blue-50 text-blue-700 border-blue-200",
-  answered: "bg-green-50 text-green-700 border-green-200",
-  closed: "bg-ds-cream text-ds-muted border-app-border",
+  open: "bg-ds-info-soft text-ds-info border-ds-info/25",
+  answered: "bg-ds-success-soft text-ds-success border-ds-success/25",
+  closed: "bg-ds-cream text-ds-muted border-ds-border",
 };
 
 export default async function AdminSupportPage() {
@@ -28,7 +28,7 @@ export default async function AdminSupportPage() {
 
   if (!svc) {
     return (
-      <div className="rounded-ds-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+      <div className="rounded-ds-xl border border-ds-warn/30 bg-ds-warn-soft p-4 text-sm text-ds-ink">
         Configure <code className="rounded bg-white/60 px-1">SUPABASE_SERVICE_ROLE_KEY</code> para
         acessar os tickets.
       </div>
@@ -45,7 +45,7 @@ export default async function AdminSupportPage() {
     return (
       <div>
         <h2 className="text-xl font-semibold">Suporte</h2>
-        <p className="mt-2 text-sm text-red-600">Erro: {error.message}</p>
+        <p className="mt-2 text-sm text-ds-danger">Erro: {error.message}</p>
       </div>
     );
   }
@@ -73,13 +73,13 @@ export default async function AdminSupportPage() {
         </p>
       </div>
 
-      <TicketSection title="Aguardando resposta" count={open.length} badgeClass="bg-blue-100 text-blue-800">
+      <TicketSection title="Aguardando resposta" count={open.length} badgeClass="bg-ds-info-soft text-ds-info">
         {open.map((t) => (
           <TicketCard key={t.id} ticket={t} />
         ))}
       </TicketSection>
 
-      <TicketSection title="Respondidos" count={answered.length} badgeClass="bg-green-100 text-green-800">
+      <TicketSection title="Respondidos" count={answered.length} badgeClass="bg-ds-success-soft text-ds-success">
         {answered.map((t) => (
           <TicketCard key={t.id} ticket={t} />
         ))}
@@ -146,14 +146,14 @@ function TicketCard({
   return (
     <Link
       href={`/admin/support/${ticket.id}`}
-      className="flex items-start justify-between gap-4 rounded-ds-xl border border-app-border bg-app-sidebar p-4 transition-shadow hover:shadow-ds-sm"
+      className="flex items-start justify-between gap-4 rounded-ds-xl border border-ds-border bg-ds-surface p-4 transition-shadow hover:shadow-ds-sm"
     >
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-ds-ink">{categoryLabel}</p>
         <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-ds-muted">
           {ticket.description}
         </p>
-        <div className="mt-2 flex items-center gap-2 text-xs text-ds-subtle">
+        <div className="mt-2 flex items-center gap-2 text-xs text-ds-muted-2">
           <span>{ticket.users?.name ?? ticket.users?.email ?? "Usuário"}</span>
           <span>·</span>
           <span>{date}</span>

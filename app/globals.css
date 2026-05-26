@@ -3,33 +3,31 @@
 @tailwind utilities;
 
 :root {
-  --background: #f5f2ef;
-  --foreground: #0c0a09;
-  --ds-accent: #ff5500;
-  --ds-border: #e8e4df;
-  
-  /* Fluid Typography Scale - usando clamp() para escalar suavemente entre mobile e desktop */
-  /* Calculado com: fluidType({ minFontSize: X, maxFontSize: Y, minViewport: 320, maxViewport: 1200 }) */
-  
-  /* Títulos principais - escala de 18px (mobile) a 24px (desktop) */
-  --font-size-h1: clamp(1.125rem, 0.9rem + 1.125vw, 1.5rem);
-  
-  /* Subtítulos - escala de 14px a 18px */
-  --font-size-h2: clamp(0.875rem, 0.75rem + 0.625vw, 1.125rem);
-  
-  /* Corpo de texto - escala de 13px a 15px */
-  --font-size-body: clamp(0.8125rem, 0.75rem + 0.3125vw, 0.9375rem);
-  
-  /* Labels pequenos - escala de 11px a 12px */
-  --font-size-small: clamp(0.6875rem, 0.65rem + 0.1875vw, 0.75rem);
-  
-  /* Escala de espaçamento fluido - adapta conforme viewport */
-  --space-xs: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem);
-  --space-sm: clamp(0.75rem, 0.6rem + 0.75vw, 1rem);
-  --space-md: clamp(1rem, 0.8rem + 1vw, 1.5rem);
-  --space-lg: clamp(1.5rem, 1.2rem + 1.5vw, 2rem);
-  --space-xl: clamp(2rem, 1.5rem + 2.5vw, 3rem);
-  --space-2xl: clamp(3rem, 2rem + 5vw, 5rem);
+  /* ── Variáveis de base (espelham tokens Tailwind para integrações CSS puras) ── */
+  --background: #f5f2ef;  /* ds-cream */
+  --foreground: #0c0a09;  /* ds-ink   */
+  --ds-accent:  #ff5500;
+  --ds-border:  #e3ddd4;  /* alinhado com tailwind.config.js */
+
+  /* ── Neutros (disponíveis em CSS puro, ex.: driver.js, custom styles) ───────── */
+  --ds-ink:     #0c0a09;
+  --ds-muted:   #6b6660;
+  --ds-cream:   #f5f2ef;
+  --ds-surface: #ffffff;
+
+  /* ── Sinal funcional (disponíveis em CSS puro sem Tailwind) ─────────────────── */
+  --ds-success:       #1f8a5b;
+  --ds-success-soft:  #e2f3ea;
+  --ds-warn:          #b97700;
+  --ds-warn-soft:     #fbeeda;
+  --ds-danger:        #c43838;
+  --ds-danger-soft:   #fbe3e3;
+  --ds-info:          #2a6fdb;
+  --ds-info-soft:     #e3edfb;
+
+  /* ── Movimento ───────────────────────────────────────────────────────────────── */
+  --t-fast:  120ms ease;  /* hover, focus */
+  --t-modal: 180ms ease;  /* modais, drawers */
 }
 
 html {
@@ -42,6 +40,8 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: var(--font-inter), system-ui, sans-serif;
+  font-feature-settings: "ss01", "cv11";  /* Inter: formas alternativas + dígitos contextuais */
+  -webkit-font-smoothing: antialiased;
   /** Idem html — defesa em profundidade. */
   overflow-x: hidden;
 }
@@ -81,34 +81,33 @@ body {
   animation: landing-reveal 0.8s cubic-bezier(0.22, 1, 0.36, 1) 260ms forwards;
 }
 
-/* driver.js — tour (cores do app: accent #ff5500, cream, bordas ds) */
+/* driver.js — popover do tour, estilizado com tokens DS */
 .driver-popover.dony-driver-popover {
-  max-width: min(320px, calc(100vw - 32px));
-  padding: 18px 16px 16px;
-  border-radius: 1rem;
+  max-width: min(340px, calc(100vw - 32px));
+  padding: 20px 18px 16px;
+  border-radius: 14px; /* ds-card */
   border: 1px solid var(--ds-border);
-  background: #ffffff;
-  box-shadow:
-    0 4px 40px rgba(12, 10, 9, 0.06),
-    0 1px 0 rgba(12, 10, 9, 0.04);
+  background: var(--ds-surface);
+  box-shadow: 0 24px 60px rgba(12, 10, 9, 0.14), 0 4px 12px rgba(12, 10, 9, 0.06); /* ds-pop */
 }
 
 .driver-popover.dony-driver-popover .driver-popover-title {
   font-family: var(--font-inter), system-ui, sans-serif;
-  font-size: 1.05rem;
+  font-size: 0.9375rem;
   font-weight: 700;
-  color: var(--foreground);
+  color: var(--ds-ink);
 }
 
 .driver-popover.dony-driver-popover .driver-popover-description {
   font-family: var(--font-inter), system-ui, sans-serif;
   font-size: 0.875rem;
-  line-height: 1.5;
-  color: #57534e;
+  line-height: 1.55;
+  color: var(--ds-muted);
 }
 
 .driver-popover.dony-driver-popover .driver-popover-progress-text {
   color: var(--ds-accent);
+  font-size: 0.75rem;
   font-weight: 600;
 }
 
@@ -117,17 +116,18 @@ body {
   font-size: 0.8125rem;
   font-weight: 600;
   padding: 6px 12px;
-  border-radius: 0.75rem;
+  border-radius: 8px; /* ds-lg */
   border: 1px solid var(--ds-border);
-  background: #ffffff;
-  color: #57534e;
+  background: var(--ds-surface);
+  color: var(--ds-muted);
   text-shadow: none;
+  transition: background 120ms ease-out, color 120ms ease-out;
 }
 
 .driver-popover.dony-driver-popover .driver-popover-footer button:hover,
 .driver-popover.dony-driver-popover .driver-popover-footer button:focus {
-  background: #f5f2ef;
-  color: var(--foreground);
+  background: var(--ds-cream);
+  color: var(--ds-ink);
 }
 
 .driver-popover.dony-driver-popover .driver-popover-navigation-btns button:last-child {
@@ -138,16 +138,16 @@ body {
 
 .driver-popover.dony-driver-popover .driver-popover-navigation-btns button:last-child:hover,
 .driver-popover.dony-driver-popover .driver-popover-navigation-btns button:last-child:focus {
-  background: #e64e00;
-  border-color: #e64e00;
+  background: #e94c00;
+  border-color: #e94c00;
   color: #ffffff;
 }
 
 .driver-popover.dony-driver-popover .driver-popover-close-btn {
-  color: #78716c;
+  color: var(--ds-muted);
 }
 
 .driver-popover.dony-driver-popover .driver-popover-close-btn:hover,
 .driver-popover.dony-driver-popover .driver-popover-close-btn:focus {
-  color: var(--foreground);
+  color: var(--ds-ink);
 }

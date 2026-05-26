@@ -66,7 +66,7 @@ export function ProfileAvatarSection({
   }
 
   return (
-    <div className="flex flex-col gap-4 rounded-ds-xl border border-app-border bg-app-sidebar p-5 shadow-sm sm:flex-row sm:items-center sm:gap-6">
+    <div className="flex flex-col gap-4 rounded-ds-xl border border-ds-border bg-ds-surface p-5 shadow-ds-sm sm:flex-row sm:items-center sm:gap-6">
       <div className="relative shrink-0">
         <Avatar src={avatarSrc} name={displayName} size="lg" />
         <input

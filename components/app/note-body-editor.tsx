@@ -84,7 +84,7 @@ export function NoteBodyEditor({
   return (
     <div className="flex flex-col gap-2">
       <div
-        className="flex flex-wrap items-center gap-1 rounded-ds-xl border border-app-border bg-ds-cream/60 p-1.5"
+        className="flex flex-wrap items-center gap-1 rounded-ds-lg border border-ds-border bg-ds-cream/60 p-1.5"
         role="toolbar"
         aria-label="Formatação do texto"
       >
@@ -132,7 +132,7 @@ export function NoteBodyEditor({
         >
           <Strikethrough className="h-4 w-4" aria-hidden />
         </Button>
-        <span className="mx-0.5 h-6 w-px shrink-0 bg-app-border" aria-hidden />
+        <span className="mx-0.5 h-6 w-px shrink-0 bg-ds-border" aria-hidden />
         <Button
           type="button"
           variant="ghost"
@@ -155,7 +155,7 @@ export function NoteBodyEditor({
         >
           <ListOrdered className="h-4 w-4" aria-hidden />
         </Button>
-        <span className="mx-0.5 h-6 w-px shrink-0 bg-app-border" aria-hidden />
+        <span className="mx-0.5 h-6 w-px shrink-0 bg-ds-border" aria-hidden />
         <Button
           type="button"
           variant="ghost"
@@ -167,7 +167,7 @@ export function NoteBodyEditor({
         >
           <Link2 className="h-4 w-4" aria-hidden />
         </Button>
-        <span className="mx-0.5 h-6 w-px shrink-0 bg-app-border" aria-hidden />
+        <span className="mx-0.5 h-6 w-px shrink-0 bg-ds-border" aria-hidden />
         <Button
           type="button"
           variant="ghost"
@@ -198,13 +198,13 @@ export function NoteBodyEditor({
         </Button>
       </div>
       {isRecording && interimText ? (
-        <div className="flex items-center gap-1.5 rounded-ds-xl border border-app-border bg-ds-cream/60 px-3 py-1.5 text-xs italic text-ds-muted">
+        <div className="flex items-center gap-1.5 rounded-ds-lg border border-ds-border bg-ds-cream/60 px-3 py-1.5 text-xs italic text-ds-muted">
           <Mic className="h-3 w-3 shrink-0 text-red-500" aria-hidden />
           <span className="truncate">{interimText}</span>
         </div>
       ) : null}
       {errorMessage ? (
-        <div className="flex items-center gap-1.5 rounded-ds-xl border border-red-100 bg-red-50 px-3 py-1.5 text-xs text-red-700">
+        <div className="flex items-center gap-1.5 rounded-ds-lg border border-ds-danger/20 bg-ds-danger-soft px-3 py-1.5 text-xs text-ds-danger">
           <MicOff className="h-3 w-3 shrink-0" aria-hidden />
           <span>{errorMessage}</span>
         </div>
@@ -215,8 +215,8 @@ export function NoteBodyEditor({
         contentEditable
         suppressContentEditableWarning
         className={cn(
-          "min-h-[min(60vh,28rem)] w-full rounded-ds-xl border border-app-border bg-app-sidebar px-4 py-4 text-sm leading-relaxed text-ds-ink shadow-sm",
-          "focus:outline-none focus:ring-2 focus:ring-app-primary/20",
+          "min-h-[min(60vh,28rem)] w-full rounded-ds-lg border border-ds-border bg-ds-surface px-4 py-4 text-sm leading-relaxed text-ds-ink shadow-ds-sm",
+          "focus:outline-none focus:ring-2 focus:ring-ds-accent/20",
           "[&_a]:text-ds-accent-ink [&_a]:underline",
           // Preflight do Tailwind remove list-style; sem isso ul/ol ficam invisiveis.
           "[&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-7",

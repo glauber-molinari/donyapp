@@ -28,6 +28,7 @@ import {
   setFinalKanbanStage,
   updateKanbanStageDetails,
 } from "./kanban-actions";
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -115,7 +116,7 @@ function SortableStageRow({
       {isAdmin ? (
         <button
           type="button"
-          className="touch-none text-ds-subtle hover:text-ds-ink"
+          className="touch-none text-ds-muted-2 hover:text-ds-ink"
           aria-label="Arrastar etapa"
           {...attributes}
           {...listeners}
@@ -134,7 +135,7 @@ function SortableStageRow({
 
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium text-ds-ink">{stage.name}</p>
-        <p className="text-xs text-ds-subtle">Posição {stage.position}</p>
+        <p className="text-xs text-ds-muted-2">Posição {stage.position}</p>
       </div>
 
       <label className="flex shrink-0 cursor-pointer items-center gap-2 text-sm text-ds-muted">
@@ -165,7 +166,7 @@ function SortableStageRow({
             type="button"
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+            className="h-8 w-8 p-0 text-ds-danger hover:bg-ds-danger-soft"
             aria-label={`Excluir ${stage.name}`}
             onClick={() => onDelete(stage)}
           >
@@ -333,19 +334,14 @@ export function SettingsKanbanSection({ stages, plan, isAdmin }: SettingsKanbanS
       ) : null}
 
       {plan === "free" && stages.length >= FREE_MAX_STAGES ? (
-        <p className="rounded-ds-xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <Alert variant="warn">
           No plano Free o limite é {FREE_MAX_STAGES} etapas (Backup → Em Edição → Em Aprovação →
           Entregue). Faça upgrade para o <strong>Pro</strong> para adicionar mais colunas ao fluxo.
-        </p>
+        </Alert>
       ) : null}
 
       {errorMessage ? (
-        <div
-          role="alert"
-          className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-800"
-        >
-          {errorMessage}
-        </div>
+        <Alert variant="danger">{errorMessage}</Alert>
       ) : null}
 
       <Card className="p-4">
@@ -408,7 +404,7 @@ export function SettingsKanbanSection({ stages, plan, isAdmin }: SettingsKanbanS
           </div>
           <div className="flex items-center gap-3 sm:shrink-0">
             <div className="flex flex-col gap-1">
-              <span className="text-xs font-medium text-ds-subtle">Cor ao salvar</span>
+              <span className="text-xs font-medium text-ds-muted-2">Cor ao salvar</span>
               <StageColorSwatch color={nextPreviewColor} className="h-10 w-10" />
             </div>
             <Button type="submit" disabled={pending || !canAdd || !newName.trim()}>

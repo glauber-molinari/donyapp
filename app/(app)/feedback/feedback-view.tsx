@@ -89,7 +89,7 @@ export function FeedbackView({ suggestions }: FeedbackViewProps) {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {STAGES.map(({ key, label }) => (
           <div key={key} className="flex flex-col gap-3">
-            <div className="flex items-center justify-between rounded-ds-xl border border-app-border bg-app-sidebar px-3 py-2">
+            <div className="flex items-center justify-between rounded-ds-xl border border-ds-border bg-ds-surface px-3 py-2">
               <span className="text-sm font-semibold text-ds-ink">{label}</span>
               <span className="rounded-full bg-ds-cream px-2 py-0.5 text-xs font-medium text-ds-muted">
                 {grouped[key].length}
@@ -98,7 +98,7 @@ export function FeedbackView({ suggestions }: FeedbackViewProps) {
 
             <div className="flex flex-col gap-2">
               {grouped[key].length === 0 ? (
-                <div className="rounded-ds-xl border border-dashed border-app-border px-4 py-6 text-center text-xs text-ds-subtle">
+                <div className="rounded-ds-xl border border-dashed border-ds-border px-4 py-6 text-center text-xs text-ds-muted-2">
                   Nenhuma sugestão ainda
                 </div>
               ) : (
@@ -127,7 +127,7 @@ export function FeedbackView({ suggestions }: FeedbackViewProps) {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-5">
           <div className="flex flex-col gap-1.5">
             <label htmlFor="fb-title" className="text-sm font-medium text-ds-ink">
-              Título <span className="text-red-500">*</span>
+              Título <span className="text-ds-danger">*</span>
             </label>
             <Input
               id="fb-title"
@@ -140,7 +140,7 @@ export function FeedbackView({ suggestions }: FeedbackViewProps) {
 
           <div className="flex flex-col gap-1.5">
             <label htmlFor="fb-desc" className="text-sm font-medium text-ds-ink">
-              Descrição <span className="text-ds-subtle text-xs font-normal">(opcional)</span>
+              Descrição <span className="text-ds-muted-2 text-xs font-normal">(opcional)</span>
             </label>
             <Textarea
               id="fb-desc"
@@ -179,7 +179,7 @@ function SuggestionCard({
   disabled: boolean;
 }) {
   return (
-    <div className="group flex flex-col gap-2 rounded-ds-xl border border-app-border bg-app-sidebar p-4 transition-shadow hover:shadow-ds-sm">
+    <div className="group flex flex-col gap-2 rounded-ds-xl border border-ds-border bg-ds-surface p-4 transition-shadow hover:shadow-ds-sm">
       <p className="text-sm font-medium leading-snug text-ds-ink">{suggestion.title}</p>
       {suggestion.description && (
         <p className="line-clamp-3 text-xs leading-relaxed text-ds-muted">
@@ -194,8 +194,8 @@ function SuggestionCard({
           aria-label={suggestion.user_voted ? "Remover voto" : "Votar nesta sugestão"}
           className={`flex items-center gap-1.5 rounded-ds-xl px-2.5 py-1 text-xs font-medium transition-colors duration-ds ease-out disabled:opacity-60 ${
             suggestion.user_voted
-              ? "bg-app-primary/10 text-app-primary"
-              : "border border-app-border text-ds-muted hover:bg-ds-cream hover:text-ds-ink"
+              ? "bg-ds-accent/10 text-ds-accent"
+              : "border border-ds-border text-ds-muted hover:bg-ds-cream hover:text-ds-ink"
           }`}
         >
           <ThumbsUp className="h-3.5 w-3.5" />

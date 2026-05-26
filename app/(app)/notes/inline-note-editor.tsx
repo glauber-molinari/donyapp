@@ -152,10 +152,10 @@ export function InlineNoteEditor({
                   <span className="truncate">{job.name}</span>
                 </>
               ) : null}
-              {dateLabel ? <span className="text-ds-subtle">{dateLabel}</span> : null}
+              {dateLabel ? <span className="text-ds-muted-2">{dateLabel}</span> : null}
             </div>
           ) : mode === "edit" && dateLabel ? (
-            <span className="text-xs text-ds-subtle">{dateLabel}</span>
+            <span className="text-xs text-ds-muted-2">{dateLabel}</span>
           ) : (
             <span className="text-xs font-medium text-ds-muted">Nova anotação</span>
           )}
@@ -165,7 +165,7 @@ export function InlineNoteEditor({
             <button
               type="button"
               onClick={() => setShowDeleteModal(true)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-ds-subtle transition-colors hover:bg-red-50 hover:text-red-600"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-ds-muted-2 transition-colors hover:bg-ds-danger-soft hover:text-ds-danger"
               aria-label="Excluir nota"
             >
               <Trash2 className="h-4 w-4" aria-hidden />
@@ -174,7 +174,7 @@ export function InlineNoteEditor({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-ds-subtle transition-colors hover:bg-ds-cream hover:text-ds-ink"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-ds-muted-2 transition-colors hover:bg-ds-cream hover:text-ds-ink"
             aria-label="Fechar editor"
           >
             <X className="h-4 w-4" aria-hidden />
@@ -237,7 +237,7 @@ export function InlineNoteEditor({
             {errorMessage ? (
               <div
                 role="alert"
-                className="mb-4 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-800"
+                className="mb-4 rounded-xl border border-ds-danger/20 bg-ds-danger-soft px-4 py-3 text-sm text-ds-danger"
               >
                 {errorMessage}
               </div>

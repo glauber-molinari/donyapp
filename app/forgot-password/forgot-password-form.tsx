@@ -6,10 +6,10 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 const inputCls =
-  "w-full rounded-ds-xl border border-app-border bg-app-canvas px-3 py-2.5 text-sm text-ds-ink placeholder:text-ds-subtle focus:outline-none focus:ring-2 focus:ring-app-primary/30 focus:ring-offset-1 focus:ring-offset-app-sidebar disabled:opacity-60";
+  "w-full rounded-ds-xl border border-ds-border bg-ds-cream px-3 py-2.5 text-sm text-ds-ink placeholder:text-ds-muted-2 focus:outline-none focus:ring-2 focus:ring-ds-accent/30 focus:ring-offset-1 focus:ring-offset-ds-surface disabled:opacity-60";
 
 const btnPrimaryCls =
-  "flex w-full items-center justify-center rounded-ds-xl bg-app-primary px-4 py-3 text-sm font-semibold text-white shadow-sm transition duration-ds ease-out hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-app-primary/40 focus:ring-offset-2 focus:ring-offset-app-canvas disabled:opacity-60";
+  "flex w-full items-center justify-center rounded-ds-xl bg-ds-accent px-4 py-3 text-sm font-semibold text-white shadow-ds-sm transition duration-ds ease-out hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-ds-accent/40 focus:ring-offset-2 focus:ring-offset-ds-cream disabled:opacity-60";
 
 export function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
@@ -37,9 +37,9 @@ export function ForgotPasswordForm() {
   if (sent) {
     return (
       <div className="flex flex-col gap-4 text-center">
-        <div className="rounded-ds-xl border border-green-100 bg-green-50 px-4 py-4 text-sm text-green-800">
+        <div className="rounded-ds-xl border border-ds-success/25 bg-ds-success-soft px-4 py-4 text-sm text-ds-success">
           <p className="font-semibold">Verifique seu email</p>
-          <p className="mt-1 text-xs text-green-700">
+          <p className="mt-1 text-xs text-ds-success">
             Se este endereço estiver cadastrado, você receberá um link para redefinir sua senha em
             instantes.
           </p>

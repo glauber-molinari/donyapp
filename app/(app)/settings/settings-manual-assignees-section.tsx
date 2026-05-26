@@ -130,7 +130,7 @@ export function SettingsManualAssigneesSection({
       {errorMessage ? (
         <div
           role="alert"
-          className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-800"
+          className="rounded-xl border border-ds-danger/20 bg-ds-danger-soft px-4 py-3 text-sm text-ds-danger"
         >
           {errorMessage}
         </div>
@@ -147,7 +147,7 @@ export function SettingsManualAssigneesSection({
                 <Avatar src={a.photo_url} name={a.name} size="sm" className="shrink-0" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium text-ds-ink">{a.name}</p>
-                  <p className="truncate text-xs text-ds-subtle">{a.email}</p>
+                  <p className="truncate text-xs text-ds-muted-2">{a.email}</p>
                 </div>
                 {isAdmin ? (
                   <div className="flex shrink-0 gap-1">
@@ -169,7 +169,7 @@ export function SettingsManualAssigneesSection({
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                      className="h-8 w-8 p-0 text-ds-danger hover:bg-ds-danger-soft hover:text-ds-danger"
                       aria-label={`Excluir ${a.name}`}
                       disabled={pending}
                       onClick={() => {

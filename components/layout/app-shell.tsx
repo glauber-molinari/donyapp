@@ -164,7 +164,7 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
 
   return (
     <OnboardingTourProvider tourCompleted={tourCompleted}>
-    <div className="flex min-h-screen bg-app-canvas">
+    <div className="flex min-h-screen bg-ds-cream">
       {mobileOpen ? (
         <button
           type="button"
@@ -176,13 +176,13 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex shrink-0 flex-col overflow-hidden border-r border-app-border bg-app-sidebar transition-[transform,width] duration-200 ease-out md:static md:z-0 md:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 flex shrink-0 flex-col overflow-hidden border-r border-ds-border bg-ds-surface transition-[transform,width] duration-200 ease-out md:static md:z-0 md:translate-x-0",
           mobileOpen ? "w-60 translate-x-0" : "-translate-x-full max-md:w-60 md:translate-x-0",
           !mobileOpen && (sidebarCollapsed ? "md:w-[4.25rem]" : "md:w-60")
         )}
       >
         {/* Mobile: logo + fechar */}
-        <div className="relative flex h-14 items-center justify-center border-b border-app-border px-4 md:hidden md:h-16">
+        <div className="relative flex h-14 items-center justify-center border-b border-ds-border px-4 md:hidden md:h-16">
           <Link
             href="/dashboard"
             className="flex items-center justify-center"
@@ -200,7 +200,7 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-ds-xl p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-ds-subtle hover:bg-ds-cream"
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-ds-xl p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-ds-muted-2 hover:bg-ds-cream"
             aria-label="Fechar menu"
           >
             <X className="h-5 w-5" />
@@ -210,7 +210,7 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
         {/* Desktop: expandido — logo + recolher (só md+, nunca junto do bloco recolhido) */}
         <div
           className={cn(
-            "relative h-16 shrink-0 items-center justify-between gap-2 border-b border-app-border px-3",
+            "relative h-16 shrink-0 items-center justify-between gap-2 border-b border-ds-border px-3",
             "hidden md:flex",
             sidebarCollapsed && "md:hidden"
           )}
@@ -247,7 +247,7 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
         {/* Desktop: recolhido — expandir + ícone compacto */}
         <div
           className={cn(
-            "shrink-0 flex-col items-center gap-2 border-b border-app-border py-3",
+            "shrink-0 flex-col items-center gap-2 border-b border-ds-border py-3",
             "hidden md:flex",
             !sidebarCollapsed && "md:hidden"
           )}
@@ -328,13 +328,13 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
 
         <div
           className={cn(
-            "border-t border-app-border px-3 pb-2 pt-1",
+            "border-t border-ds-border px-3 pb-2 pt-1",
             sidebarCollapsed && "md:px-2"
           )}
         >
           <p
             className={cn(
-              "px-3 pb-1 text-sm font-medium uppercase tracking-wide text-ds-subtle",
+              "px-3 pb-1 text-sm font-medium uppercase tracking-wide text-ds-muted-2",
               sidebarCollapsed && "md:sr-only"
             )}
           >
@@ -356,7 +356,7 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
               <span className="relative shrink-0">
                 <HelpCircle className="h-5 w-5 opacity-80" aria-hidden />
                 {unreadSupportCount > 0 && (
-                  <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-app-primary" />
+                  <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-ds-accent" />
                 )}
               </span>
               <span className={cn(sidebarCollapsed && "md:sr-only")}>Suporte</span>
@@ -388,7 +388,7 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
           </div>
         </div>
 
-        <div className={cn("border-t border-app-border p-3", sidebarCollapsed && "md:px-2")}>
+        <div className={cn("border-t border-ds-border p-3", sidebarCollapsed && "md:px-2")}>
           <div
             className={cn(
               "mb-1 flex min-h-[2.5rem] items-center gap-3 rounded-ds-xl px-3 py-2.5",
@@ -435,7 +435,7 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
       <SidebarCollapsedContext.Provider value={sidebarCollapsed}>
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           {/* Header mobile */}
-          <header className="sticky top-0 z-30 flex min-h-[52px] shrink-0 items-center justify-between gap-2 border-b border-app-border bg-app-sidebar px-3 md:hidden">
+          <header className="sticky top-0 z-30 flex min-h-[52px] shrink-0 items-center justify-between gap-2 border-b border-ds-border bg-ds-surface px-3 md:hidden">
             <div className="flex items-center gap-2">
               <Link
                 href="/dashboard"
@@ -458,7 +458,7 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
           </header>
 
           {/* Header desktop */}
-          <header className="sticky top-0 z-30 hidden min-h-[48px] shrink-0 items-center justify-end gap-3 border-b border-app-border bg-app-sidebar px-6 md:flex">
+          <header className="sticky top-0 z-30 hidden min-h-[48px] shrink-0 items-center justify-end gap-3 border-b border-ds-border bg-ds-surface px-6 md:flex">
             <NotificationBell />
           </header>
 

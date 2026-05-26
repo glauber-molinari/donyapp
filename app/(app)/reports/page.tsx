@@ -117,7 +117,7 @@ export default async function ReportsPage() {
 
           <div className="pointer-events-none opacity-60 blur-sm">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <div className="rounded-lg border border-app-border bg-white p-6 shadow-sm">
+              <div className="rounded-lg border border-ds-border bg-white p-6 shadow-ds-sm">
                 <div className="mb-3 flex items-center justify-between">
                   <span className="text-sm font-medium text-ds-muted">Média de Entrega</span>
                   <div className="rounded-lg bg-blue-50 p-2 text-blue-600">
@@ -138,7 +138,7 @@ export default async function ReportsPage() {
                 <p className="mt-1 text-xs text-ds-muted">Tempo médio de conclusão</p>
               </div>
 
-              <div className="rounded-lg border border-app-border bg-white p-6 shadow-sm">
+              <div className="rounded-lg border border-ds-border bg-white p-6 shadow-ds-sm">
                 <div className="mb-3 flex items-center justify-between">
                   <span className="text-sm font-medium text-ds-muted">Total Entregue</span>
                   <div className="rounded-lg bg-green-50 p-2 text-green-600">
@@ -159,7 +159,7 @@ export default async function ReportsPage() {
                 <p className="mt-1 text-xs text-ds-muted">Jobs finalizados</p>
               </div>
 
-              <div className="rounded-lg border border-app-border bg-white p-6 shadow-sm">
+              <div className="rounded-lg border border-ds-border bg-white p-6 shadow-ds-sm">
                 <div className="mb-3 flex items-center justify-between">
                   <span className="text-sm font-medium text-ds-muted">Jobs Ativos</span>
                   <div className="rounded-lg bg-orange-50 p-2 text-orange-600">
@@ -179,7 +179,7 @@ export default async function ReportsPage() {
                 <p className="mt-1 text-xs text-ds-muted">Em andamento</p>
               </div>
 
-              <div className="rounded-lg border border-app-border bg-white p-6 shadow-sm">
+              <div className="rounded-lg border border-ds-border bg-white p-6 shadow-ds-sm">
                 <div className="mb-3 flex items-center justify-between">
                   <span className="text-sm font-medium text-ds-muted">Taxa no Prazo</span>
                   <div className="rounded-lg bg-purple-50 p-2 text-purple-600">
@@ -202,7 +202,7 @@ export default async function ReportsPage() {
             </div>
 
             <div className="mt-4 grid gap-4 md:grid-cols-2">
-              <div className="rounded-lg border border-app-border bg-white p-6 shadow-sm">
+              <div className="rounded-lg border border-ds-border bg-white p-6 shadow-ds-sm">
                 <h3 className="mb-4 text-lg font-semibold text-ds-ink">Média por Tipo</h3>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
@@ -220,7 +220,7 @@ export default async function ReportsPage() {
                 </div>
               </div>
 
-              <div className="rounded-lg border border-app-border bg-white p-6 shadow-sm">
+              <div className="rounded-lg border border-ds-border bg-white p-6 shadow-ds-sm">
                 <h3 className="mb-4 text-lg font-semibold text-ds-ink">Entregas no Prazo</h3>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">

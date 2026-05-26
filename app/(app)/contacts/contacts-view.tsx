@@ -146,7 +146,7 @@ export function ContactsView({ contacts }: ContactsViewProps) {
       {errorMessage ? (
         <div
           role="alert"
-          className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-800"
+          className="rounded-xl border border-ds-danger/20 bg-ds-danger-soft px-4 py-3 text-sm text-ds-danger"
         >
           {errorMessage}
         </div>
@@ -154,7 +154,7 @@ export function ContactsView({ contacts }: ContactsViewProps) {
 
       <div className="relative max-w-md">
         <Search
-          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ds-subtle"
+          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ds-muted-2"
           aria-hidden
         />
         <input
@@ -162,7 +162,7 @@ export function ContactsView({ contacts }: ContactsViewProps) {
           placeholder="Buscar por nome ou e-mail…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="w-full rounded-ds-xl border border-app-border bg-app-sidebar py-2.5 pl-10 pr-3 text-sm text-ds-ink shadow-sm placeholder:text-ds-subtle focus:border-app-primary/50 focus:outline-none focus:ring-2 focus:ring-app-primary/20"
+          className="w-full rounded-ds-xl border border-ds-border bg-ds-surface py-2.5 pl-10 pr-3 text-sm text-ds-ink shadow-ds-sm placeholder:text-ds-muted-2 focus:border-ds-accent/50 focus:outline-none focus:ring-2 focus:ring-ds-accent/20"
           aria-label="Buscar contatos"
         />
       </div>
@@ -189,10 +189,10 @@ export function ContactsView({ contacts }: ContactsViewProps) {
         </p>
       ) : (
         <>
-          <div className="hidden overflow-hidden rounded-ds-xl border border-app-border md:block">
+          <div className="hidden overflow-hidden rounded-ds-xl border border-ds-border md:block">
             <table className="w-full border-collapse text-left text-sm">
               <thead>
-                <tr className="border-b border-app-border bg-ds-cream/90">
+                <tr className="border-b border-ds-border bg-ds-cream/90">
                   <th className="px-4 py-3 font-medium text-ds-muted">Nome</th>
                   <th className="px-4 py-3 font-medium text-ds-muted">E-mail</th>
                   <th className="px-4 py-3 font-medium text-ds-muted">Telefone</th>
@@ -210,7 +210,7 @@ export function ContactsView({ contacts }: ContactsViewProps) {
                     <td className="px-4 py-3 font-medium text-ds-ink">
                       <button
                         type="button"
-                        className="text-left underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/30"
+                        className="text-left underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent/30"
                         onClick={() => router.push(`/contacts/${c.id}`)}
                         aria-label={`Abrir ${c.name}`}
                       >
@@ -218,7 +218,7 @@ export function ContactsView({ contacts }: ContactsViewProps) {
                       </button>
                     </td>
                     <td className="px-4 py-3 text-ds-muted">{c.email}</td>
-                    <td className="px-4 py-3 text-ds-subtle">{c.phone ?? "—"}</td>
+                    <td className="px-4 py-3 text-ds-muted-2">{c.phone ?? "—"}</td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex justify-end gap-1">
                         {c.phone?.trim() ? (
@@ -226,7 +226,7 @@ export function ContactsView({ contacts }: ContactsViewProps) {
                             href={whatsappUrl(c.phone)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-green-600 hover:bg-green-50"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ds-success hover:bg-ds-success-soft"
                             aria-label={`WhatsApp de ${c.name}`}
                           >
                             <WhatsAppIcon className="h-4 w-4" />
@@ -259,7 +259,7 @@ export function ContactsView({ contacts }: ContactsViewProps) {
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                          className="h-8 w-8 p-0 text-ds-danger hover:bg-ds-danger-soft hover:text-ds-danger"
                           aria-label={`Excluir ${c.name}`}
                           onClick={() => {
                             setErrorMessage(null);
@@ -283,7 +283,7 @@ export function ContactsView({ contacts }: ContactsViewProps) {
                   <div className="min-w-0">
                     <button
                       type="button"
-                      className="block w-full truncate text-left font-semibold text-ds-ink underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/30"
+                      className="block w-full truncate text-left font-semibold text-ds-ink underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent/30"
                       onClick={() => router.push(`/contacts/${c.id}`)}
                       aria-label={`Abrir ${c.name}`}
                     >
@@ -291,7 +291,7 @@ export function ContactsView({ contacts }: ContactsViewProps) {
                     </button>
                     <p className="text-sm text-ds-muted">{c.email}</p>
                     {c.phone ? (
-                      <p className="mt-1 text-sm text-ds-subtle">{c.phone}</p>
+                      <p className="mt-1 text-sm text-ds-muted-2">{c.phone}</p>
                     ) : null}
                   </div>
                   <div className="flex shrink-0 gap-1">
@@ -300,7 +300,7 @@ export function ContactsView({ contacts }: ContactsViewProps) {
                         href={whatsappUrl(c.phone)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-green-600 hover:bg-green-50"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ds-success hover:bg-ds-success-soft"
                         aria-label={`WhatsApp de ${c.name}`}
                       >
                         <WhatsAppIcon className="h-4 w-4" />
@@ -333,7 +333,7 @@ export function ContactsView({ contacts }: ContactsViewProps) {
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0 text-red-600 hover:bg-red-50"
+                      className="h-8 w-8 p-0 text-ds-danger hover:bg-ds-danger-soft"
                       aria-label={`Excluir ${c.name}`}
                       onClick={() => {
                         setErrorMessage(null);

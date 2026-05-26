@@ -7,6 +7,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   type MutableRefObject,
@@ -77,7 +78,7 @@ function buildSteps(router: ReturnType<typeof useRouter>): DriveStep[] {
       element: "#btn-novo-contato",
       popover: {
         title: "Novo contato",
-        description: "Clique aqui para adicionar um cliente. Basta o nome e o e-mail dele.",
+        description: "Clique para cadastrar um cliente. Preencha nome e e-mail — o restante é opcional.",
         side: "bottom",
         align: "start",
       },
@@ -111,7 +112,7 @@ function buildSteps(router: ReturnType<typeof useRouter>): DriveStep[] {
       element: "#btn-novo-job",
       popover: {
         title: "Novo job",
-        description: "Crie um job para cada trabalho de edição. Defina o prazo e as observações.",
+        description: "Cadastre um job para cada sessão de fotos ou vídeo. Informe nome, cliente, prazo e tipo de entrega.",
         side: "bottom",
         align: "start",
       },
@@ -121,7 +122,7 @@ function buildSteps(router: ReturnType<typeof useRouter>): DriveStep[] {
       element: "#kanban-board",
       popover: {
         title: "Kanban de Edições",
-        description: "Arraste os cards entre as colunas conforme avança na edição. Clique em um card para ver detalhes ou excluir.",
+        description: "Arraste os cards entre colunas à medida que a edição avança. Clique em qualquer card para ver detalhes, editar ou excluir.",
         side: "top",
         align: "start",
       },
@@ -210,7 +211,7 @@ function buildSteps(router: ReturnType<typeof useRouter>): DriveStep[] {
       popover: {
         title: "Configurações",
         description:
-          "Configurações da conta ficam por aqui. No próximo passo, um resumo rápido de cada seção.",
+          "Aqui ficam todas as configurações da conta. Clique para conhecer cada seção no próximo passo.",
         side: "right",
         align: "start",
         onPrevClick: (_el, _step, { driver: d }) => {
@@ -226,9 +227,9 @@ function buildSteps(router: ReturnType<typeof useRouter>): DriveStep[] {
     {
       element: "#tour-settings-sidebar",
       popover: {
-        title: "Dentro de Configurações",
+        title: "O que tem em Configurações",
         description:
-          "Perfil — ajuste seu nome e refaça este tour. Kanban — etapas do quadro e tipos de trabalho. Equipe — convide ou remova colaboradores. E-mail — templates de entrega ao cliente. Agenda — conecte o Google Calendar. Plano — veja trial e assinatura. Importar — adicione contatos em lote a partir de uma planilha .csv.",
+          "Perfil — nome e refazer o tour. Kanban — etapas e tipos de trabalho. Equipe — convide colaboradores. E-mail — templates de entrega. Agenda — Google Calendar. Plano — trial e assinatura. Importar — contatos em lote via .csv.",
         side: "right",
         align: "start",
       },
@@ -244,7 +245,8 @@ function baseDriverConfig(
   return {
     showProgress: true,
     progressText: "{{current}} de {{total}}",
-    nextBtnText: "Próximo",
+    nextBtnText: "Próximo →",
+    prevBtnText: "← Anterior",
     doneBtnText: "Concluir",
     showButtons: ["next", "previous", "close"],
     animate: true,
@@ -283,7 +285,6 @@ export interface OnboardingTourProviderProps {
 }
 
 export function OnboardingTourProvider({ tourCompleted, children }: OnboardingTourProviderProps) {
-  void tourCompleted;
   const router = useRouter();
   const routerRef = useRef(router);
   routerRef.current = router;
@@ -294,6 +295,15 @@ export function OnboardingTourProvider({ tourCompleted, children }: OnboardingTo
     const d = driver(baseDriverConfig(steps, persistCompletion, driverRef));
     driverRef.current = d;
     d.drive();
+  }, []);
+
+  // Auto-start para novos usuários que ainda não viram o tour.
+  useEffect(() => {
+    if (!tourCompleted) {
+      mountDriver(true);
+    }
+    // Só deve rodar na montagem do shell — dependências intencionalmente vazias.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const startTour = useCallback(() => {

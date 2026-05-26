@@ -85,14 +85,16 @@ export function ContactSearchField({
           }}
           placeholder="Buscar por nome ou e-mail…"
           className={cn(
-            "w-full rounded-ds-xl border border-app-border bg-app-sidebar px-3 py-2.5 text-sm text-ds-ink shadow-sm",
-            "focus:border-app-primary/50 focus:outline-none focus:ring-2 focus:ring-app-primary/20",
-            disabled && "cursor-not-allowed bg-ds-cream text-ds-subtle"
+            "w-full rounded-ds-lg border border-ds-border bg-ds-surface px-3 py-2.5 text-sm text-ds-ink shadow-ds-sm",
+            "transition-[border-color,box-shadow] duration-ds-fast ease-out",
+            "focus:border-ds-accent focus:outline-none focus:ring-2 focus:ring-[rgba(255,85,0,0.18)]",
+            "placeholder:text-ds-muted-2",
+            disabled && "cursor-not-allowed bg-ds-cream text-ds-muted"
           )}
         />
         {open && query.trim() ? (
           <ul
-            className="absolute z-50 mt-1 max-h-48 w-full overflow-auto rounded-ds-xl border border-app-border bg-ds-surface py-1 shadow-ds-md"
+            className="absolute z-50 mt-1 max-h-48 w-full overflow-auto rounded-ds-lg border border-ds-border bg-ds-surface py-1 shadow-ds-md"
             role="listbox"
           >
             {filtered.length === 0 ? (

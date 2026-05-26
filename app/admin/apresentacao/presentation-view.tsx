@@ -69,12 +69,12 @@ const slides = [
           ].map((problem, i) => (
             <div
               key={i}
-              className="flex items-start gap-3 rounded-ds-xl border border-red-200 bg-red-50 p-4"
+              className="flex items-start gap-3 rounded-ds-xl border border-ds-danger/20 bg-ds-danger-soft p-4"
             >
-              <div className="mt-0.5 h-6 w-6 shrink-0 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold text-sm">
+              <div className="mt-0.5 h-6 w-6 shrink-0 rounded-full bg-ds-danger-soft flex items-center justify-center text-ds-danger font-bold text-sm">
                 ✕
               </div>
-              <p className="text-sm text-red-900">{problem}</p>
+              <p className="text-sm text-ds-ink">{problem}</p>
             </div>
           ))}
         </div>
@@ -115,8 +115,8 @@ const slides = [
               key={i}
               className={cn(
                 "flex items-start gap-3 rounded-ds-xl border p-4",
-                solution.color === "emerald" && "border-emerald-200 bg-emerald-50",
-                solution.color === "blue" && "border-blue-200 bg-blue-50",
+                solution.color === "emerald" && "border-ds-success/25 bg-ds-success-soft",
+                solution.color === "blue" && "border-ds-info/25 bg-ds-info-soft",
                 solution.color === "purple" && "border-purple-200 bg-purple-50",
                 solution.color === "orange" && "border-orange-200 bg-orange-50"
               )}
@@ -124,8 +124,8 @@ const slides = [
               <div
                 className={cn(
                   "mt-0.5 h-6 w-6 shrink-0 rounded-full flex items-center justify-center font-bold text-sm",
-                  solution.color === "emerald" && "bg-emerald-100 text-emerald-600",
-                  solution.color === "blue" && "bg-blue-100 text-blue-600",
+                  solution.color === "emerald" && "bg-ds-success-soft text-ds-success",
+                  solution.color === "blue" && "bg-ds-info-soft text-ds-info",
                   solution.color === "purple" && "bg-purple-100 text-purple-600",
                   solution.color === "orange" && "bg-orange-100 text-orange-600"
                 )}
@@ -136,8 +136,8 @@ const slides = [
                 <p
                   className={cn(
                     "text-sm font-semibold",
-                    solution.color === "emerald" && "text-emerald-900",
-                    solution.color === "blue" && "text-blue-900",
+                    solution.color === "emerald" && "text-ds-ink",
+                    solution.color === "blue" && "text-ds-ink",
                     solution.color === "purple" && "text-purple-900",
                     solution.color === "orange" && "text-orange-900"
                   )}
@@ -147,8 +147,8 @@ const slides = [
                 <p
                   className={cn(
                     "text-xs",
-                    solution.color === "emerald" && "text-emerald-700",
-                    solution.color === "blue" && "text-blue-700",
+                    solution.color === "emerald" && "text-ds-success",
+                    solution.color === "blue" && "text-ds-info",
                     solution.color === "purple" && "text-purple-700",
                     solution.color === "orange" && "text-orange-700"
                   )}
@@ -169,7 +169,7 @@ const slides = [
     icon: LayoutDashboard,
     content: (
       <div className="flex flex-col gap-6">
-        <div className="rounded-ds-xl border border-app-border bg-white p-6 shadow-ds-card">
+        <div className="rounded-ds-xl border border-ds-border bg-white p-6 shadow-ds-card">
           <p className="mb-4 text-sm text-ds-muted">
             Acompanhe métricas importantes em tempo real
           </p>
@@ -185,7 +185,7 @@ const slides = [
               >
                 <p className="text-xs font-medium text-ds-muted">{metric.label}</p>
                 <p className="text-3xl font-bold text-ds-ink">{metric.value}</p>
-                <p className="text-xs text-ds-subtle">{metric.change}</p>
+                <p className="text-xs text-ds-muted-2">{metric.change}</p>
               </div>
             ))}
           </div>
@@ -198,7 +198,7 @@ const slides = [
             "Histórico de entregas",
           ].map((item, i) => (
             <li key={i} className="flex items-center gap-2 text-sm text-ds-muted">
-              <div className="h-1.5 w-1.5 rounded-full bg-app-primary" />
+              <div className="h-1.5 w-1.5 rounded-full bg-ds-accent" />
               {item}
             </li>
           ))}
@@ -213,13 +213,13 @@ const slides = [
     icon: Columns3,
     content: (
       <div className="flex flex-col gap-6">
-        <div className="rounded-ds-xl border border-app-border bg-white p-6 shadow-ds-card">
+        <div className="rounded-ds-xl border border-ds-border bg-white p-6 shadow-ds-card">
           <div className="flex gap-3 overflow-x-auto pb-2">
             {[
               { name: "Backup", count: 3, color: "bg-gray-100" },
               { name: "Em Edição", count: 8, color: "bg-blue-100" },
               { name: "Em Aprovação", count: 5, color: "bg-yellow-100" },
-              { name: "Entregue", count: 142, color: "bg-green-100" },
+              { name: "Entregue", count: 142, color: "bg-ds-success-soft" },
             ].map((stage, i) => (
               <div
                 key={i}
@@ -227,7 +227,7 @@ const slides = [
               >
                 <div className="mb-2 flex items-center justify-between">
                   <p className="text-xs font-semibold text-ds-ink">{stage.name}</p>
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-app-primary text-[10px] font-bold text-white">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-ds-accent text-[10px] font-bold text-white">
                     {stage.count}
                   </span>
                 </div>
@@ -251,7 +251,7 @@ const slides = [
             "Filtros por prazo, cliente e responsável",
           ].map((item, i) => (
             <li key={i} className="flex items-center gap-2 text-sm text-ds-muted">
-              <div className="h-1.5 w-1.5 rounded-full bg-app-primary" />
+              <div className="h-1.5 w-1.5 rounded-full bg-ds-accent" />
               {item}
             </li>
           ))}
@@ -266,23 +266,23 @@ const slides = [
     icon: LaptopMinimal,
     content: (
       <div className="flex flex-col gap-6">
-        <div className="rounded-ds-xl border border-app-border bg-white p-6 shadow-ds-card">
+        <div className="rounded-ds-xl border border-ds-border bg-white p-6 shadow-ds-card">
           <div className="space-y-4">
             <div className="flex items-start gap-4 rounded-ds-xl border border-ds-border bg-ds-cream p-4">
               <div className="flex-1">
                 <p className="font-semibold text-ds-ink">Casamento Maria & João</p>
                 <p className="mt-1 text-xs text-ds-muted">Cliente: Studio Silva</p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+                  <span className="rounded-full bg-ds-info-soft px-2 py-0.5 text-xs font-medium text-ds-info">
                     Casamento
                   </span>
-                  <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                  <span className="rounded-full bg-ds-success-soft px-2 py-0.5 text-xs font-medium text-ds-success">
                     Em dia
                   </span>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-xs text-ds-subtle">Prazo</p>
+                <p className="text-xs text-ds-muted-2">Prazo</p>
                 <p className="text-sm font-semibold text-ds-ink">15/05/2026</p>
               </div>
             </div>
@@ -300,7 +300,7 @@ const slides = [
             "Status visual de urgência",
           ].map((item, i) => (
             <li key={i} className="flex items-center gap-2 text-sm text-ds-muted">
-              <div className="h-1.5 w-1.5 rounded-full bg-app-primary" />
+              <div className="h-1.5 w-1.5 rounded-full bg-ds-accent" />
               {item}
             </li>
           ))}
@@ -315,7 +315,7 @@ const slides = [
     icon: Users,
     content: (
       <div className="flex flex-col gap-6">
-        <div className="rounded-ds-xl border border-app-border bg-white p-6 shadow-ds-card">
+        <div className="rounded-ds-xl border border-ds-border bg-white p-6 shadow-ds-card">
           <div className="space-y-2">
             {[
               { name: "Studio Silva", email: "contato@studiosilva.com", jobs: 12 },
@@ -330,7 +330,7 @@ const slides = [
                   <p className="text-sm font-semibold text-ds-ink">{contact.name}</p>
                   <p className="text-xs text-ds-muted">{contact.email}</p>
                 </div>
-                <span className="rounded-full bg-app-primary px-2 py-1 text-xs font-semibold text-white">
+                <span className="rounded-full bg-ds-accent px-2 py-1 text-xs font-semibold text-white">
                   {contact.jobs} jobs
                 </span>
               </div>
@@ -345,7 +345,7 @@ const slides = [
             "Contatos ilimitados",
           ].map((item, i) => (
             <li key={i} className="flex items-center gap-2 text-sm text-ds-muted">
-              <div className="h-1.5 w-1.5 rounded-full bg-app-primary" />
+              <div className="h-1.5 w-1.5 rounded-full bg-ds-accent" />
               {item}
             </li>
           ))}
@@ -360,7 +360,7 @@ const slides = [
     icon: Users,
     content: (
       <div className="flex flex-col gap-6">
-        <div className="rounded-ds-xl border border-app-border bg-white p-6 shadow-ds-card">
+        <div className="rounded-ds-xl border border-ds-border bg-white p-6 shadow-ds-card">
           <p className="mb-4 text-sm text-ds-muted">Convide sua equipe por e-mail</p>
           <div className="space-y-2">
             {[
@@ -372,7 +372,7 @@ const slides = [
                 key={i}
                 className="flex items-center gap-3 rounded-ds-xl border border-ds-border bg-ds-cream p-3"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-app-primary text-sm font-bold text-white">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-ds-accent text-sm font-bold text-white">
                   {member.avatar}
                 </div>
                 <div className="flex-1">
@@ -393,7 +393,7 @@ const slides = [
             "Histórico de ações",
           ].map((item, i) => (
             <li key={i} className="flex items-center gap-2 text-sm text-ds-muted">
-              <div className="h-1.5 w-1.5 rounded-full bg-app-primary" />
+              <div className="h-1.5 w-1.5 rounded-full bg-ds-accent" />
               {item}
             </li>
           ))}
@@ -408,7 +408,7 @@ const slides = [
     icon: NotebookPen,
     content: (
       <div className="flex flex-col gap-6">
-        <div className="rounded-ds-xl border border-app-border bg-white p-6 shadow-ds-card">
+        <div className="rounded-ds-xl border border-ds-border bg-white p-6 shadow-ds-card">
           <div className="grid gap-3 sm:grid-cols-2">
             {[
               {
@@ -438,7 +438,7 @@ const slides = [
               >
                 <div className="flex items-start justify-between gap-2">
                   <p className="text-sm font-semibold text-ds-ink">{note.title}</p>
-                  <span className="text-xs text-ds-subtle">{note.date}</span>
+                  <span className="text-xs text-ds-muted-2">{note.date}</span>
                 </div>
                 <p className="text-xs text-ds-muted">{note.preview}</p>
               </div>
@@ -453,7 +453,7 @@ const slides = [
             "Organização por data",
           ].map((item, i) => (
             <li key={i} className="flex items-center gap-2 text-sm text-ds-muted">
-              <div className="h-1.5 w-1.5 rounded-full bg-app-primary" />
+              <div className="h-1.5 w-1.5 rounded-full bg-ds-accent" />
               {item}
             </li>
           ))}
@@ -468,10 +468,10 @@ const slides = [
     icon: Calendar,
     content: (
       <div className="flex flex-col gap-6">
-        <div className="rounded-ds-xl border border-app-border bg-white p-6 shadow-ds-card">
+        <div className="rounded-ds-xl border border-ds-border bg-white p-6 shadow-ds-card">
           <div className="mb-4 flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-ds-xl border border-ds-border bg-ds-cream">
-              <Calendar className="h-6 w-6 text-app-primary" />
+              <Calendar className="h-6 w-6 text-ds-accent" />
             </div>
             <div>
               <p className="text-sm font-semibold text-ds-ink">Google Calendar conectado</p>
@@ -507,7 +507,7 @@ const slides = [
             "Alertas e notificações",
           ].map((item, i) => (
             <li key={i} className="flex items-center gap-2 text-sm text-ds-muted">
-              <div className="h-1.5 w-1.5 rounded-full bg-app-primary" />
+              <div className="h-1.5 w-1.5 rounded-full bg-ds-accent" />
               {item}
             </li>
           ))}
@@ -522,7 +522,7 @@ const slides = [
     icon: CheckSquare,
     content: (
       <div className="flex flex-col gap-6">
-        <div className="rounded-ds-xl border border-app-border bg-white p-6 shadow-ds-card">
+        <div className="rounded-ds-xl border border-ds-border bg-white p-6 shadow-ds-card">
           <div className="space-y-2">
             {[
               { task: "Fazer backup dos arquivos brutos", done: true },
@@ -565,7 +565,7 @@ const slides = [
             "Prazos por tarefa",
           ].map((item, i) => (
             <li key={i} className="flex items-center gap-2 text-sm text-ds-muted">
-              <div className="h-1.5 w-1.5 rounded-full bg-app-primary" />
+              <div className="h-1.5 w-1.5 rounded-full bg-ds-accent" />
               {item}
             </li>
           ))}
@@ -580,7 +580,7 @@ const slides = [
     icon: BarChart3,
     content: (
       <div className="flex flex-col gap-6">
-        <div className="rounded-ds-xl border border-app-border bg-white p-6 shadow-ds-card">
+        <div className="rounded-ds-xl border border-ds-border bg-white p-6 shadow-ds-card">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="rounded-ds-xl border border-ds-border bg-ds-cream p-4">
               <p className="text-xs font-medium text-ds-muted">Taxa de conclusão</p>
@@ -602,7 +602,7 @@ const slides = [
             <div className="rounded-ds-xl border border-ds-border bg-ds-cream p-4">
               <p className="text-xs font-medium text-ds-muted">Clientes ativos</p>
               <p className="mt-2 text-3xl font-bold text-ds-ink">18</p>
-              <p className="mt-1 text-xs text-ds-subtle">15 recorrentes</p>
+              <p className="mt-1 text-xs text-ds-muted-2">15 recorrentes</p>
             </div>
           </div>
         </div>
@@ -616,7 +616,7 @@ const slides = [
             "Tipos de trabalho mais frequentes",
           ].map((item, i) => (
             <li key={i} className="flex items-center gap-2 text-sm text-ds-muted">
-              <div className="h-1.5 w-1.5 rounded-full bg-app-primary" />
+              <div className="h-1.5 w-1.5 rounded-full bg-ds-accent" />
               {item}
             </li>
           ))}
@@ -631,11 +631,11 @@ const slides = [
     icon: Mail,
     content: (
       <div className="flex flex-col gap-6">
-        <div className="rounded-ds-xl border border-app-border bg-white p-6 shadow-ds-card">
+        <div className="rounded-ds-xl border border-ds-border bg-white p-6 shadow-ds-card">
           <div className="rounded-lg border border-ds-border bg-ds-cream p-4">
             <div className="mb-3 flex items-center justify-between border-b border-ds-border pb-3">
               <p className="text-xs font-semibold text-ds-ink">Para: cliente@exemplo.com</p>
-              <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+              <span className="rounded-full bg-ds-success-soft px-2 py-0.5 text-xs font-medium text-ds-success">
                 Enviado
               </span>
             </div>
@@ -648,8 +648,8 @@ const slides = [
             <p className="mt-2 text-sm text-ds-muted">
               Seu material está finalizado e pronto para download. Você pode acessar através do link abaixo:
             </p>
-            <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3">
-              <p className="text-xs font-medium text-blue-900">
+            <div className="mt-3 rounded-lg border border-ds-info/25 bg-ds-info-soft p-3">
+              <p className="text-xs font-medium text-ds-ink">
                 🔗 https://drive.google.com/exemplo
               </p>
             </div>
@@ -668,7 +668,7 @@ const slides = [
             "Personalização por tipo de trabalho",
           ].map((item, i) => (
             <li key={i} className="flex items-center gap-2 text-sm text-ds-muted">
-              <div className="h-1.5 w-1.5 rounded-full bg-app-primary" />
+              <div className="h-1.5 w-1.5 rounded-full bg-ds-accent" />
               {item}
             </li>
           ))}
@@ -708,9 +708,9 @@ const slides = [
           ].map((setting, i) => (
             <div
               key={i}
-              className="flex flex-col gap-3 rounded-ds-xl border border-app-border bg-white p-5 shadow-ds-sm"
+              className="flex flex-col gap-3 rounded-ds-xl border border-ds-border bg-white p-5 shadow-ds-sm"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-ds-xl border border-ds-border bg-ds-cream text-app-primary">
+              <div className="flex h-10 w-10 items-center justify-center rounded-ds-xl border border-ds-border bg-ds-cream text-ds-accent">
                 <setting.icon className="h-5 w-5" />
               </div>
               <div>
@@ -764,9 +764,9 @@ const slides = [
         ].map((benefit, i) => (
           <div
             key={i}
-            className="flex flex-col gap-3 rounded-ds-xl border border-app-border bg-white p-5 shadow-ds-card"
+            className="flex flex-col gap-3 rounded-ds-xl border border-ds-border bg-white p-5 shadow-ds-card"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-ds-2xl border border-app-border bg-ds-cream text-app-primary">
+            <div className="flex h-12 w-12 items-center justify-center rounded-ds-2xl border border-ds-border bg-ds-cream text-ds-accent">
               <benefit.icon className="h-6 w-6" />
             </div>
             <div>
@@ -816,7 +816,7 @@ const slides = [
             </div>
           </div>
         </div>
-        <div className="rounded-ds-xl border border-app-border bg-white p-5 shadow-ds-sm">
+        <div className="rounded-ds-xl border border-ds-border bg-white p-5 shadow-ds-sm">
           <p className="text-sm font-semibold text-ds-ink">O que esperamos de você:</p>
           <ul className="mt-3 space-y-2">
             {[
@@ -826,7 +826,7 @@ const slides = [
               "Sugira melhorias e novas funcionalidades",
             ].map((item, i) => (
               <li key={i} className="flex items-start gap-2 text-sm text-ds-muted">
-                <span className="mt-0.5 text-app-primary">•</span>
+                <span className="mt-0.5 text-ds-accent">•</span>
                 {item}
               </li>
             ))}
@@ -842,7 +842,7 @@ const slides = [
     icon: Target,
     content: (
       <div className="flex flex-col items-center justify-center gap-8">
-        <div className="rounded-ds-2xl border border-app-border bg-gradient-to-br from-orange-50 to-yellow-50 p-8 text-center shadow-ds-card">
+        <div className="rounded-ds-2xl border border-ds-border bg-gradient-to-br from-orange-50 to-yellow-50 p-8 text-center shadow-ds-card">
           <p className="text-2xl font-bold text-ds-ink sm:text-3xl">
             Bem-vinda ao futuro da sua pós-produção
           </p>
@@ -851,16 +851,16 @@ const slides = [
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
-          <div className="rounded-ds-xl border border-app-border bg-white p-5 text-center shadow-ds-sm">
-            <p className="text-3xl font-bold text-app-primary">1</p>
+          <div className="rounded-ds-xl border border-ds-border bg-white p-5 text-center shadow-ds-sm">
+            <p className="text-3xl font-bold text-ds-accent">1</p>
             <p className="mt-2 text-sm font-semibold text-ds-ink">Crie sua conta</p>
           </div>
-          <div className="rounded-ds-xl border border-app-border bg-white p-5 text-center shadow-ds-sm">
-            <p className="text-3xl font-bold text-app-primary">2</p>
+          <div className="rounded-ds-xl border border-ds-border bg-white p-5 text-center shadow-ds-sm">
+            <p className="text-3xl font-bold text-ds-accent">2</p>
             <p className="mt-2 text-sm font-semibold text-ds-ink">Configure seu fluxo</p>
           </div>
-          <div className="rounded-ds-xl border border-app-border bg-white p-5 text-center shadow-ds-sm">
-            <p className="text-3xl font-bold text-app-primary">3</p>
+          <div className="rounded-ds-xl border border-ds-border bg-white p-5 text-center shadow-ds-sm">
+            <p className="text-3xl font-bold text-ds-accent">3</p>
             <p className="mt-2 text-sm font-semibold text-ds-ink">Comece a usar!</p>
           </div>
         </div>
@@ -868,7 +868,7 @@ const slides = [
           <p className="text-sm text-ds-muted">
             Dúvidas? Entre em contato pelo e-mail ou WhatsApp
           </p>
-          <p className="mt-2 text-sm font-semibold text-app-primary">
+          <p className="mt-2 text-sm font-semibold text-ds-accent">
             donyhelp@hotmail.com
           </p>
         </div>
@@ -935,9 +935,9 @@ export function PresentationView() {
     <div className="fixed inset-0 flex flex-col bg-ds-cream">
       <div className="flex flex-1 items-center justify-center overflow-auto p-4 sm:p-8">
         <div className="w-full max-w-5xl">
-          <div className="rounded-ds-2xl border border-app-border bg-white p-6 shadow-ds-card sm:p-10 lg:p-12">
+          <div className="rounded-ds-2xl border border-ds-border bg-white p-6 shadow-ds-card sm:p-10 lg:p-12">
             <div className="mb-6 flex items-center gap-4 sm:mb-8">
-              <div className="flex h-14 w-14 items-center justify-center rounded-ds-2xl border border-app-border bg-ds-cream text-app-primary sm:h-16 sm:w-16">
+              <div className="flex h-14 w-14 items-center justify-center rounded-ds-2xl border border-ds-border bg-ds-cream text-ds-accent sm:h-16 sm:w-16">
                 <Icon className="h-7 w-7 sm:h-8 sm:w-8" strokeWidth={1.75} />
               </div>
               <div className="flex-1">
@@ -953,7 +953,7 @@ export function PresentationView() {
         </div>
       </div>
 
-      <div className="border-t border-app-border bg-app-sidebar p-4">
+      <div className="border-t border-ds-border bg-ds-surface p-4">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Button
@@ -988,7 +988,7 @@ export function PresentationView() {
                   className={cn(
                     "h-2 w-2 rounded-full transition-all",
                     i === currentSlide
-                      ? "w-6 bg-app-primary"
+                      ? "w-6 bg-ds-accent"
                       : "bg-ds-border hover:bg-ds-muted"
                   )}
                   aria-label={`Ir para slide ${i + 1}`}
@@ -1003,7 +1003,7 @@ export function PresentationView() {
         </div>
       </div>
 
-      <div className="fixed bottom-20 right-6 rounded-ds-xl border border-app-border bg-white p-3 text-xs text-ds-muted shadow-ds-sm">
+      <div className="fixed bottom-20 right-6 rounded-ds-xl border border-ds-border bg-white p-3 text-xs text-ds-muted shadow-ds-sm">
         <p className="font-semibold">Atalhos:</p>
         <p className="mt-1">← → Navegar</p>
         <p>F Tela cheia</p>

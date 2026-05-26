@@ -68,7 +68,7 @@ export function AgendaEventModal({
     <Modal open={open} onClose={onClose} title={event.title} size="xl">
       <div className="flex flex-col gap-4 p-5 text-sm text-ds-muted">
         <div className="flex gap-3">
-          <Calendar className="mt-0.5 h-5 w-5 shrink-0 text-ds-subtle" aria-hidden />
+          <Calendar className="mt-0.5 h-5 w-5 shrink-0 text-ds-muted-2" aria-hidden />
           <div>
             <p className="font-medium text-ds-ink">{dateLine}</p>
             {timeLine ? <p className="mt-0.5">{timeLine}</p> : null}
@@ -77,19 +77,19 @@ export function AgendaEventModal({
 
         {event.location ? (
           <div className="flex gap-3">
-            <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-ds-subtle" aria-hidden />
+            <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-ds-muted-2" aria-hidden />
             <p className="whitespace-pre-wrap text-ds-ink">{event.location}</p>
           </div>
         ) : null}
 
         {plainDesc ? (
           <div className="flex gap-3">
-            <AlignLeft className="mt-0.5 h-5 w-5 shrink-0 text-ds-subtle" aria-hidden />
+            <AlignLeft className="mt-0.5 h-5 w-5 shrink-0 text-ds-muted-2" aria-hidden />
             <p className="whitespace-pre-wrap text-ds-ink">{plainDesc}</p>
           </div>
         ) : null}
 
-        <div className="flex items-center gap-2 border-t border-app-border pt-4">
+        <div className="flex items-center gap-2 border-t border-ds-border pt-4">
           <span
             className="h-3 w-3 shrink-0 rounded-full border border-ds-border"
             style={{ backgroundColor: event.backgroundColor }}
@@ -104,7 +104,7 @@ export function AgendaEventModal({
             target="_blank"
             rel="noopener noreferrer"
             className={cn(
-              "mt-1 inline-flex h-10 w-full items-center justify-center gap-2 rounded-ds-xl border border-app-border bg-app-sidebar text-sm font-medium text-ds-ink shadow-sm transition-colors duration-ds ease-out hover:bg-ds-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/25 focus-visible:ring-offset-2 focus-visible:ring-offset-app-canvas"
+              "mt-1 inline-flex h-10 w-full items-center justify-center gap-2 rounded-ds-xl border border-ds-border bg-ds-surface text-sm font-medium text-ds-ink shadow-ds-sm transition-colors duration-ds ease-out hover:bg-ds-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent/25 focus-visible:ring-offset-2 focus-visible:ring-offset-ds-cream"
             )}
           >
             <ExternalLink className="h-4 w-4 shrink-0" aria-hidden />

@@ -36,8 +36,8 @@ const STATUS_LABELS: Record<SupportTicketStatus, string> = {
 };
 
 const STATUS_CLASSES: Record<SupportTicketStatus, string> = {
-  open: "bg-blue-50 text-blue-700",
-  answered: "bg-green-50 text-green-700",
+  open: "bg-ds-info-soft text-ds-info",
+  answered: "bg-ds-success-soft text-ds-success",
   closed: "bg-ds-cream text-ds-muted",
 };
 
@@ -129,7 +129,7 @@ export function AdminTicketView({
       </div>
 
       {status !== "closed" && (
-        <form onSubmit={handleReply} className="flex flex-col gap-3 rounded-ds-xl border border-app-border bg-app-sidebar p-4">
+        <form onSubmit={handleReply} className="flex flex-col gap-3 rounded-ds-xl border border-ds-border bg-ds-surface p-4">
           <Textarea
             id="admin-reply"
             label="Responder"
@@ -165,18 +165,18 @@ function MessageBubble({ message }: { message: AdminTicketMessage }) {
       <div
         className={`max-w-[85%] rounded-ds-xl px-4 py-3 ${
           isSupport
-            ? "bg-app-primary/10 border border-app-primary/20"
-            : "bg-app-sidebar border border-app-border"
+            ? "bg-ds-accent/10 border border-ds-accent/20"
+            : "bg-ds-surface border border-ds-border"
         }`}
       >
         <p
-          className={`mb-1 text-xs font-semibold ${isSupport ? "text-app-primary" : "text-ds-muted"}`}
+          className={`mb-1 text-xs font-semibold ${isSupport ? "text-ds-accent" : "text-ds-muted"}`}
         >
           {isSupport ? "Equipe Donyapp" : message.senderName}
         </p>
         <p className="whitespace-pre-wrap text-sm leading-relaxed text-ds-ink">{message.content}</p>
       </div>
-      <p className="px-1 text-xs text-ds-subtle">{time}</p>
+      <p className="px-1 text-xs text-ds-muted-2">{time}</p>
     </div>
   );
 }

@@ -13,8 +13,24 @@ function initialsFromName(name: string) {
   return single.slice(0, 2).toUpperCase();
 }
 
+/** Paleta determinística: 5 pares bg/text baseados no hash do nome */
+const PALETTES = [
+  "bg-ds-accent-soft  text-ds-accent",
+  "bg-ds-info-soft    text-ds-info",
+  "bg-ds-success-soft text-ds-success",
+  "bg-ds-warn-soft    text-ds-warn",
+  "bg-ds-cream        text-ds-ink",
+] as const;
+
+function paletteForName(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
+  }
+  return PALETTES[hash % PALETTES.length]!;
+}
+
 const sizeClass = {
-  /** Alinha com ícones de navegação (h-5 w-5) na sidebar */
   xs: "h-5 w-5 text-[10px] leading-none",
   sm: "h-8 w-8 text-xs",
   md: "h-10 w-10 text-sm",
@@ -41,8 +57,9 @@ export function Avatar({ src, name, size = "md", className }: AvatarProps) {
   return (
     <div
       className={cn(
-        "relative flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-ds-cream font-medium text-ds-ink ring-1 ring-app-border",
+        "relative flex shrink-0 items-center justify-center overflow-hidden rounded-full font-medium ring-1 ring-ds-hairline",
         sizeClass[size],
+        showImg ? "bg-ds-cream" : paletteForName(name),
         className
       )}
       title={name}

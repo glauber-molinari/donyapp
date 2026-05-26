@@ -221,7 +221,7 @@ export function SettingsTeamSection({
       <Card className="overflow-hidden p-0">
         <table className="w-full border-collapse text-left text-sm">
           <thead>
-            <tr className="border-b border-app-border bg-ds-cream/90">
+            <tr className="border-b border-ds-border bg-ds-cream/90">
               <th className="px-3 py-2 font-medium text-ds-muted text-xs">Nome</th>
               <th className="px-3 py-2 font-medium text-ds-muted text-xs">E-mail</th>
               <th className="px-3 py-2 font-medium text-ds-muted text-xs">Papel</th>
@@ -244,7 +244,7 @@ export function SettingsTeamSection({
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0 text-red-600 hover:bg-red-50"
+                      className="h-8 w-8 p-0 text-ds-danger hover:bg-ds-danger-soft"
                       aria-label={`Remover ${m.name ?? m.email ?? "membro"}`}
                       onClick={() => {
                         setRemoveId(m.id);
@@ -272,7 +272,7 @@ export function SettingsTeamSection({
           <Card className="overflow-hidden p-0">
             <table className="w-full border-collapse text-left text-sm">
               <thead>
-                <tr className="border-b border-app-border bg-ds-cream/90">
+                <tr className="border-b border-ds-border bg-ds-cream/90">
                   <th className="px-3 py-2 font-medium text-ds-muted text-xs">E-mail</th>
                   <th className="px-3 py-2 font-medium text-ds-muted text-xs">Status</th>
                   <th className="px-3 py-2 font-medium text-ds-muted text-xs">Enviado</th>
@@ -289,8 +289,8 @@ export function SettingsTeamSection({
                       <td className="px-3 py-2">
                         <span
                           className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${status === "expired"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-yellow-100 text-yellow-700"
+                            ? "bg-ds-danger-soft text-ds-danger"
+                            : "bg-ds-warn-soft text-ds-warn"
                             }`}
                         >
                           {status === "expired" ? "Exp." : "Pend."}
@@ -304,7 +304,7 @@ export function SettingsTeamSection({
                             type="button"
                             variant="ghost"
                             size="sm"
-                            className="h-6 px-0 text-xs text-ds-accent hover:bg-orange-50"
+                            className="h-6 px-0 text-xs text-ds-accent hover:bg-ds-cream"
                             onClick={() => {
                               setResendId(inv.id);
                             }}
@@ -316,7 +316,7 @@ export function SettingsTeamSection({
                             type="button"
                             variant="ghost"
                             size="sm"
-                            className="h-6 px-1 text-xs text-red-600 hover:bg-red-50"
+                            className="h-6 px-1 text-xs text-ds-danger hover:bg-ds-danger-soft"
                             onClick={() => {
                               setCancelInvId(inv.id);
                             }}
@@ -373,7 +373,7 @@ export function SettingsTeamSection({
             placeholder="nome@email.com"
           />
           {inviteError ? (
-            <p className="text-sm text-red-700" role="alert">
+            <p className="text-sm text-ds-danger" role="alert">
               {inviteError}
             </p>
           ) : null}

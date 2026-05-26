@@ -126,7 +126,7 @@ export function NoteEditorClient({ mode, noteId, initial, contacts, jobs }: Note
   return (
     <div className="flex flex-col gap-6">
       <nav className="flex flex-wrap items-center gap-1 text-sm text-ds-muted" aria-label="Navegação">
-        <Link href="/notes" className="font-medium text-app-primary hover:underline">
+        <Link href="/notes" className="font-medium text-ds-accent hover:underline">
           Anotações
         </Link>
         <ChevronRight className="h-4 w-4 shrink-0 opacity-60" aria-hidden />
@@ -167,14 +167,14 @@ export function NoteEditorClient({ mode, noteId, initial, contacts, jobs }: Note
       {errorMessage ? (
         <div
           role="alert"
-          className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-800"
+          className="rounded-xl border border-ds-danger/20 bg-ds-danger-soft px-4 py-3 text-sm text-ds-danger"
         >
           {errorMessage}
         </div>
       ) : null}
 
       <form id="note-editor-form" className="flex flex-col gap-6" onSubmit={handleSubmit}>
-        <div className="rounded-ds-xl border border-app-border bg-app-sidebar p-4 shadow-ds-card sm:p-6">
+        <div className="rounded-ds-xl border border-ds-border bg-ds-surface p-4 shadow-ds-card sm:p-6">
           <div className="flex flex-col gap-5">
             <Input
               id="note-editor-title"
@@ -224,7 +224,7 @@ export function NoteEditorClient({ mode, noteId, initial, contacts, jobs }: Note
                   onChange={(e) =>
                     setPriority(isNotePriority(e.target.value) ? e.target.value : "none")
                   }
-                  className="w-full rounded-ds-xl border border-app-border bg-app-sidebar px-3 py-2.5 text-sm text-ds-ink shadow-sm focus:border-app-primary/50 focus:outline-none focus:ring-2 focus:ring-app-primary/20"
+                  className="w-full rounded-ds-xl border border-ds-border bg-ds-surface px-3 py-2.5 text-sm text-ds-ink shadow-ds-sm focus:border-ds-accent/50 focus:outline-none focus:ring-2 focus:ring-ds-accent/20"
                 >
                   {(["none", "low", "medium", "high"] as const).map((p) => (
                     <option key={p} value={p}>

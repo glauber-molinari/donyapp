@@ -49,7 +49,7 @@ export function FeedbackAdminView({ pending, approved, rejected }: FeedbackAdmin
       <section>
         <div className="mb-3 flex items-center gap-2">
           <h3 className="text-sm font-semibold text-ds-ink">Aguardando análise</h3>
-          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+          <span className="rounded-full bg-ds-warn-soft px-2 py-0.5 text-xs font-medium text-ds-warn">
             {pending.length}
           </span>
         </div>
@@ -69,7 +69,7 @@ export function FeedbackAdminView({ pending, approved, rejected }: FeedbackAdmin
       <section>
         <div className="mb-3 flex items-center gap-2">
           <h3 className="text-sm font-semibold text-ds-ink">Aprovadas</h3>
-          <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+          <span className="rounded-full bg-ds-success-soft px-2 py-0.5 text-xs font-medium text-ds-success">
             {approved.length}
           </span>
         </div>
@@ -101,7 +101,7 @@ export function FeedbackAdminView({ pending, approved, rejected }: FeedbackAdmin
             {rejected.map((s) => (
               <div
                 key={s.id}
-                className="flex items-start justify-between gap-4 rounded-ds-xl border border-app-border bg-app-sidebar px-4 py-3 opacity-60"
+                className="flex items-start justify-between gap-4 rounded-ds-xl border border-ds-border bg-ds-surface px-4 py-3 opacity-60"
               >
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-ds-ink">{s.title}</p>
@@ -138,7 +138,7 @@ function PendingCard({ suggestion }: { suggestion: AdminSuggestion }) {
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-ds-xl border border-app-border bg-app-sidebar p-4">
+    <div className="flex flex-col gap-3 rounded-ds-xl border border-ds-border bg-ds-surface p-4">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-ds-ink">{suggestion.title}</p>
@@ -146,7 +146,7 @@ function PendingCard({ suggestion }: { suggestion: AdminSuggestion }) {
             <p className="mt-1 text-xs leading-relaxed text-ds-muted">{suggestion.description}</p>
           )}
           {suggestion.user_email && (
-            <p className="mt-1.5 text-xs text-ds-subtle">{suggestion.user_email}</p>
+            <p className="mt-1.5 text-xs text-ds-muted-2">{suggestion.user_email}</p>
           )}
         </div>
       </div>
@@ -195,14 +195,14 @@ function ApprovedCard({ suggestion }: { suggestion: AdminSuggestion }) {
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-ds-xl border border-app-border bg-app-sidebar p-4 sm:flex-row sm:items-center">
+    <div className="flex flex-col gap-3 rounded-ds-xl border border-ds-border bg-ds-surface p-4 sm:flex-row sm:items-center">
       <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold text-ds-ink">{suggestion.title}</p>
         {suggestion.description && (
           <p className="mt-0.5 line-clamp-2 text-xs text-ds-muted">{suggestion.description}</p>
         )}
         {suggestion.user_email && (
-          <p className="mt-1 text-xs text-ds-subtle">{suggestion.user_email}</p>
+          <p className="mt-1 text-xs text-ds-muted-2">{suggestion.user_email}</p>
         )}
       </div>
 
@@ -216,7 +216,7 @@ function ApprovedCard({ suggestion }: { suggestion: AdminSuggestion }) {
             value={suggestion.stage ?? "em_estudo"}
             onChange={handleStageChange}
             disabled={isPending}
-            className="h-8 appearance-none rounded-ds-xl border border-app-border bg-app-canvas pl-3 pr-7 text-xs font-medium text-ds-ink transition-colors focus:outline-none focus:ring-2 focus:ring-app-primary/25 disabled:opacity-60"
+            className="h-8 appearance-none rounded-ds-xl border border-ds-border bg-ds-cream pl-3 pr-7 text-xs font-medium text-ds-ink transition-colors focus:outline-none focus:ring-2 focus:ring-ds-accent/25 disabled:opacity-60"
           >
             {STAGES.map((st) => (
               <option key={st.value} value={st.value}>

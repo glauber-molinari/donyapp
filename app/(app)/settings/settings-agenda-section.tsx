@@ -54,7 +54,7 @@ export function SettingsAgendaSection({
       <p className="text-sm text-ds-muted">
         Apenas administradores podem conectar ou alterar o Google Calendar da equipe. Todos os membros
         podem ver a página{" "}
-        <Link href="/agenda" className="font-medium text-app-primary underline-offset-2 hover:underline">
+        <Link href="/agenda" className="font-medium text-ds-accent underline-offset-2 hover:underline">
           Agenda
         </Link>{" "}
         quando houver uma conta conectada.
@@ -78,16 +78,16 @@ export function SettingsAgendaSection({
   return (
     <div className="flex flex-col gap-6">
       {!integrationServerReady ? (
-        <p className="rounded-ds-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900" role="alert">
+        <p className="rounded-ds-xl border border-ds-danger/20 bg-ds-danger-soft px-4 py-3 text-sm text-ds-danger" role="alert">
           <strong className="font-semibold">Service role ausente.</strong> Defina{" "}
-          <code className="rounded bg-red-100/80 px-1 py-0.5 text-xs">SUPABASE_SERVICE_ROLE_KEY</code> no
+          <code className="rounded bg-ds-danger/10 px-1 py-0.5 text-xs">SUPABASE_SERVICE_ROLE_KEY</code> no
           servidor para salvar tokens com segurança (somente backend).
         </p>
       ) : null}
 
       {flashSuccess ? (
         <p
-          className="rounded-ds-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-950"
+          className="rounded-ds-xl border border-ds-success/20 bg-ds-success-soft px-4 py-3 text-sm text-ds-success"
           role="status"
         >
           Conta Google conectada com sucesso. A equipe já pode usar a página Agenda.
@@ -95,12 +95,12 @@ export function SettingsAgendaSection({
       ) : null}
 
       {flashError ? (
-        <p className="rounded-ds-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900" role="alert">
+        <p className="rounded-ds-xl border border-ds-danger/20 bg-ds-danger-soft px-4 py-3 text-sm text-ds-danger" role="alert">
           {flashError}
         </p>
       ) : null}
 
-      <div className="flex flex-col gap-3 rounded-ds-xl border border-app-border bg-ds-cream/40 px-4 py-4">
+      <div className="flex flex-col gap-3 rounded-ds-xl border border-ds-border bg-ds-cream/40 px-4 py-4">
         <p className="text-sm font-medium text-ds-ink">Status</p>
         {connected ? (
           <p className="text-sm text-ds-muted">
@@ -119,7 +119,7 @@ export function SettingsAgendaSection({
         <div className="mt-2 flex flex-wrap gap-3">
           <a
             href="/api/integrations/google/authorize"
-            className="inline-flex h-10 items-center justify-center rounded-ds-xl bg-app-primary px-4 text-sm font-medium text-white shadow-sm transition-colors duration-ds ease-out hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/35 focus-visible:ring-offset-2 focus-visible:ring-offset-app-canvas"
+            className="inline-flex h-10 items-center justify-center rounded-ds-xl bg-ds-accent px-4 text-sm font-medium text-white shadow-ds-sm transition-colors duration-ds ease-out hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent/35 focus-visible:ring-offset-2 focus-visible:ring-offset-ds-cream"
           >
             {connected ? "Trocar conta Google" : "Conectar conta Google"}
           </a>

@@ -10,8 +10,8 @@ export const metadata: Metadata = {
 
 export default function ForgotPasswordPage() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-app-canvas px-4">
-      <div className="w-full max-w-sm rounded-ds-xl border border-app-border bg-app-sidebar p-8 shadow-ds-sm">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-ds-cream px-4">
+      <div className="w-full max-w-sm rounded-ds-xl border border-ds-border bg-ds-surface p-8 shadow-ds-sm">
         <div className="mb-6 flex justify-center">
           <Image
             src="/brand/logo-dony-png.png"
@@ -30,7 +30,7 @@ export default function ForgotPasswordPage() {
       </div>
       <Link
         href="/"
-        className="mt-6 text-sm font-medium text-app-primary transition duration-ds ease-out hover:brightness-95"
+        className="mt-6 text-sm font-medium text-ds-accent transition duration-ds ease-out hover:brightness-95"
       >
         Voltar
       </Link>

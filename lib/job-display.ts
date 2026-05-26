@@ -4,10 +4,46 @@ export type DeadlineTimelineTone = "danger" | "warn" | "ok" | "muted" | "done";
 
 function parseLocalDate(ymd: string): Date {
   const [y, m, d] = ymd.split("-").map(Number);
-  return new Date(y, m - 1, d);
+  return new Date(y!, m! - 1, d!);
 }
 
-/** Badge de prazo só para jobs não entregues: atrasado ou próximo (≤3 dias). */
+/**
+ * Formata deadline seguindo a regra DS:
+ *   hoje           → "hoje"
+ *   amanhã         → "amanhã"
+ *   +2 a 5 dias    → "em N dias"
+ *   > 5 dias       → "DD/MM"
+ *   outro ano      → "DD/MM/AA"
+ *   atrasado       → "atrasado Nd"
+ */
+export function formatDeadlinePt(ymd: string): string {
+  const deadline = parseLocalDate(ymd.slice(0, 10));
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  deadline.setHours(0, 0, 0, 0);
+
+  const diffDays = Math.round((deadline.getTime() - today.getTime()) / 86_400_000);
+
+  if (diffDays < 0) {
+    const n = Math.abs(diffDays);
+    return `atrasado ${n}d`;
+  }
+  if (diffDays === 0) return "hoje";
+  if (diffDays === 1) return "amanhã";
+  if (diffDays <= 5) return `em ${diffDays} dias`;
+
+  const dd = String(deadline.getDate()).padStart(2, "0");
+  const mm = String(deadline.getMonth() + 1).padStart(2, "0");
+
+  if (deadline.getFullYear() !== today.getFullYear()) {
+    const yy = String(deadline.getFullYear()).slice(2);
+    return `${dd}/${mm}/${yy}`;
+  }
+
+  return `${dd}/${mm}`;
+}
+
+/** Badge de prazo (jobs não entregues): atrasado ou próximo (≤5 dias, per DS). */
 export function deadlineBadge(
   deadlineYmd: string,
   stageIsFinal: boolean
@@ -19,21 +55,12 @@ export function deadlineBadge(
   deadline.setHours(0, 0, 0, 0);
   const diffDays = Math.round((deadline.getTime() - today.getTime()) / 86_400_000);
   if (diffDays < 0) return "overdue";
-  if (diffDays <= 3) return "upcoming";
+  if (diffDays <= 5) return "upcoming";
   return null;
 }
 
-export function formatDeadlinePt(ymd: string): string {
-  const d = parseLocalDate(ymd);
-  return new Intl.DateTimeFormat("pt-BR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(d);
-}
-
 /**
- * Preenchimento 0–100% da linha de proximidade do prazo final (mesma janela de 14 dias do dashboard),
+ * Preenchimento 0–100% da linha de proximidade do prazo (janela de 14 dias),
  * sem expor número de dias — só para barra visual.
  */
 export function deadlineTimelineVisual(
@@ -57,8 +84,7 @@ export function deadlineTimelineVisual(
   const capped = Math.min(14, diffDays);
   const fillPct = Math.round(((14 - capped) / 14) * 100);
   let tone: DeadlineTimelineTone = "muted";
-  if (diffDays === 0) tone = "warn";
-  else if (diffDays <= 3) tone = "warn";
+  if (diffDays <= 5) tone = "warn";
   else if (diffDays <= 10) tone = "ok";
   return { fillPct, tone };
 }

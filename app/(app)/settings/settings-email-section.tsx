@@ -17,7 +17,7 @@ import { toast } from "@/lib/toast";
 import type { Plan } from "@/types/database";
 
 const PLACEHOLDER_HELP = (
-  <p className="text-xs text-ds-subtle">
+  <p className="text-xs text-ds-muted-2">
     Você pode usar:{" "}
     <code className="rounded bg-ds-cream px-1 py-0.5 text-ds-muted">
       {"{{nome_cliente}} {{nome_job}} {{link_material}} {{nome_remetente}}"}
@@ -150,13 +150,13 @@ export function SettingsEmailSection({
           {PLACEHOLDER_HELP}
         </div>
 
-        <Card className="border-dashed border-app-border bg-ds-cream/40 p-4">
+        <Card className="border-dashed border-ds-border bg-ds-cream/40 p-4">
           <p className="text-xs font-medium uppercase tracking-wide text-ds-muted">Pré-visualização</p>
           <p className="mt-2 whitespace-pre-wrap text-sm text-ds-ink">{preview}</p>
         </Card>
 
         {errorText ? (
-          <p role="alert" className="text-sm text-red-700">
+          <p role="alert" className="text-sm text-ds-danger">
             {errorText}
           </p>
         ) : null}

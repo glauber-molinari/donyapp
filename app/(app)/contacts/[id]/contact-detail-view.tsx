@@ -183,7 +183,7 @@ export function ContactDetailView({ contact, jobs, notes }: ContactDetailViewPro
               href={whatsappUrl(contact.phone)}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-ds-xl border border-green-200 bg-green-50 px-3 py-1.5 text-sm font-medium text-green-700 hover:bg-green-100"
+              className="inline-flex items-center gap-1.5 rounded-ds-xl border border-ds-success/20 bg-ds-success-soft px-3 py-1.5 text-sm font-medium text-ds-success hover:bg-ds-success-soft/80"
             >
               <WhatsAppIcon className="h-4 w-4" />
               WhatsApp
@@ -205,7 +205,7 @@ export function ContactDetailView({ contact, jobs, notes }: ContactDetailViewPro
             type="button"
             variant="ghost"
             size="sm"
-            className="text-red-600 hover:bg-red-50 hover:text-red-700"
+            className="text-ds-danger hover:bg-ds-danger-soft hover:text-ds-danger"
             onClick={() => {
               setErrorMessage(null);
               setDeleteOpen(true);
@@ -229,7 +229,7 @@ export function ContactDetailView({ contact, jobs, notes }: ContactDetailViewPro
       {errorMessage ? (
         <div
           role="alert"
-          className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-800"
+          className="rounded-xl border border-ds-danger/20 bg-ds-danger-soft px-4 py-3 text-sm text-ds-danger"
         >
           {errorMessage}
         </div>
@@ -291,7 +291,7 @@ export function ContactDetailView({ contact, jobs, notes }: ContactDetailViewPro
                   className={`rounded-full px-1.5 py-px text-xs ${
                     activeTab === tab.key
                       ? "bg-white/20 text-white"
-                      : "bg-ds-border text-ds-subtle"
+                      : "bg-ds-border text-ds-muted-2"
                   }`}
                 >
                   {count}
@@ -336,8 +336,8 @@ export function ContactDetailView({ contact, jobs, notes }: ContactDetailViewPro
               <Link key={note.id} href={`/notes/${note.id}`}>
                 <Card className="flex h-full cursor-pointer flex-col gap-3 p-4 transition-colors hover:bg-ds-cream/60">
                   <div className="flex items-start justify-between gap-2">
-                    <StickyNote className="mt-0.5 h-4 w-4 shrink-0 text-ds-subtle" aria-hidden />
-                    <p className="shrink-0 text-xs text-ds-subtle">
+                    <StickyNote className="mt-0.5 h-4 w-4 shrink-0 text-ds-muted-2" aria-hidden />
+                    <p className="shrink-0 text-xs text-ds-muted-2">
                       {new Date(note.created_at).toLocaleDateString("pt-BR", {
                         day: "2-digit",
                         month: "short",
@@ -448,7 +448,7 @@ export function ContactDetailView({ contact, jobs, notes }: ContactDetailViewPro
             pode ser desfeita.
           </p>
           {errorMessage ? (
-            <p className="mt-2 text-sm text-red-700">{errorMessage}</p>
+            <p className="mt-2 text-sm text-ds-danger">{errorMessage}</p>
           ) : null}
         </div>
       </Modal>
@@ -501,11 +501,11 @@ function JobRow({ job }: { job: JobRow }) {
           <p className="mt-0.5 text-xs text-ds-muted">{job.work_type.name}</p>
         ) : null}
       </div>
-      <div className="mt-auto flex flex-col gap-1 text-xs text-ds-subtle">
+      <div className="mt-auto flex flex-col gap-1 text-xs text-ds-muted-2">
         <span>Prazo: {formatDate(job.deadline)}</span>
         {job.job_date ? <span>Data do job: {formatDate(job.job_date)}</span> : null}
         {job.stage?.is_final ? (
-          <span className="font-medium text-green-700">
+          <span className="font-medium text-ds-success">
             Entregue em: {formatDate(job.updated_at.slice(0, 10))}
           </span>
         ) : null}

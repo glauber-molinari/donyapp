@@ -249,7 +249,7 @@ export function DeliveryEmailModal({
 
         {isPro && !canConfigureReply ? (
           <div
-            className="rounded-ds-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950"
+            className="rounded-ds-lg border border-ds-warn/30 bg-ds-warn-soft px-4 py-3 text-sm text-ds-ink"
             role="status"
           >
             <p>
@@ -260,7 +260,7 @@ export function DeliveryEmailModal({
         ) : null}
 
         {isPro && canConfigureReply ? (
-          <p className="text-xs text-ds-subtle">
+          <p className="text-xs text-ds-muted-2">
             Respostas do cliente serão enviadas para:{" "}
             <span className="font-medium text-ds-muted">{replyToEmail}</span>
           </p>
@@ -298,7 +298,7 @@ export function DeliveryEmailModal({
         />
 
         {localError ? (
-          <p className="text-sm text-red-700" role="alert">
+          <p className="text-sm text-ds-danger" role="alert">
             {localError}
           </p>
         ) : null}

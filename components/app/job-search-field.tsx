@@ -64,14 +64,14 @@ export function JobSearchField({
           }}
           placeholder={disabled ? "Selecione um cliente primeiro" : "Buscar job por nome…"}
           className={cn(
-            "w-full rounded-ds-xl border border-app-border bg-app-sidebar px-3 py-2.5 text-sm text-ds-ink shadow-sm",
-            "focus:border-app-primary/50 focus:outline-none focus:ring-2 focus:ring-app-primary/20",
-            disabled && "cursor-not-allowed bg-ds-cream text-ds-subtle"
+            "w-full rounded-ds-lg border border-ds-border bg-ds-surface px-3 py-2.5 text-sm text-ds-ink shadow-ds-sm",
+            "focus:border-ds-accent/50 focus:outline-none focus:ring-2 focus:ring-ds-accent/20",
+            disabled && "cursor-not-allowed bg-ds-cream text-ds-muted"
           )}
         />
         {showList ? (
           <ul
-            className="absolute z-50 mt-1 max-h-52 w-full overflow-auto rounded-ds-xl border border-app-border bg-ds-surface py-1 shadow-ds-md"
+            className="absolute z-50 mt-1 max-h-52 w-full overflow-auto rounded-ds-lg border border-ds-border bg-ds-surface py-1 shadow-ds-md"
             role="listbox"
           >
             <li key="__none">

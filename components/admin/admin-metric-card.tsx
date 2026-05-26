@@ -14,7 +14,7 @@ export function AdminMetricCard({
   return (
     <div
       className={cn(
-        "rounded-ds-xl border border-app-border bg-app-sidebar p-4 shadow-sm",
+        "rounded-ds-xl border border-ds-border bg-ds-surface p-4 shadow-ds-sm",
         className
       )}
     >

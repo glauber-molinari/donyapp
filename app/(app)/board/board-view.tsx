@@ -172,7 +172,7 @@ const ClientRevisionSelect = memo(function ClientRevisionSelect({ job }: { job: 
             setPending(false);
           }
         }}
-        className="w-full rounded-md border border-app-border bg-app-sidebar px-2 py-1 text-[11px] text-ds-ink shadow-sm focus:border-app-primary/50 focus:outline-none focus:ring-2 focus:ring-app-primary/20 disabled:opacity-60"
+        className="w-full rounded-ds-md border border-ds-border bg-ds-surface px-2 py-1 text-[11px] text-ds-ink shadow-ds-sm focus:border-ds-accent/50 focus:outline-none focus:ring-2 focus:ring-ds-accent/20 disabled:opacity-60"
       >
         {CLIENT_REVISION_OPTIONS.map((o) => (
           <option key={o.value} value={o.value}>
@@ -340,7 +340,7 @@ const AvatarStack = memo(function AvatarStack({
           />
         ))}
         {rest > 0 ? (
-          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-stone-100 text-[9px] font-semibold text-ds-muted ring-2 ring-white">
+          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-ds-hairline text-[9px] font-semibold text-ds-muted ring-2 ring-white">
             +{rest}
           </div>
         ) : null}
@@ -359,18 +359,18 @@ const DeadlineTimelineBar = memo(function DeadlineTimelineBar({
   const { fillPct, tone } = deadlineTimelineVisual(job.deadline, stageFinal);
   const barClass =
     tone === "danger"
-      ? "bg-red-500"
+      ? "bg-ds-danger"
       : tone === "warn"
-        ? "bg-amber-500"
+        ? "bg-ds-warn"
         : tone === "ok"
-          ? "bg-emerald-500"
+          ? "bg-ds-success"
           : tone === "done"
-            ? "bg-emerald-600/45"
-            : "bg-stone-400/60";
+            ? "bg-ds-success/45"
+            : "bg-ds-muted/40";
 
   return (
     <div
-      className="mt-2 h-1 w-full overflow-hidden rounded-full bg-stone-200/90"
+      className="mt-2 h-1 w-full overflow-hidden rounded-full bg-ds-hairline"
       role="progressbar"
       aria-valuemin={0}
       aria-valuemax={100}
@@ -428,14 +428,14 @@ const JobCardContent = memo(function JobCardContent({
       <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
         <Badge kind="job-type" value={jobTypeBadgeForList(job, jobsForBadgeList)} className="text-[10px] font-medium" />
         {overlay || !revisionInteractive ? (
-          <span className="inline-flex items-center rounded-full border border-ds-border/60 bg-stone-50 px-1.5 py-px text-[10px] font-medium text-ds-muted">
+          <span className="inline-flex items-center rounded-full border border-ds-border/60 bg-ds-cream px-1.5 py-px text-[10px] font-medium text-ds-muted">
             Alt. {rev}
           </span>
         ) : null}
       </div>
       {assignees.length ? (
         <div className="mt-1.5 flex items-center justify-between gap-2">
-          <span className="text-[10px] font-medium uppercase tracking-wide text-ds-subtle">
+          <span className="text-[10px] font-medium uppercase tracking-wide text-ds-muted-2">
             Equipe
           </span>
           <AvatarStack people={assignees} />
@@ -445,7 +445,7 @@ const JobCardContent = memo(function JobCardContent({
       {job.contacts?.name ? (
         <p className="mt-1.5 text-[11px] text-ds-muted">{job.contacts.name}</p>
       ) : null}
-      <p className="mt-1 text-[10px] leading-tight text-ds-subtle">
+      <p className="mt-1 text-[10px] leading-tight text-ds-muted-2">
         Int. {formatDeadlinePt(job.internal_deadline.slice(0, 10))} · Final{" "}
         {formatDeadlinePt(job.deadline.slice(0, 10))}
       </p>
@@ -527,7 +527,7 @@ const SortableJobCard = memo(function SortableJobCard({
   const dragHandle = dragDisabled ? undefined : (
     <button
       type="button"
-      className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-md border border-transparent text-ds-muted hover:border-ds-border/80 hover:bg-stone-50 hover:text-ds-ink"
+      className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-md border border-transparent text-ds-muted hover:border-ds-border/80 hover:bg-ds-cream hover:text-ds-ink"
       aria-label="Arrastar card"
       {...listeners}
       {...attributes}
@@ -594,8 +594,8 @@ const KanbanColumn = memo(function KanbanColumn({
     <div
       className={cn(
         "flex min-h-0 flex-col overflow-hidden rounded-xl border border-ds-border/60 shadow-sm transition-[box-shadow,colors]",
-        /* Mobile/tablet: colunas com largura legível + scroll-snap pra "travar" em uma coluna por vez */
-        "max-lg:w-[min(92vw,20rem)] max-lg:max-w-[20rem] max-lg:shrink-0 max-lg:flex-none max-lg:snap-start",
+        /* Mobile/tablet: colunas com largura legível, scroll horizontal livre */
+        "max-lg:w-[min(88vw,20rem)] max-lg:max-w-[20rem] max-lg:shrink-0 max-lg:flex-none",
         "lg:min-w-[128px] lg:max-w-[260px] lg:flex-1 lg:basis-0"
       )}
       style={{
@@ -928,14 +928,14 @@ export function BoardView({
               value={boardMonthYm}
               onChange={(e) => setBoardMonthYm(e.target.value)}
               title="Mostra jobs com prazo interno ou final no mês; em Entregue, também os atualizados nesse mês."
-              className="rounded-ds-xl border border-app-border bg-app-sidebar px-3 py-2 text-sm text-ds-ink shadow-sm focus:border-app-primary/50 focus:outline-none focus:ring-2 focus:ring-app-primary/20"
+              className="rounded-ds-lg border border-ds-border bg-ds-surface px-3 py-2 text-sm text-ds-ink shadow-ds-sm focus:border-ds-accent/50 focus:outline-none focus:ring-2 focus:ring-ds-accent/20"
             />
           </div>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
           <div className="relative max-w-md flex-1">
             <Search
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ds-subtle"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ds-muted-2"
               aria-hidden
             />
             <input
@@ -943,7 +943,7 @@ export function BoardView({
               placeholder="Buscar job ou contato…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-ds-xl border border-app-border bg-app-sidebar py-2.5 pl-10 pr-3 text-sm text-ds-ink shadow-sm placeholder:text-ds-subtle focus:border-app-primary/50 focus:outline-none focus:ring-2 focus:ring-app-primary/20"
+              className="w-full rounded-ds-lg border border-ds-border bg-ds-surface py-2.5 pl-10 pr-3 text-sm text-ds-ink shadow-ds-sm placeholder:text-ds-muted-2 focus:border-ds-accent/50 focus:outline-none focus:ring-2 focus:ring-ds-accent/20"
               aria-label="Buscar no quadro"
             />
           </div>
@@ -973,14 +973,14 @@ export function BoardView({
       {errorMessage ? (
         <div
           role="alert"
-          className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-800"
+          className="rounded-ds-lg border border-ds-danger/20 bg-ds-danger-soft px-4 py-3 text-sm text-ds-danger"
         >
           {errorMessage}
         </div>
       ) : null}
 
       {noStages ? (
-        <p className="text-sm text-amber-800" role="status">
+        <p className="text-sm text-ds-warn" role="status">
           Não há etapas no kanban. Configure em Configurações quando disponível.
         </p>
       ) : null}
@@ -1007,7 +1007,7 @@ export function BoardView({
           onDragCancel={handleDragCancel}
         >
           <div
-            className="w-full min-w-0 overflow-x-auto scroll-smooth pb-4 pt-1 [scrollbar-width:thin] overscroll-x-contain touch-pan-x snap-x snap-mandatory scroll-pl-1 lg:snap-none"
+            className="w-full min-w-0 overflow-x-auto scroll-smooth pb-4 pt-1 [scrollbar-width:thin] overscroll-x-contain touch-pan-x"
             role="region"
             aria-label="Colunas do quadro — em telas pequenas, deslize horizontalmente para ver todas as etapas"
           >
@@ -1149,7 +1149,7 @@ export function BoardView({
           setErrorMessage(null);
           setCreateOpen(true);
         }}
-        className="fixed right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-app-primary text-white shadow-lg shadow-app-primary/30 transition-transform duration-150 ease-out hover:brightness-95 active:scale-95 disabled:opacity-50 disabled:pointer-events-none md:hidden"
+        className="fixed right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-ds-accent text-white shadow-lg shadow-ds-accent/30 transition-transform duration-ds-fast ease-out hover:brightness-95 active:scale-95 disabled:opacity-50 disabled:pointer-events-none md:hidden"
         style={{
           bottom: "calc(env(safe-area-inset-bottom, 0px) + 5rem)",
         }}

@@ -29,7 +29,7 @@ export function AgendaView({
         {isAdmin ? (
           <Link
             href="/settings/agenda"
-            className="inline-flex h-10 items-center justify-center rounded-ds-xl bg-app-primary px-4 text-sm font-medium text-white shadow-sm transition-colors duration-ds ease-out hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/35 focus-visible:ring-offset-2 focus-visible:ring-offset-app-canvas"
+            className="inline-flex h-10 items-center justify-center rounded-ds-xl bg-ds-accent px-4 text-sm font-medium text-white shadow-ds-sm transition-colors duration-ds ease-out hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent/35 focus-visible:ring-offset-2 focus-visible:ring-offset-ds-cream"
           >
             Ir para Configurações
           </Link>
@@ -44,12 +44,12 @@ export function AgendaView({
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-ds-ink">Agenda</h1>
           <p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-ds-muted">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-emerald-900 ring-1 ring-emerald-200/80">
-              <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" aria-hidden />
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-ds-success-soft px-2.5 py-1 text-ds-success ring-1 ring-ds-success/20">
+              <span className="h-2 w-2 shrink-0 rounded-full bg-ds-success" aria-hidden />
               <span className="font-medium">Google Calendar conectado</span>
             </span>
             {googleEmail ? (
-              <span className="text-ds-subtle">
+              <span className="text-ds-muted-2">
                 · <span className="text-ds-ink">{googleEmail}</span>
               </span>
             ) : null}

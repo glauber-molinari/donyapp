@@ -14,6 +14,25 @@ type TaskAssignee = Database["public"]["Tables"]["task_assignees"]["Row"];
 type User = Database["public"]["Tables"]["users"]["Row"];
 type ManualAssignee = Database["public"]["Tables"]["manual_job_assignees"]["Row"];
 
+export type Period = "month" | "quarter" | "year" | "all";
+
+function getPeriodStart(period: Period): Date | null {
+  const now = new Date();
+  switch (period) {
+    case "month":
+      return new Date(now.getFullYear(), now.getMonth(), 1);
+    case "quarter": {
+      const d = new Date(now);
+      d.setMonth(d.getMonth() - 3);
+      return d;
+    }
+    case "year":
+      return new Date(now.getFullYear(), 0, 1);
+    default:
+      return null;
+  }
+}
+
 export type TopPerformer = {
   id: string;
   name: string;
@@ -60,7 +79,9 @@ export interface DeliveryMetrics {
   averageRevisions: number;
 }
 
-export async function fetchDeliveryMetrics(): Promise<{ ok: boolean; data?: DeliveryMetrics; error?: string }> {
+export async function fetchDeliveryMetrics(
+  period: Period = "all",
+): Promise<{ ok: boolean; data?: DeliveryMetrics; error?: string }> {
   try {
     const supabase = createClient();
 
@@ -112,7 +133,7 @@ export async function fetchDeliveryMetrics(): Promise<{ ok: boolean; data?: Deli
           *,
           kanban_stages (id, name, is_final),
           job_work_types (id, name)
-        `
+        `,
         )
         .eq("account_id", profile.account_id)
         .order("created_at", { ascending: false }),
@@ -143,12 +164,10 @@ export async function fetchDeliveryMetrics(): Promise<{ ok: boolean; data?: Deli
 
     const deliveredJobs = jobs.filter((j) => j.stage_id && finalStages.includes(j.stage_id));
 
-    const totalDelivered = deliveredJobs.length;
-
     const jobsWithDays = deliveredJobs.map((job) => {
       const created = new Date(job.created_at);
       const deadline = new Date(job.deadline);
-      
+
       let deliveredAt = new Date();
       if (job.stage_id) {
         const stageMovement = new Date(job.updated_at);
@@ -157,22 +176,26 @@ export async function fetchDeliveryMetrics(): Promise<{ ok: boolean; data?: Deli
         }
       }
 
-      const daysToDeliver = Math.ceil((deliveredAt.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
-      
+      const daysToDeliver = Math.ceil(
+        (deliveredAt.getTime() - created.getTime()) / (1000 * 60 * 60 * 24),
+      );
       const isOnTime = deliveredAt <= deadline;
 
-      return {
-        ...job,
-        daysToDeliver,
-        isOnTime,
-        deliveredAt,
-      };
+      return { ...job, daysToDeliver, isOnTime, deliveredAt };
     });
 
-    const totalDays = jobsWithDays.reduce((sum, j) => sum + j.daysToDeliver, 0);
-    const averageDaysToDeliver = totalDelivered > 0 ? Math.round(totalDays / totalDelivered) : 0;
+    // ── Period filter ─────────────────────────────────────────────────────────
+    const periodStart = getPeriodStart(period);
+    const filteredJobs = periodStart
+      ? jobsWithDays.filter((j) => j.deliveredAt >= periodStart!)
+      : jobsWithDays;
+    const totalDelivered = filteredJobs.length;
 
-    const byType = jobsWithDays.reduce(
+    const totalDays = filteredJobs.reduce((sum, j) => sum + j.daysToDeliver, 0);
+    const averageDaysToDeliver =
+      totalDelivered > 0 ? Math.round(totalDays / totalDelivered) : 0;
+
+    const byType = filteredJobs.reduce(
       (acc, job) => {
         if (!acc[job.type]) {
           acc[job.type] = { count: 0, totalDays: 0 };
@@ -181,40 +204,53 @@ export async function fetchDeliveryMetrics(): Promise<{ ok: boolean; data?: Deli
         acc[job.type].totalDays += job.daysToDeliver;
         return acc;
       },
-      {} as Record<string, { count: number; totalDays: number }>
+      {} as Record<string, { count: number; totalDays: number }>,
     );
 
     const averageDaysByType = {
       foto: byType.foto ? Math.round(byType.foto.totalDays / byType.foto.count) : 0,
       video: byType.video ? Math.round(byType.video.totalDays / byType.video.count) : 0,
-      foto_video: byType.foto_video ? Math.round(byType.foto_video.totalDays / byType.foto_video.count) : 0,
+      foto_video: byType.foto_video
+        ? Math.round(byType.foto_video.totalDays / byType.foto_video.count)
+        : 0,
     };
 
-    const deliveredOnTime = jobsWithDays.filter((j) => j.isOnTime).length;
+    const deliveredOnTime = filteredJobs.filter((j) => j.isOnTime).length;
     const deliveredLate = totalDelivered - deliveredOnTime;
-    const percentOnTime = totalDelivered > 0 ? Math.round((deliveredOnTime / totalDelivered) * 100) : 0;
-    const percentLate = totalDelivered > 0 ? Math.round((deliveredLate / totalDelivered) * 100) : 0;
+    const percentOnTime =
+      totalDelivered > 0 ? Math.round((deliveredOnTime / totalDelivered) * 100) : 0;
+    const percentLate =
+      totalDelivered > 0 ? Math.round((deliveredLate / totalDelivered) * 100) : 0;
 
+    // ── Tasks ─────────────────────────────────────────────────────────────────
     const taskDone = tasks.filter((t) => t.status === "feito");
-    const taskOpen = tasks.length - taskDone.length;
+    const taskOpen = tasks.filter((t) => t.status !== "feito").length;
+
     const taskDoneWithDays = taskDone.map((t) => {
       const created = new Date(t.created_at);
       const completedAt = new Date(t.updated_at);
       const deadline = new Date(t.deadline);
       const daysToComplete = Math.max(
         0,
-        Math.ceil((completedAt.getTime() - created.getTime()) / (1000 * 60 * 60 * 24))
+        Math.ceil((completedAt.getTime() - created.getTime()) / (1000 * 60 * 60 * 24)),
       );
       const isOnTime = completedAt <= deadline;
       return { ...t, completedAt, daysToComplete, isOnTime };
     });
 
-    const taskDoneOnTime = taskDoneWithDays.filter((t) => t.isOnTime).length;
-    const taskDoneLate = taskDoneWithDays.length - taskDoneOnTime;
-    const taskDaysTotal = taskDoneWithDays.reduce((sum, t) => sum + t.daysToComplete, 0);
-    const averageDaysToComplete = taskDoneWithDays.length > 0 ? Math.round(taskDaysTotal / taskDoneWithDays.length) : 0;
+    const filteredTasks = periodStart
+      ? taskDoneWithDays.filter((t) => t.completedAt >= periodStart!)
+      : taskDoneWithDays;
+
+    const taskDoneOnTime = filteredTasks.filter((t) => t.isOnTime).length;
+    const taskDoneLate = filteredTasks.length - taskDoneOnTime;
+    const taskDaysTotal = filteredTasks.reduce((sum, t) => sum + t.daysToComplete, 0);
+    const averageDaysToComplete =
+      filteredTasks.length > 0 ? Math.round(taskDaysTotal / filteredTasks.length) : 0;
     const percentDoneOnTime =
-      taskDoneWithDays.length > 0 ? Math.round((taskDoneOnTime / taskDoneWithDays.length) * 100) : 0;
+      filteredTasks.length > 0
+        ? Math.round((taskDoneOnTime / filteredTasks.length) * 100)
+        : 0;
 
     const { data: taskAssignees } = await supabase
       .from("task_assignees")
@@ -222,12 +258,15 @@ export async function fetchDeliveryMetrics(): Promise<{ ok: boolean; data?: Deli
       .eq("account_id", profile.account_id)
       .in(
         "task_id",
-        taskDone.map((t) => t.id)
+        taskDone.map((t) => t.id),
       );
 
     const doneAssignees = (taskAssignees ?? []) as TaskAssignee[];
 
-    const userById = new Map<string, { id: string; name: string; avatarUrl: string | null; email: string | null }>();
+    const userById = new Map<
+      string,
+      { id: string; name: string; avatarUrl: string | null; email: string | null }
+    >();
     for (const u of accountUsers) {
       userById.set(u.id, {
         id: u.id,
@@ -237,7 +276,10 @@ export async function fetchDeliveryMetrics(): Promise<{ ok: boolean; data?: Deli
       });
     }
 
-    const manualById = new Map<string, { id: string; name: string; avatarUrl: string | null; email: string }>();
+    const manualById = new Map<
+      string,
+      { id: string; name: string; avatarUrl: string | null; email: string }
+    >();
     for (const m of manuals) {
       manualById.set(m.id, {
         id: m.id,
@@ -247,7 +289,10 @@ export async function fetchDeliveryMetrics(): Promise<{ ok: boolean; data?: Deli
       });
     }
 
-    const manualByEmail = new Map<string, { id: string; name: string; avatarUrl: string | null; email: string }>();
+    const manualByEmail = new Map<
+      string,
+      { id: string; name: string; avatarUrl: string | null; email: string }
+    >();
     for (const m of manuals) manualByEmail.set(m.email.toLowerCase(), manualById.get(m.id)!);
 
     type PerfAgg = {
@@ -262,7 +307,10 @@ export async function fetchDeliveryMetrics(): Promise<{ ok: boolean; data?: Deli
 
     const perf = new Map<string, PerfAgg>();
 
-    const upsertPerf = (key: string, base: { id: string; name: string; avatarUrl: string | null }) => {
+    const upsertPerf = (
+      key: string,
+      base: { id: string; name: string; avatarUrl: string | null },
+    ) => {
       const existing = perf.get(key);
       if (existing) return existing;
       const init: PerfAgg = {
@@ -278,16 +326,19 @@ export async function fetchDeliveryMetrics(): Promise<{ ok: boolean; data?: Deli
       return init;
     };
 
-    for (const job of jobsWithDays) {
-      const refs: Array<{ key: string; id: string; name: string; avatarUrl: string | null }> = [];
+    for (const job of filteredJobs) {
+      const refs: Array<{ key: string; id: string; name: string; avatarUrl: string | null }> =
+        [];
 
       const addUser = (userId: string) => {
         const u = userById.get(userId);
-        if (u) refs.push({ key: `user:${u.id}`, id: u.id, name: u.name, avatarUrl: u.avatarUrl });
+        if (u)
+          refs.push({ key: `user:${u.id}`, id: u.id, name: u.name, avatarUrl: u.avatarUrl });
       };
       const addManual = (manualId: string) => {
         const m = manualById.get(manualId);
-        if (m) refs.push({ key: `manual:${m.id}`, id: m.id, name: m.name, avatarUrl: m.avatarUrl });
+        if (m)
+          refs.push({ key: `manual:${m.id}`, id: m.id, name: m.name, avatarUrl: m.avatarUrl });
       };
 
       if (job.type === "foto" || job.type === "foto_video") {
@@ -300,7 +351,6 @@ export async function fetchDeliveryMetrics(): Promise<{ ok: boolean; data?: Deli
         else if (job.video_manual_assignee_id) addManual(job.video_manual_assignee_id);
       }
 
-      // fallback: created_by if no editor linked
       if (refs.length === 0 && job.created_by) addUser(job.created_by);
 
       for (const r of refs) {
@@ -310,14 +360,18 @@ export async function fetchDeliveryMetrics(): Promise<{ ok: boolean; data?: Deli
       }
     }
 
-    const assigneesByTaskId = doneAssignees.reduce((acc, a) => {
-      (acc[a.task_id] ??= []).push(a);
-      return acc;
-    }, {} as Record<string, TaskAssignee[]>);
+    const assigneesByTaskId = doneAssignees.reduce(
+      (acc, a) => {
+        (acc[a.task_id] ??= []).push(a);
+        return acc;
+      },
+      {} as Record<string, TaskAssignee[]>,
+    );
 
-    for (const t of taskDoneWithDays) {
+    for (const t of filteredTasks) {
       const assignees = assigneesByTaskId[t.id] ?? [];
-      const refs: Array<{ key: string; id: string; name: string; avatarUrl: string | null }> = [];
+      const refs: Array<{ key: string; id: string; name: string; avatarUrl: string | null }> =
+        [];
 
       for (const a of assignees) {
         if (a.user_id && userById.has(a.user_id)) {
@@ -328,7 +382,12 @@ export async function fetchDeliveryMetrics(): Promise<{ ok: boolean; data?: Deli
         const email = (a.email ?? "").toLowerCase();
         const manual = email ? manualByEmail.get(email) : undefined;
         if (manual) {
-          refs.push({ key: `manual:${manual.id}`, id: manual.id, name: manual.name, avatarUrl: manual.avatarUrl });
+          refs.push({
+            key: `manual:${manual.id}`,
+            id: manual.id,
+            name: manual.name,
+            avatarUrl: manual.avatarUrl,
+          });
         } else {
           refs.push({
             key: `email:${email || a.id}`,
@@ -341,7 +400,8 @@ export async function fetchDeliveryMetrics(): Promise<{ ok: boolean; data?: Deli
 
       if (refs.length === 0) {
         const u = userById.get(t.created_by);
-        if (u) refs.push({ key: `user:${u.id}`, id: u.id, name: u.name, avatarUrl: u.avatarUrl });
+        if (u)
+          refs.push({ key: `user:${u.id}`, id: u.id, name: u.name, avatarUrl: u.avatarUrl });
       }
 
       for (const r of refs) {
@@ -355,10 +415,7 @@ export async function fetchDeliveryMetrics(): Promise<{ ok: boolean; data?: Deli
       .map((p) => {
         const totalItems = p.deliveries + p.tasksDone;
         const combinedAvg =
-          totalItems > 0
-            ? (p.deliveriesDaysTotal + p.tasksDaysTotal) / totalItems
-            : 0;
-
+          totalItems > 0 ? (p.deliveriesDaysTotal + p.tasksDaysTotal) / totalItems : 0;
         return {
           id: p.id,
           name: p.name,
@@ -369,10 +426,14 @@ export async function fetchDeliveryMetrics(): Promise<{ ok: boolean; data?: Deli
         };
       })
       .filter((p) => p.deliveries + p.tasksDone > 0)
-      .sort((a, b) => (a.averageDays - b.averageDays) || (b.deliveries + b.tasksDone - (a.deliveries + a.tasksDone)))
+      .sort(
+        (a, b) =>
+          a.averageDays - b.averageDays ||
+          b.deliveries + b.tasksDone - (a.deliveries + a.tasksDone),
+      )
       .slice(0, 10);
 
-    const byMonth = jobsWithDays.reduce(
+    const byMonth = filteredJobs.reduce(
       (acc, job) => {
         const monthKey = new Date(job.deliveredAt).toLocaleDateString("pt-BR", {
           year: "numeric",
@@ -389,12 +450,12 @@ export async function fetchDeliveryMetrics(): Promise<{ ok: boolean; data?: Deli
         }
         return acc;
       },
-      {} as Record<string, { month: string; total: number; onTime: number; late: number }>
+      {} as Record<string, { month: string; total: number; onTime: number; late: number }>,
     );
 
     const deliveriesByMonth = Object.values(byMonth).slice(0, 12);
 
-    const byWorkType = jobsWithDays.reduce(
+    const byWorkType = filteredJobs.reduce(
       (acc, job) => {
         const workTypeName = job.job_work_types?.name ?? "Outros";
         if (!acc[workTypeName]) {
@@ -404,7 +465,7 @@ export async function fetchDeliveryMetrics(): Promise<{ ok: boolean; data?: Deli
         acc[workTypeName].totalDays += job.daysToDeliver;
         return acc;
       },
-      {} as Record<string, { workTypeName: string; count: number; totalDays: number }>
+      {} as Record<string, { workTypeName: string; count: number; totalDays: number }>,
     );
 
     const deliveriesByWorkType = Object.values(byWorkType).map((wt) => ({
@@ -417,7 +478,8 @@ export async function fetchDeliveryMetrics(): Promise<{ ok: boolean; data?: Deli
     const currentActiveJobs = activeJobs.length;
 
     const totalRevisions = jobs.reduce((sum, j) => sum + j.client_revision, 0);
-    const averageRevisions = jobs.length > 0 ? parseFloat((totalRevisions / jobs.length).toFixed(1)) : 0;
+    const averageRevisions =
+      jobs.length > 0 ? parseFloat((totalRevisions / jobs.length).toFixed(1)) : 0;
 
     const metrics: DeliveryMetrics = {
       averageDaysToDeliver,
@@ -429,7 +491,7 @@ export async function fetchDeliveryMetrics(): Promise<{ ok: boolean; data?: Deli
       percentLate,
       tasksSummary: {
         total: tasks.length,
-        done: taskDone.length,
+        done: filteredTasks.length,
         open: taskOpen,
         doneOnTime: taskDoneOnTime,
         doneLate: taskDoneLate,

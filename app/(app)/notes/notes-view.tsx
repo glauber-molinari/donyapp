@@ -135,13 +135,14 @@ export function NotesView({ notes, contacts, jobs }: NotesViewProps) {
             Anotações
           </h1>
           <button
+            id="btn-nova-nota"
             type="button"
             onClick={handleNewNote}
             aria-label="Nova nota"
             className={cn(
-              "inline-flex shrink-0 items-center justify-center gap-1.5 rounded-ds-xl font-medium transition-colors ease-out",
-              "bg-app-primary text-white shadow-sm hover:brightness-95",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/35",
+              "inline-flex shrink-0 items-center justify-center gap-1.5 rounded-ds-lg font-medium transition-colors ease-out",
+              "bg-ds-accent text-white shadow-ds-sm hover:brightness-95",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent/35",
               isOpen
                 ? "h-8 px-2.5 text-xs"
                 : "h-9 px-3 text-xs sm:h-10 sm:px-4 sm:text-sm"
@@ -156,7 +157,7 @@ export function NotesView({ notes, contacts, jobs }: NotesViewProps) {
         <div className={cn(isOpen ? "shrink-0 border-b border-ds-border p-2" : "max-w-md")}>
           <div className="relative">
             <Search
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ds-subtle"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ds-muted-2"
               aria-hidden
             />
             <input
@@ -164,7 +165,7 @@ export function NotesView({ notes, contacts, jobs }: NotesViewProps) {
               placeholder={isOpen ? "Buscar…" : "Buscar por cliente, título, categoria…"}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full rounded-ds-xl border border-app-border bg-ds-cream/60 py-2 pl-9 pr-3 text-sm text-ds-ink shadow-sm placeholder:text-ds-subtle focus:border-app-primary/50 focus:outline-none focus:ring-2 focus:ring-app-primary/20"
+              className="w-full rounded-ds-xl border border-ds-border bg-ds-cream/60 py-2 pl-9 pr-3 text-sm text-ds-ink shadow-ds-sm placeholder:text-ds-muted-2 focus:border-ds-accent/50 focus:outline-none focus:ring-2 focus:ring-ds-accent/20"
               aria-label="Buscar anotações"
             />
           </div>
@@ -179,7 +180,7 @@ export function NotesView({ notes, contacts, jobs }: NotesViewProps) {
             <button
               type="button"
               onClick={handleNewNote}
-              className="inline-flex h-10 items-center gap-2 rounded-ds-xl bg-app-primary px-4 text-sm font-medium text-white shadow-sm transition-colors hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/35"
+              className="inline-flex h-10 items-center gap-2 rounded-ds-xl bg-ds-accent px-4 text-sm font-medium text-white shadow-ds-sm transition-colors hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent/35"
             >
               <Plus className="h-4 w-4" aria-hidden />
               Nova nota
@@ -223,7 +224,7 @@ export function NotesView({ notes, contacts, jobs }: NotesViewProps) {
                       ) : (
                         <span />
                       )}
-                      <time className="shrink-0 text-[0.6rem] text-ds-subtle">{dateLabel}</time>
+                      <time className="shrink-0 text-[0.6rem] text-ds-muted-2">{dateLabel}</time>
                     </div>
                     <p className="mt-1 line-clamp-1 text-xs font-semibold text-ds-ink">
                       {titleLine}
@@ -275,7 +276,7 @@ export function NotesView({ notes, contacts, jobs }: NotesViewProps) {
                         {snippet || "—"}
                       </p>
                     </div>
-                    <time className="text-[0.65rem] text-ds-subtle">{dateLabel}</time>
+                    <time className="text-[0.65rem] text-ds-muted-2">{dateLabel}</time>
                   </button>
                 </li>
               );

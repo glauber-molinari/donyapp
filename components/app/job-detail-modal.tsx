@@ -37,8 +37,8 @@ function formatOptionalDate(ymd: string | null | undefined): string {
 
 function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="grid gap-0.5 border-b border-app-border/60 py-2.5 last:border-0 sm:grid-cols-[minmax(7.5rem,32%)_1fr] sm:gap-3">
-      <dt className="text-xs font-medium uppercase tracking-wide text-ds-subtle">{label}</dt>
+    <div className="grid gap-0.5 border-b border-ds-border/60 py-2.5 last:border-0 sm:grid-cols-[minmax(7.5rem,32%)_1fr] sm:gap-3">
+      <dt className="text-xs font-medium uppercase tracking-wide text-ds-muted-2">{label}</dt>
       <dd className="text-sm text-ds-ink">{children}</dd>
     </div>
   );
@@ -162,7 +162,7 @@ function JobHistoryTimeline({
                   {sub}
                 </p>
               ) : null}
-              <p className="mt-1 text-[11px] text-ds-subtle">
+              <p className="mt-1 text-[11px] text-ds-muted-2">
                 {entry.changed_by_name ? (
                   <span className="font-medium text-ds-muted">{entry.changed_by_name} · </span>
                 ) : null}
@@ -473,7 +473,7 @@ export function JobDetailModal({
                   "rounded-ds-lg px-3 py-2.5 min-h-[44px] text-left text-xs font-medium transition sm:text-sm",
                   tab === t.id
                     ? "bg-ds-cream text-ds-ink shadow-sm"
-                    : "text-ds-subtle hover:bg-ds-cream/60 hover:text-ds-ink"
+                    : "text-ds-muted-2 hover:bg-ds-cream/60 hover:text-ds-ink"
                 )}
               >
                 {t.label}

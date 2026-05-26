@@ -1,5 +1,9 @@
 "use client";
 
+/**
+ * Modal — alias do SidePanel para painéis laterais de edição.
+ * Para confirmações e diálogos centrados, use <Dialog> de ./dialog.tsx.
+ */
 import { SidePanel, type SidePanelSize } from "./side-panel";
 
 export type ModalSize = "sm" | "md" | "lg" | "xl";

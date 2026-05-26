@@ -37,7 +37,7 @@ export function MobileBottomNav({ onOpenMore }: MobileBottomNavProps) {
       aria-label="Navegação principal mobile"
       className={cn(
         "fixed inset-x-0 bottom-0 z-40 md:hidden",
-        "border-t border-app-border bg-app-sidebar/95 backdrop-blur supports-[backdrop-filter]:bg-app-sidebar/80",
+        "border-t border-ds-border bg-ds-surface/95 backdrop-blur supports-[backdrop-filter]:bg-ds-surface/80",
         "pb-[env(safe-area-inset-bottom,0px)]"
       )}
     >

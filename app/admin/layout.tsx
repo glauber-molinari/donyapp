@@ -35,8 +35,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   ] as const;
 
   return (
-    <div className="min-h-screen bg-app-canvas text-ds-ink">
-      <header className="border-b border-app-border bg-app-sidebar">
+    <div className="min-h-screen bg-ds-cream text-ds-ink">
+      <header className="border-b border-ds-border bg-ds-surface">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-ds-muted">Donyapp</p>
@@ -51,7 +51,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             ))}
             <Link
               href="/dashboard"
-              className="rounded-ds-lg px-3 py-2 text-sm font-medium text-app-primary hover:bg-ds-cream"
+              className="rounded-ds-lg px-3 py-2 text-sm font-medium text-ds-accent hover:bg-ds-cream"
             >
               Voltar ao app
             </Link>

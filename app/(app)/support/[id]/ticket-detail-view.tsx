@@ -33,8 +33,8 @@ const STATUS_LABELS: Record<SupportTicketStatus, string> = {
 };
 
 const STATUS_CLASSES: Record<SupportTicketStatus, string> = {
-  open: "bg-blue-50 text-blue-700",
-  answered: "bg-green-50 text-green-700",
+  open: "bg-ds-info-soft text-ds-info",
+  answered: "bg-ds-success-soft text-ds-success",
   closed: "bg-ds-cream text-ds-muted",
 };
 
@@ -105,7 +105,7 @@ export function TicketDetailView({
       {status !== "closed" ? (
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col gap-3 rounded-ds-xl border border-app-border bg-app-sidebar p-4"
+          className="flex flex-col gap-3 rounded-ds-xl border border-ds-border bg-ds-surface p-4"
         >
           <textarea
             ref={textareaRef}
@@ -115,7 +115,7 @@ export function TicketDetailView({
             rows={3}
             maxLength={3000}
             disabled={isPending}
-            className="w-full resize-y rounded-ds-xl border border-app-border bg-app-canvas px-3 py-2.5 text-sm text-ds-ink placeholder:text-ds-subtle focus:outline-none focus:ring-2 focus:ring-app-primary/20 disabled:opacity-60"
+            className="w-full resize-y rounded-ds-xl border border-ds-border bg-ds-cream px-3 py-2.5 text-sm text-ds-ink placeholder:text-ds-muted-2 focus:outline-none focus:ring-2 focus:ring-ds-accent/20 disabled:opacity-60"
           />
           <div className="flex justify-end">
             <Button type="submit" disabled={isPending || !reply.trim()} className="gap-1.5">
@@ -125,7 +125,7 @@ export function TicketDetailView({
           </div>
         </form>
       ) : (
-        <div className="rounded-ds-xl border border-app-border bg-ds-cream/50 p-4 text-sm text-ds-muted">
+        <div className="rounded-ds-xl border border-ds-border bg-ds-cream/50 p-4 text-sm text-ds-muted">
           Este ticket foi finalizado. Se precisar de mais ajuda, abra um novo ticket.
         </div>
       )}
@@ -147,18 +147,18 @@ function MessageBubble({ message }: { message: TicketMessage }) {
       <div
         className={`max-w-[85%] rounded-ds-xl px-4 py-3 ${
           isSupport
-            ? "bg-app-sidebar border border-app-border"
-            : "bg-app-primary/10 border border-app-primary/20"
+            ? "bg-ds-surface border border-ds-border"
+            : "bg-ds-accent/10 border border-ds-accent/20"
         }`}
       >
         <p
-          className={`mb-1 text-xs font-semibold ${isSupport ? "text-app-primary" : "text-ds-muted"}`}
+          className={`mb-1 text-xs font-semibold ${isSupport ? "text-ds-accent" : "text-ds-muted"}`}
         >
           {isSupport ? "Equipe Donyapp" : message.senderName}
         </p>
         <p className="whitespace-pre-wrap text-sm leading-relaxed text-ds-ink">{message.content}</p>
       </div>
-      <p className="px-1 text-xs text-ds-subtle">{time}</p>
+      <p className="px-1 text-xs text-ds-muted-2">{time}</p>
     </div>
   );
 }

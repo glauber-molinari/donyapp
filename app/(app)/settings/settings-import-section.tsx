@@ -194,14 +194,14 @@ export function SettingsImportSection() {
       </div>
 
       {/* Instruções de formato */}
-      <div className="rounded-xl border border-app-border bg-ds-cream/50 p-4">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ds-subtle">
+      <div className="rounded-xl border border-ds-border bg-ds-cream/50 p-4">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ds-muted-2">
           Formato esperado
         </p>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
-              <tr className="border-b border-app-border">
+              <tr className="border-b border-ds-border">
                 <th className="pb-1.5 pr-6 text-left font-semibold text-ds-muted">nome</th>
                 <th className="pb-1.5 pr-6 text-left font-semibold text-ds-muted">email</th>
                 <th className="pb-1.5 text-left font-semibold text-ds-muted">telefone</th>
@@ -221,7 +221,7 @@ export function SettingsImportSection() {
             </tbody>
           </table>
         </div>
-        <p className="mt-2 text-[11px] text-ds-subtle">
+        <p className="mt-2 text-[11px] text-ds-muted-2">
           Separadores aceitos: vírgula (,) ou ponto-e-vírgula (;). Exportado pelo Excel ou Google
           Planilhas.
         </p>
@@ -234,8 +234,8 @@ export function SettingsImportSection() {
           className={cn(
             "flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed px-6 py-8 transition-colors",
             status.type === "error"
-              ? "border-red-300 bg-red-50"
-              : "border-app-border bg-app-sidebar hover:border-app-primary/40 hover:bg-ds-cream/40"
+              ? "border-ds-danger/30 bg-ds-danger-soft"
+              : "border-ds-border bg-ds-surface hover:border-ds-accent/40 hover:bg-ds-cream/40"
           )}
         >
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-ds-cream text-ds-muted">
@@ -265,7 +265,7 @@ export function SettingsImportSection() {
 
         {/* Preview dos dados parseados */}
         {status.type === "parsed" && (
-          <div className="rounded-xl border border-app-border bg-white p-4">
+          <div className="rounded-xl border border-ds-border bg-white p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-sm font-semibold text-ds-ink">
@@ -273,7 +273,7 @@ export function SettingsImportSection() {
                   importar
                 </p>
                 {status.invalid > 0 && (
-                  <p className="mt-0.5 text-xs text-amber-700">
+                  <p className="mt-0.5 text-xs text-ds-warn">
                     {status.invalid} linha{status.invalid !== 1 ? "s" : ""} ignorada
                     {status.invalid !== 1 ? "s" : ""} (nome ou e-mail inválido)
                   </p>
@@ -289,7 +289,7 @@ export function SettingsImportSection() {
             </div>
 
             {/* Mini preview: primeiros 5 contatos */}
-            <ul className="mt-3 divide-y divide-app-border/60">
+            <ul className="mt-3 divide-y divide-ds-border/60">
               {status.rows.slice(0, 5).map((r, i) => (
                 <li key={i} className="flex items-center gap-3 py-1.5">
                   <div className="min-w-0 flex-1">
@@ -297,12 +297,12 @@ export function SettingsImportSection() {
                     <p className="truncate text-[11px] text-ds-muted">{r.email}</p>
                   </div>
                   {r.phone ? (
-                    <span className="shrink-0 text-[11px] text-ds-subtle">{r.phone}</span>
+                    <span className="shrink-0 text-[11px] text-ds-muted-2">{r.phone}</span>
                   ) : null}
                 </li>
               ))}
               {status.rows.length > 5 && (
-                <li className="py-1.5 text-[11px] text-ds-subtle">
+                <li className="py-1.5 text-[11px] text-ds-muted-2">
                   + {status.rows.length - 5} mais…
                 </li>
               )}
@@ -312,30 +312,30 @@ export function SettingsImportSection() {
 
         {/* Resultado da importação */}
         {status.type === "success" && (
-          <div className="flex flex-col gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+          <div className="flex flex-col gap-2 rounded-xl border border-ds-success/20 bg-ds-success-soft p-4">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" aria-hidden />
-              <p className="text-sm font-semibold text-emerald-800">
+              <CheckCircle2 className="h-5 w-5 shrink-0 text-ds-success" aria-hidden />
+              <p className="text-sm font-semibold text-ds-success">
                 {status.imported} contato{status.imported !== 1 ? "s" : ""} importado
                 {status.imported !== 1 ? "s" : ""} com sucesso
               </p>
             </div>
             {status.skipped > 0 && (
-              <p className="text-xs text-emerald-700">
+              <p className="text-xs text-ds-success">
                 {status.skipped} linha{status.skipped !== 1 ? "s" : ""} ignorada
                 {status.skipped !== 1 ? "s" : ""} (e-mail inválido ou dados ausentes
                 {status.limitReached ? " ou limite do plano Free atingido" : ""}).
               </p>
             )}
             {status.limitReached && status.skipped === 0 && (
-              <p className="text-xs text-amber-700">
+              <p className="text-xs text-ds-warn">
                 Limite do plano Free atingido — alguns contatos não foram importados.
               </p>
             )}
             <button
               type="button"
               onClick={reset}
-              className="mt-1 self-start text-xs font-medium text-emerald-700 underline underline-offset-2 hover:text-emerald-900"
+              className="mt-1 self-start text-xs font-medium text-ds-success underline underline-offset-2 hover:text-ds-success/80"
             >
               Importar outro arquivo
             </button>
@@ -344,15 +344,15 @@ export function SettingsImportSection() {
 
         {/* Erro */}
         {status.type === "error" && (
-          <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-4">
-            <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-500" aria-hidden />
+          <div className="flex items-start gap-2 rounded-xl border border-ds-danger/20 bg-ds-danger-soft p-4">
+            <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-ds-danger" aria-hidden />
             <div>
-              <p className="text-sm font-semibold text-red-800">Erro na importação</p>
-              <p className="mt-0.5 text-xs text-red-700">{status.message}</p>
+              <p className="text-sm font-semibold text-ds-danger">Erro na importação</p>
+              <p className="mt-0.5 text-xs text-ds-danger">{status.message}</p>
               <button
                 type="button"
                 onClick={reset}
-                className="mt-2 text-xs font-medium text-red-700 underline underline-offset-2 hover:text-red-900"
+                className="mt-2 text-xs font-medium text-ds-danger underline underline-offset-2 hover:text-ds-danger/80"
               >
                 Tentar novamente
               </button>

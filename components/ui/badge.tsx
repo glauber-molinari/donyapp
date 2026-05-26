@@ -1,6 +1,6 @@
-import { AlertCircle, Clock } from "lucide-react";
-
 import { cn } from "@/lib/utils";
+
+// ─── Tipos de job ────────────────────────────────────────────────────────────
 
 export type JobTypeBadgeValue = "foto" | "video" | "foto_video";
 export type DeadlineBadgeValue = "upcoming" | "overdue";
@@ -14,54 +14,95 @@ type BadgeJobTypeProps = {
 type BadgeDeadlineProps = {
   kind: "deadline";
   value: DeadlineBadgeValue;
+  label: string;
   className?: string;
 };
 
 export type BadgeProps = BadgeJobTypeProps | BadgeDeadlineProps;
 
 const jobTypeClass: Record<JobTypeBadgeValue, string> = {
-  foto: "bg-ds-accent/15 text-ds-accent-ink",
-  video: "bg-sky-100 text-sky-800",
-  foto_video: "bg-amber-100 text-amber-900",
+  foto:       "bg-ds-accent-soft text-ds-accent",
+  video:      "bg-ds-info-soft   text-ds-info",
+  foto_video: "bg-ds-warn-soft   text-ds-warn",
 };
 
 const jobTypeLabel: Record<JobTypeBadgeValue, string> = {
-  foto: "Foto",
-  video: "Vídeo",
+  foto:       "Foto",
+  video:      "Vídeo",
   foto_video: "Foto e Vídeo",
 };
 
+const deadlineClass: Record<DeadlineBadgeValue, string> = {
+  upcoming: "bg-ds-warn-soft   text-ds-warn",
+  overdue:  "bg-ds-danger-soft text-ds-danger",
+};
+
 export function Badge(props: BadgeProps) {
+  const base = "inline-flex w-fit max-w-max items-center self-start rounded-ds-pill px-2 py-0.5 text-xs font-medium";
+
   if (props.kind === "job-type") {
     return (
-      <span
-        className={cn(
-          "inline-flex w-fit max-w-max items-center self-start rounded-md px-2 py-0.5 text-xs font-medium",
-          jobTypeClass[props.value],
-          props.className
-        )}
-      >
+      <span className={cn(base, jobTypeClass[props.value], props.className)}>
         {jobTypeLabel[props.value]}
       </span>
     );
   }
 
-  const isUpcoming = props.value === "upcoming";
+  return (
+    <span className={cn(base, deadlineClass[props.value], props.className)}>
+      {props.label}
+    </span>
+  );
+}
 
+// ─── Badge semântico (6 tons) ─────────────────────────────────────────────────
+
+export type SemanticTone = "default" | "success" | "warn" | "danger" | "info" | "ink";
+
+type SemanticBadgeProps = {
+  tone?: SemanticTone;
+  dot?: boolean;
+  children: React.ReactNode;
+  className?: string;
+};
+
+const semanticClass: Record<SemanticTone, string> = {
+  default: "bg-ds-hairline    text-ds-ink   border border-ds-border",
+  success: "bg-ds-success-soft text-ds-success",
+  warn:    "bg-ds-warn-soft   text-ds-warn",
+  danger:  "bg-ds-danger-soft text-ds-danger",
+  info:    "bg-ds-info-soft   text-ds-info",
+  ink:     "bg-ds-ink         text-white",
+};
+
+export function SemanticBadge({ tone = "default", dot, children, className }: SemanticBadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex w-fit max-w-max items-center gap-1 self-start rounded-md px-2 py-0.5 text-xs font-medium",
-        isUpcoming ? "bg-amber-100 text-amber-800" : "bg-red-100 text-red-800",
-        props.className
+        "inline-flex w-fit items-center gap-1 rounded-ds-pill px-2 py-0.5 text-xs font-medium",
+        semanticClass[tone],
+        className
       )}
     >
-      {isUpcoming ? (
-        <Clock className="h-3 w-3 shrink-0" aria-hidden />
-      ) : (
-        <AlertCircle className="h-3 w-3 shrink-0" aria-hidden />
+      {dot && (
+        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-current" aria-hidden />
       )}
-      {isUpcoming ? "Prazo próximo" : "Atrasado"}
+      {children}
+    </span>
+  );
+}
+
+// ─── Pro badge ────────────────────────────────────────────────────────────────
+
+export function ProBadge({ className }: { className?: string }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-ds-pill bg-gradient-to-br from-ds-ink to-ds-ink-2 px-1.5 py-px text-[10px] font-semibold uppercase tracking-widest text-white",
+        className
+      )}
+    >
+      Pro
     </span>
   );
 }

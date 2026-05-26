@@ -100,7 +100,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                 Por que usar?
               </Link>
             </div>
-            <p className="mt-5 text-sm text-ds-subtle">Plano gratuito para começar. Sem cartão.</p>
+            <p className="mt-5 text-sm text-ds-muted-2">Plano gratuito para começar. Sem cartão.</p>
           </div>
 
           <div className="relative mx-auto mt-14 max-w-[1200px] sm:mt-20">
@@ -149,7 +149,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                 </li>
               ))}
             </ol>
-            <p className="mt-6 text-center text-xs text-ds-subtle">
+            <p className="mt-6 text-center text-xs text-ds-muted-2">
               Funciona com Google Drive, Dropbox, WeTransfer e qualquer link de entrega.
             </p>
           </div>
@@ -294,7 +294,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
               O Free cobre o básico. No Pro entram equipe, e-mail automático na entrega e limites maiores.
             </p>
 
-            <p className="mt-8 text-sm text-ds-subtle">
+            <p className="mt-8 text-sm text-ds-muted-2">
               Mensal para flexibilidade. Anual para economizar {yearlySavingsPercent}%.
             </p>
           </div>
@@ -302,13 +302,13 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
           <div className="mt-12 mx-auto grid max-w-6xl justify-items-stretch gap-6 md:justify-items-center lg:grid-cols-3 lg:gap-6">
             <div className="flex w-full max-w-[420px] flex-col rounded-[28px] border border-ds-border bg-ds-surface p-7 shadow-ds-card min-h-[640px]">
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-ds-subtle">Free</p>
+                <p className="text-sm font-semibold text-ds-muted-2">Free</p>
                 <p className="mt-1 text-sm text-ds-muted">Para começar sem compromisso</p>
               </div>
 
               <div className="mt-6 flex items-end gap-2">
                 <span className="text-5xl font-black tracking-tight text-ds-ink">R$ 0</span>
-                <span className="pb-2 text-sm font-medium text-ds-subtle">/ mês</span>
+                <span className="pb-2 text-sm font-medium text-ds-muted-2">/ mês</span>
               </div>
 
               <Link
@@ -319,7 +319,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
               </Link>
 
               <div className="mt-7 border-t border-ds-border pt-6">
-                <p className="text-xs font-semibold uppercase tracking-wide text-ds-subtle">Inclui</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-ds-muted-2">Inclui</p>
                 <ul className="mt-4 space-y-3 text-sm text-ds-muted">
                   {[
                     `Até ${FREE_MAX_ACTIVE_JOBS} jobs ativos no Kanban`,
@@ -412,7 +412,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
             <div className="flex w-full max-w-[420px] flex-col justify-between rounded-[28px] border border-ds-border bg-ds-surface p-7 shadow-ds-card min-h-[640px] lg:max-w-none">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-ds-subtle">Pro Anual</p>
+                  <p className="text-sm font-semibold text-ds-muted-2">Pro Anual</p>
                   <p className="mt-1 text-sm text-ds-muted">Economize no plano anual</p>
                 </div>
                 {yearlySavingsPercent > 0 ? (
@@ -430,7 +430,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                 </p>
                 <div className="flex items-end gap-2">
                   <span className="text-5xl font-black tracking-tight text-ds-ink">{formatBrl(proYearly)}</span>
-                  <span className="pb-2 text-sm font-medium text-ds-subtle">/ ano</span>
+                  <span className="pb-2 text-sm font-medium text-ds-muted-2">/ ano</span>
                 </div>
               </div>
 
@@ -442,14 +442,14 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                 <ArrowRight className="h-4 w-4" />
               </Link>
 
-              <p className="mt-3 text-center text-xs text-ds-subtle">
+              <p className="mt-3 text-center text-xs text-ds-muted-2">
                 {yearlySavingsPercent > 0
                   ? `Equivale a ${formatBrl(proYearly / 12)}/mês no anual.`
                   : "Pagamento anual."}
               </p>
 
               <div className="mt-7 border-t border-ds-border pt-6">
-                <p className="text-xs font-semibold uppercase tracking-wide text-ds-subtle">
+                <p className="text-xs font-semibold uppercase tracking-wide text-ds-muted-2">
                   Tudo do Pro, mais economia
                 </p>
                 <ul className="mt-4 space-y-3 text-sm text-ds-muted">
@@ -523,7 +523,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                     <span className="flex items-center justify-between gap-2">
                       {q}
                       <ChevronRight
-                        className="h-4 w-4 shrink-0 text-ds-subtle transition group-open:rotate-90"
+                        className="h-4 w-4 shrink-0 text-ds-muted-2 transition group-open:rotate-90"
                         aria-hidden
                       />
                     </span>
@@ -563,7 +563,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
       </section>
 
       <footer className="border-t border-ds-border bg-ds-cream py-8">
-        <div className="mx-auto flex max-w-[1200px] flex-col items-center gap-5 px-4 text-center text-xs text-ds-subtle sm:flex-row sm:justify-between sm:gap-4 sm:text-left sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-[1200px] flex-col items-center gap-5 px-4 text-center text-xs text-ds-muted-2 sm:flex-row sm:justify-between sm:gap-4 sm:text-left sm:px-6 lg:px-8">
           <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:gap-5">
             <Image
               src="/brand/logo-dony-png.png"
@@ -601,7 +601,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
           </div>
           <div className="flex flex-col items-center gap-2 sm:items-end sm:text-right">
             <p className="text-ds-muted">Donyapp, gestão de pós-produção para fotógrafos e videomakers.</p>
-            <LegalLinks className="text-xs" linkClassName="text-ds-subtle hover:text-ds-ink" />
+            <LegalLinks className="text-xs" linkClassName="text-ds-muted-2 hover:text-ds-ink" />
           </div>
         </div>
       </footer>

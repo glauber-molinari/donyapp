@@ -91,8 +91,8 @@ export function SdCardTagsField({
       ))}
       <div
         className={cn(
-          "flex min-h-[2.75rem] flex-wrap items-center gap-2 rounded-ds-xl border border-app-border bg-app-sidebar px-2 py-2 shadow-sm",
-          "focus-within:border-app-primary/50 focus-within:ring-2 focus-within:ring-app-primary/20"
+          "flex min-h-[2.75rem] flex-wrap items-center gap-2 rounded-ds-lg border border-ds-border bg-ds-surface px-2 py-2 shadow-ds-sm",
+          "focus-within:border-ds-accent/50 focus-within:ring-2 focus-within:ring-ds-accent/20"
         )}
       >
         {tags.map((tag) => (
@@ -120,7 +120,7 @@ export function SdCardTagsField({
           onBlur={commitDraft}
           placeholder={tags.length ? "Outro cartão…" : "Ex.: 001 ou CARTÃO 1"}
           autoComplete="off"
-          className="min-w-[8rem] flex-1 border-0 bg-transparent px-1 py-1 text-sm text-ds-ink outline-none placeholder:text-ds-subtle"
+          className="min-w-[8rem] flex-1 border-0 bg-transparent px-1 py-1 text-sm text-ds-ink outline-none placeholder:text-ds-muted-2"
         />
       </div>
       {hint ? <p className="text-xs text-ds-muted">{hint}</p> : null}

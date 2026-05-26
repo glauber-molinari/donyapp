@@ -176,10 +176,10 @@ export function AgendaCalendar({ isAdmin }: { isAdmin: boolean }) {
 
   return (
     <>
-      <Card className="border-app-border bg-app-sidebar p-4 shadow-ds-card sm:p-6">
+      <Card className="border-ds-border bg-ds-surface p-4 shadow-ds-card sm:p-6">
         {error ? (
           <p
-            className="mb-3 rounded-ds-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950"
+            className="mb-3 rounded-ds-xl border border-ds-warn/20 bg-ds-warn-soft px-3 py-2 text-sm text-ds-warn"
             role="alert"
           >
             {error}
@@ -188,11 +188,11 @@ export function AgendaCalendar({ isAdmin }: { isAdmin: boolean }) {
         <div className="agenda-rbc relative min-h-[420px] md:min-h-[560px]">
           {loading ? (
             <div
-              className="absolute inset-0 z-10 flex items-center justify-center rounded-ds-xl bg-app-sidebar/70"
+              className="absolute inset-0 z-10 flex items-center justify-center rounded-ds-xl bg-ds-surface/70"
               aria-busy
               aria-label="Carregando eventos"
             >
-              <Loader2 className="h-8 w-8 shrink-0 animate-spin text-app-primary" aria-hidden />
+              <Loader2 className="h-8 w-8 shrink-0 animate-spin text-ds-accent" aria-hidden />
             </div>
           ) : null}
           <Calendar
@@ -218,7 +218,7 @@ export function AgendaCalendar({ isAdmin }: { isAdmin: boolean }) {
         </div>
         {isAdmin ? (
           <p className="mt-4 text-xs text-ds-muted">
-            <Link href="/settings/agenda" className="font-medium text-app-primary underline-offset-2 hover:underline">
+            <Link href="/settings/agenda" className="font-medium text-ds-accent underline-offset-2 hover:underline">
               Configurações → Agenda
             </Link>
             {" — "}

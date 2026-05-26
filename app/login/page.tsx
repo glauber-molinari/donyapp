@@ -26,8 +26,8 @@ export default function LoginPage({
     nextRaw && nextRaw.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : "/dashboard";
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-app-canvas px-4">
-      <div className="w-full max-w-sm rounded-ds-xl border border-app-border bg-app-sidebar p-8 shadow-ds-sm">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-ds-cream px-4">
+      <div className="w-full max-w-sm rounded-ds-xl border border-ds-border bg-ds-surface p-8 shadow-ds-sm">
         <div className="mb-6 flex justify-center">
           <Image
             src="/brand/logo-dony-png.png"
@@ -44,7 +44,7 @@ export default function LoginPage({
         </p>
         {message ? (
           <p
-            className="mt-4 rounded-ds-xl border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-800"
+            className="mt-4 rounded-ds-xl border border-ds-danger/20 bg-ds-danger-soft px-3 py-2 text-sm text-ds-danger"
             role="alert"
           >
             {message}
@@ -53,19 +53,19 @@ export default function LoginPage({
         <div className="mt-6">
           <LoginForm next={next} />
         </div>
-        <p className="mt-6 text-center text-xs text-ds-subtle">
+        <p className="mt-6 text-center text-xs text-ds-muted-2">
           Ao entrar, você concorda com os <Link href="/termos-de-servico" className="underline-offset-4 hover:underline">Termos de Serviço</Link> e a{" "}
           <Link href="/politica-de-privacidade" className="underline-offset-4 hover:underline">Política de Privacidade</Link>.
         </p>
       </div>
       <Link
         href="/"
-        className="mt-6 text-sm font-medium text-app-primary transition duration-ds ease-out hover:brightness-95"
+        className="mt-6 text-sm font-medium text-ds-accent transition duration-ds ease-out hover:brightness-95"
       >
         Voltar
       </Link>
-      <div className="mt-4 text-center text-xs text-ds-subtle">
-        <LegalLinks linkClassName="text-ds-subtle hover:text-ds-ink" />
+      <div className="mt-4 text-center text-xs text-ds-muted-2">
+        <LegalLinks linkClassName="text-ds-muted-2 hover:text-ds-ink" />
       </div>
     </div>
   );

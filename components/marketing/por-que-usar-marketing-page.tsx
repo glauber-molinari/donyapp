@@ -19,7 +19,7 @@ export function PorQueUsarMarketingPage({ displayClassName, bodyClassName }: Por
           aria-labelledby="por-que-usar-heading"
         >
           <div className="mx-auto max-w-[1200px] sm:px-6 lg:px-8">
-            <p className="text-sm font-medium text-ds-subtle">
+            <p className="text-sm font-medium text-ds-muted-2">
               <Link href="/" className="text-ds-muted underline-offset-2 transition hover:text-ds-ink hover:underline">
                 Início
               </Link>

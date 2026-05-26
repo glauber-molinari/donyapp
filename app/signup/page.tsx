@@ -12,8 +12,8 @@ export const metadata: Metadata = {
 
 export default function SignupPage() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-app-canvas px-4">
-      <div className="w-full max-w-sm rounded-ds-xl border border-app-border bg-app-sidebar p-8 shadow-ds-sm">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-ds-cream px-4">
+      <div className="w-full max-w-sm rounded-ds-xl border border-ds-border bg-ds-surface p-8 shadow-ds-sm">
         <div className="mb-6 flex justify-center">
           <Image
             src="/brand/logo-dony-png.png"
@@ -29,7 +29,7 @@ export default function SignupPage() {
           Gestão de pós-produção para fotógrafos e videomakers.
         </p>
         <SignupForm />
-        <p className="mt-6 text-center text-xs text-ds-subtle">
+        <p className="mt-6 text-center text-xs text-ds-muted-2">
           Ao criar conta, você concorda com os{" "}
           <Link href="/termos-de-servico" className="underline-offset-4 hover:underline">
             Termos de Serviço
@@ -43,12 +43,12 @@ export default function SignupPage() {
       </div>
       <Link
         href="/"
-        className="mt-6 text-sm font-medium text-app-primary transition duration-ds ease-out hover:brightness-95"
+        className="mt-6 text-sm font-medium text-ds-accent transition duration-ds ease-out hover:brightness-95"
       >
         Voltar
       </Link>
-      <div className="mt-4 text-center text-xs text-ds-subtle">
-        <LegalLinks linkClassName="text-ds-subtle hover:text-ds-ink" />
+      <div className="mt-4 text-center text-xs text-ds-muted-2">
+        <LegalLinks linkClassName="text-ds-muted-2 hover:text-ds-ink" />
       </div>
     </div>
   );

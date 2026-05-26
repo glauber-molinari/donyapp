@@ -11,6 +11,9 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ className, label, hint, error, id, ...props }, ref) => {
+    const hintId = hint ? `${id}-hint` : undefined;
+    const errorId = error ? `${id}-error` : undefined;
+
     return (
       <div className="flex w-full flex-col gap-1.5">
         {label ? (
@@ -22,22 +25,24 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           id={id}
           aria-invalid={Boolean(error)}
-          aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
+          aria-describedby={errorId ?? hintId}
           className={cn(
-            "w-full rounded-ds-xl border border-app-border bg-app-sidebar px-3 py-2.5 text-sm text-ds-ink shadow-sm placeholder:text-ds-subtle",
-            "focus:border-app-primary/50 focus:outline-none focus:ring-2 focus:ring-app-primary/20",
-            error && "border-red-200 focus:border-red-300 focus:ring-red-200/40",
+            "w-full rounded-ds-lg border border-ds-border bg-ds-surface px-3 py-2.5 text-sm text-ds-ink placeholder:text-ds-muted-2",
+            "transition-[border-color,box-shadow] duration-ds-fast ease-out",
+            "focus:border-ds-accent focus:outline-none focus:ring-2 focus:ring-[rgba(255,85,0,0.18)]",
+            error &&
+              "border-ds-danger focus:border-ds-danger focus:ring-[rgba(196,56,56,0.18)]",
             className
           )}
           {...props}
         />
         {hint && !error ? (
-          <p id={`${id}-hint`} className="text-xs text-ds-muted">
+          <p id={hintId} className="text-xs text-ds-muted">
             {hint}
           </p>
         ) : null}
         {error ? (
-          <p id={`${id}-error`} className="text-xs text-red-600" role="alert">
+          <p id={errorId} className="text-xs text-ds-danger" role="alert">
             {error}
           </p>
         ) : null}

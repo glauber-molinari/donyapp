@@ -223,7 +223,7 @@ export function SettingsPlanSection({
               ) : null}
             </p>
             {isPro && cancelAtPeriodEnd && currentPeriodEndsAt ? (
-              <p className="mt-2 rounded-lg border border-amber-200/80 bg-amber-50/90 px-3 py-2 text-sm text-amber-950">
+              <p className="mt-2 rounded-lg border border-ds-warn/20 bg-ds-warn-soft px-3 py-2 text-sm text-ds-warn">
                 Sua assinatura não será renovada. Você mantém o acesso Pro até{" "}
                 <span className="font-medium">{formatDatePt(currentPeriodEndsAt)}</span>
                 {`. Depois disso, a conta volta ao plano Free.`}
@@ -255,7 +255,7 @@ export function SettingsPlanSection({
                 type="button"
                 variant="secondary"
                 size="md"
-                className="w-full border-red-200 text-red-800 hover:bg-red-50 sm:w-auto"
+                className="w-full border-ds-danger/20 text-ds-danger hover:bg-ds-danger-soft sm:w-auto"
                 onClick={() => {
                   setError(null);
                   setCancelOpen(true);
@@ -311,7 +311,7 @@ export function SettingsPlanSection({
             plano Free, sem cobranças futuras.
           </p>
           {error ? (
-            <p className="text-sm text-red-700" role="alert">
+            <p className="text-sm text-ds-danger" role="alert">
               {error}
             </p>
           ) : null}
@@ -321,7 +321,7 @@ export function SettingsPlanSection({
             </Button>
             <Button
               type="button"
-              className="w-full bg-red-700 hover:bg-red-800 sm:w-auto"
+              className="w-full bg-ds-danger hover:bg-ds-danger/90 sm:w-auto"
               disabled={cancelBusy}
               onClick={() => void handleCancelSubscription()}
             >
@@ -338,7 +338,7 @@ export function SettingsPlanSection({
             Após a confirmação, o plano Pro é ativado automaticamente.
           </p>
           {error ? (
-            <p className="text-sm text-red-700" role="alert">
+            <p className="text-sm text-ds-danger" role="alert">
               {error}
             </p>
           ) : null}

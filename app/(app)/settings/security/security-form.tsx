@@ -8,10 +8,10 @@ import { createClient } from "@/lib/supabase/client";
 import { changeEmail } from "./security-actions";
 
 const inputCls =
-  "w-full rounded-ds-xl border border-app-border bg-app-canvas px-3 py-2.5 text-sm text-ds-ink placeholder:text-ds-subtle focus:outline-none focus:ring-2 focus:ring-app-primary/30 focus:ring-offset-1 focus:ring-offset-app-sidebar disabled:opacity-60";
+  "w-full rounded-ds-xl border border-ds-border bg-ds-cream px-3 py-2.5 text-sm text-ds-ink placeholder:text-ds-muted-2 focus:outline-none focus:ring-2 focus:ring-ds-accent/30 focus:ring-offset-1 focus:ring-offset-ds-surface disabled:opacity-60";
 
 const btnCls =
-  "rounded-ds-xl bg-app-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition duration-ds ease-out hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-app-primary/40 focus:ring-offset-2 disabled:opacity-60";
+  "rounded-ds-xl bg-ds-accent px-4 py-2 text-sm font-semibold text-white shadow-ds-sm transition duration-ds ease-out hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-ds-accent/40 focus:ring-offset-2 disabled:opacity-60";
 
 interface Props {
   hasEmailProvider: boolean;
@@ -97,14 +97,14 @@ export function SecurityForm({ hasEmailProvider, currentEmail }: Props) {
   return (
     <div className="flex flex-col gap-8">
       {/* Seção: Email */}
-      <section className="flex flex-col gap-4 rounded-ds-xl border border-app-border bg-app-sidebar p-5 shadow-sm">
+      <section className="flex flex-col gap-4 rounded-ds-xl border border-ds-border bg-ds-surface p-5 shadow-ds-sm">
         <div>
           <h3 className="text-sm font-semibold text-ds-ink">Endereço de email</h3>
           <p className="mt-0.5 text-xs text-ds-muted">
             Email atual:{" "}
             <span className="font-medium text-ds-ink">{currentEmail || "—"}</span>
           </p>
-          <p className="mt-1 text-xs text-ds-subtle">
+          <p className="mt-1 text-xs text-ds-muted-2">
             Você receberá confirmações nos dois endereços antes da troca ser efetivada.
           </p>
         </div>
@@ -121,7 +121,7 @@ export function SecurityForm({ hasEmailProvider, currentEmail }: Props) {
           />
           {emailResult && (
             <p
-              className={`text-sm ${emailResult.ok ? "text-green-700" : "text-red-600"}`}
+              className={`text-sm ${emailResult.ok ? "text-ds-success" : "text-ds-danger"}`}
               role="alert"
             >
               {emailResult.msg}
@@ -136,7 +136,7 @@ export function SecurityForm({ hasEmailProvider, currentEmail }: Props) {
       </section>
 
       {/* Seção: Senha */}
-      <section className="flex flex-col gap-4 rounded-ds-xl border border-app-border bg-app-sidebar p-5 shadow-sm">
+      <section className="flex flex-col gap-4 rounded-ds-xl border border-ds-border bg-ds-surface p-5 shadow-ds-sm">
         <div>
           <h3 className="text-sm font-semibold text-ds-ink">Senha</h3>
           {hasEmailProvider ? (
@@ -151,14 +151,14 @@ export function SecurityForm({ hasEmailProvider, currentEmail }: Props) {
         </div>
 
         {!hasEmailProvider && (
-          <p className="text-sm text-ds-subtle">
+          <p className="text-sm text-ds-muted-2">
             Não é possível alterar a senha de contas vinculadas exclusivamente ao Google.
           </p>
         )}
 
         {hasEmailProvider && pwdStep === "done" && (
           <div className="flex flex-col gap-3">
-            <p className="text-sm text-green-700">Senha alterada com sucesso.</p>
+            <p className="text-sm text-ds-success">Senha alterada com sucesso.</p>
             <div className="flex justify-end">
               <button type="button" onClick={resetPasswordFlow} className={btnCls}>
                 Alterar novamente
@@ -180,7 +180,7 @@ export function SecurityForm({ hasEmailProvider, currentEmail }: Props) {
                 autoComplete="new-password"
                 className={inputCls}
               />
-              <p className="px-1 text-xs text-ds-subtle">{PASSWORD_HINT}</p>
+              <p className="px-1 text-xs text-ds-muted-2">{PASSWORD_HINT}</p>
             </div>
             <input
               type="password"
@@ -193,7 +193,7 @@ export function SecurityForm({ hasEmailProvider, currentEmail }: Props) {
               className={inputCls}
             />
             {pwdError && (
-              <p className="text-sm text-red-600" role="alert">
+              <p className="text-sm text-ds-danger" role="alert">
                 {pwdError}
               </p>
             )}
@@ -207,7 +207,7 @@ export function SecurityForm({ hasEmailProvider, currentEmail }: Props) {
 
         {hasEmailProvider && pwdStep === "otp" && (
           <form onSubmit={(e) => void confirmPasswordChange(e)} className="flex flex-col gap-3">
-            <div className="rounded-ds-xl border border-blue-100 bg-blue-50 px-3 py-2.5 text-xs text-blue-700">
+            <div className="rounded-ds-xl border border-ds-info/20 bg-ds-info-soft px-3 py-2.5 text-xs text-ds-info">
               Código enviado para <strong>{currentEmail}</strong>. Verifique sua caixa de entrada.
             </div>
             <input
@@ -222,7 +222,7 @@ export function SecurityForm({ hasEmailProvider, currentEmail }: Props) {
               className={inputCls}
             />
             {pwdError && (
-              <p className="text-sm text-red-600" role="alert">
+              <p className="text-sm text-ds-danger" role="alert">
                 {pwdError}
               </p>
             )}

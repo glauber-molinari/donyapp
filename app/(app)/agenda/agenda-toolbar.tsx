@@ -21,7 +21,7 @@ export function AgendaToolbar(props: ToolbarProps) {
         <button
           type="button"
           onClick={() => onNavigate("PREV")}
-          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-ds-xl border border-app-border bg-app-sidebar text-ds-muted shadow-sm transition-colors hover:bg-ds-cream hover:text-ds-ink"
+          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-ds-xl border border-ds-border bg-ds-surface text-ds-muted shadow-sm transition-colors hover:bg-ds-cream hover:text-ds-ink"
           aria-label="Período anterior"
         >
           <ChevronLeft className="h-5 w-5" aria-hidden />
@@ -32,7 +32,7 @@ export function AgendaToolbar(props: ToolbarProps) {
         <button
           type="button"
           onClick={() => onNavigate("NEXT")}
-          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-ds-xl border border-app-border bg-app-sidebar text-ds-muted shadow-sm transition-colors hover:bg-ds-cream hover:text-ds-ink"
+          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-ds-xl border border-ds-border bg-ds-surface text-ds-muted shadow-sm transition-colors hover:bg-ds-cream hover:text-ds-ink"
           aria-label="Próximo período"
         >
           <ChevronRight className="h-5 w-5" aria-hidden />
@@ -40,7 +40,7 @@ export function AgendaToolbar(props: ToolbarProps) {
         <button
           type="button"
           onClick={() => onNavigate("TODAY")}
-          className="ml-0 inline-flex h-9 items-center rounded-ds-xl border border-app-border bg-app-sidebar px-3 text-sm font-medium text-ds-ink shadow-sm transition-colors hover:bg-ds-cream sm:ml-1"
+          className="ml-0 inline-flex h-9 items-center rounded-ds-xl border border-ds-border bg-ds-surface px-3 text-sm font-medium text-ds-ink shadow-sm transition-colors hover:bg-ds-cream sm:ml-1"
         >
           Hoje
         </button>
@@ -48,7 +48,7 @@ export function AgendaToolbar(props: ToolbarProps) {
 
       <div className="flex flex-wrap items-center gap-2">
         <div
-          className="inline-flex rounded-ds-xl border border-app-border bg-app-sidebar p-1 shadow-ds-sm"
+          className="inline-flex rounded-ds-xl border border-ds-border bg-ds-surface p-1 shadow-ds-sm"
           role="tablist"
           aria-label="Visualização"
         >

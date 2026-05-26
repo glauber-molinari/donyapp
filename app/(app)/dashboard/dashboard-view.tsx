@@ -122,12 +122,12 @@ function ProximityPill({ deadline }: { deadline: string }) {
     "inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-xs font-medium tabular-nums";
   const tone =
     p.tone === "danger"
-      ? "border-red-200 bg-red-50 text-red-800"
+      ? "border-ds-danger/20 bg-ds-danger-soft text-ds-danger"
       : p.tone === "warn"
-        ? "border-amber-200 bg-amber-50 text-amber-900"
+        ? "border-ds-warn/20 bg-ds-warn-soft text-ds-warn"
         : p.tone === "ok"
-          ? "border-emerald-200 bg-emerald-50 text-emerald-900"
-          : "border-app-border bg-app-sidebar text-ds-muted";
+          ? "border-ds-success/20 bg-ds-success-soft text-ds-success"
+          : "border-ds-border bg-ds-surface text-ds-muted";
 
   const progress = (() => {
     if (p.days === null) return 0;
@@ -144,12 +144,12 @@ function ProximityPill({ deadline }: { deadline: string }) {
           className={cn(
             "block h-full rounded-full",
             p.tone === "danger"
-              ? "bg-red-500"
+              ? "bg-ds-danger"
               : p.tone === "warn"
-                ? "bg-amber-500"
+                ? "bg-ds-warn"
                 : p.tone === "ok"
-                  ? "bg-emerald-500"
-                  : "bg-ds-subtle/60"
+                  ? "bg-ds-success"
+                  : "bg-ds-muted-2/60"
           )}
           style={{ inlineSize: `${progress}%` }}
         />
@@ -165,7 +165,7 @@ function AvatarStack({
   people: { id: string; name: string; avatarUrl: string | null }[];
   max?: number;
 }) {
-  if (people.length === 0) return <span className="text-xs text-ds-subtle">—</span>;
+  if (people.length === 0) return <span className="text-xs text-ds-muted-2">—</span>;
   const shown = people.slice(0, max);
   const rest = people.length - shown.length;
   return (
@@ -177,11 +177,11 @@ function AvatarStack({
             src={p.avatarUrl}
             name={p.name}
             size="sm"
-            className="ring-2 ring-app-canvas"
+            className="ring-2 ring-ds-cream"
           />
         ))}
         {rest > 0 ? (
-          <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-app-sidebar text-[0.7rem] font-semibold text-ds-muted ring-1 ring-app-border">
+          <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ds-surface text-[0.7rem] font-semibold text-ds-muted ring-1 ring-ds-border">
             +{rest}
           </div>
         ) : null}
@@ -529,7 +529,7 @@ export function DashboardView({
             </div>
             <Link
               href="/settings/team"
-              className="inline-flex h-10 shrink-0 items-center justify-center rounded-ds-xl border border-app-border bg-app-sidebar px-4 text-sm font-medium text-ds-ink shadow-sm transition-colors hover:bg-ds-cream"
+              className="inline-flex h-10 shrink-0 items-center justify-center rounded-ds-xl border border-ds-border bg-ds-surface px-4 text-sm font-medium text-ds-ink shadow-ds-sm transition-colors hover:bg-ds-cream"
             >
               Convidar agora
             </Link>
@@ -538,7 +538,7 @@ export function DashboardView({
       ) : null}
 
       {noStages ? (
-        <p className="text-sm text-amber-800" role="status">
+        <p className="text-sm text-ds-warn" role="status">
           Não há etapas no kanban. Configure o quadro antes de criar jobs.
         </p>
       ) : null}
@@ -553,12 +553,12 @@ export function DashboardView({
 
       {needsAttention && attentionBannerDismissed === false ? (
         <div
-          className="relative rounded-ds-xl border border-amber-200/80 bg-amber-50/90 px-4 py-4 pr-12 sm:px-5 sm:pr-14"
+          className="relative rounded-ds-xl border border-ds-warn/20 bg-ds-warn-soft px-4 py-4 pr-12 sm:px-5 sm:pr-14"
           role="status"
         >
           <button
             type="button"
-            className="absolute right-2 top-2 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-ds-lg text-amber-900/60 transition-colors hover:bg-amber-100/80 hover:text-amber-950"
+            className="absolute right-2 top-2 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-ds-lg text-ds-warn/80 transition-colors hover:bg-ds-warn/10 hover:text-ds-warn"
             aria-label="Fechar aviso de prazos"
             onClick={() => {
               setAttentionBannerDismissed(true);
@@ -571,7 +571,7 @@ export function DashboardView({
           >
             <X className="h-4 w-4" aria-hidden />
           </button>
-          <p className="text-sm font-semibold text-amber-950">
+          <p className="text-sm font-semibold text-ds-warn">
             {metrics.overdue > 0 && metrics.dueSoon > 0
               ? `${metrics.overdue} atrasado(s) e ${metrics.dueSoon} com prazo em até 3 dias.`
               : metrics.overdue > 0
@@ -584,7 +584,7 @@ export function DashboardView({
                 type="button"
                 variant="secondary"
                 size="sm"
-                className="border-amber-200 bg-white"
+                className="border-ds-warn/20 bg-white"
                 onClick={() => router.push("/dashboard?attention=overdue")}
               >
                 Ver atrasados
@@ -595,7 +595,7 @@ export function DashboardView({
                 type="button"
                 variant="secondary"
                 size="sm"
-                className="border-amber-200 bg-white"
+                className="border-ds-warn/20 bg-white"
                 onClick={() => router.push("/dashboard?attention=dueSoon")}
               >
                 Ver prazo em até 3 dias
@@ -603,7 +603,7 @@ export function DashboardView({
             ) : null}
             <Link
               href="/board"
-              className="inline-flex h-8 items-center gap-1 rounded-ds-xl px-3 text-sm font-medium text-amber-950 underline-offset-4 hover:underline"
+              className="inline-flex h-8 items-center gap-1 rounded-ds-xl px-3 text-sm font-medium text-ds-warn underline-offset-4 hover:underline"
             >
               Abrir Edições
               <ExternalLink className="h-3.5 w-3.5" aria-hidden />
@@ -632,7 +632,7 @@ export function DashboardView({
           </Card>
           <Card className="p-4 shadow-sm">
             <div className="flex items-start gap-3">
-              <div className="rounded-ds-xl bg-red-50 p-2 text-red-700">
+              <div className="rounded-ds-xl bg-ds-danger-soft p-2 text-ds-danger">
                 <AlertCircle className="h-5 w-5 shrink-0" aria-hidden />
               </div>
               <div className="min-w-0">
@@ -643,7 +643,7 @@ export function DashboardView({
           </Card>
           <Card className="p-4 shadow-sm">
             <div className="flex items-start gap-3">
-              <div className="rounded-ds-xl bg-amber-50 p-2 text-amber-800">
+              <div className="rounded-ds-xl bg-ds-warn-soft p-2 text-ds-warn">
                 <CalendarClock className="h-5 w-5 shrink-0" aria-hidden />
               </div>
               <div className="min-w-0">
@@ -654,7 +654,7 @@ export function DashboardView({
           </Card>
           <Card className="hidden p-4 shadow-sm lg:block">
             <div className="flex items-start gap-3">
-              <div className="rounded-ds-xl bg-emerald-50 p-2 text-emerald-800">
+              <div className="rounded-ds-xl bg-ds-success-soft p-2 text-ds-success">
                 <PackageCheck className="h-5 w-5 shrink-0" aria-hidden />
               </div>
               <div className="min-w-0">
@@ -667,7 +667,7 @@ export function DashboardView({
           </Card>
           <Card className="hidden p-4 shadow-sm lg:block">
             <div className="flex items-start gap-3">
-              <div className="rounded-ds-xl bg-sky-50 p-2 text-sky-800">
+              <div className="rounded-ds-xl bg-ds-info-soft p-2 text-ds-info">
                 <CalendarDays className="h-5 w-5 shrink-0" aria-hidden />
               </div>
               <div className="min-w-0">
@@ -679,12 +679,12 @@ export function DashboardView({
             </div>
           </Card>
         </div>
-        <details className="mt-3 rounded-ds-xl border border-app-border bg-app-sidebar/60 px-3 py-2 lg:hidden">
+        <details className="mt-3 rounded-ds-xl border border-ds-border bg-ds-surface/60 px-3 py-2 lg:hidden">
           <summary className="cursor-pointer text-sm font-medium text-ds-ink">Mais indicadores</summary>
           <div className="mt-3 grid grid-cols-2 gap-3 pb-2">
             <Card className="p-4 shadow-sm">
               <div className="flex items-start gap-3">
-                <div className="rounded-ds-xl bg-emerald-50 p-2 text-emerald-800">
+                <div className="rounded-ds-xl bg-ds-success-soft p-2 text-ds-success">
                   <PackageCheck className="h-5 w-5 shrink-0" aria-hidden />
                 </div>
                 <div className="min-w-0">
@@ -697,7 +697,7 @@ export function DashboardView({
             </Card>
             <Card className="p-4 shadow-sm">
               <div className="flex items-start gap-3">
-                <div className="rounded-ds-xl bg-sky-50 p-2 text-sky-800">
+                <div className="rounded-ds-xl bg-ds-info-soft p-2 text-ds-info">
                   <CalendarDays className="h-5 w-5 shrink-0" aria-hidden />
                 </div>
                 <div className="min-w-0">
@@ -715,7 +715,7 @@ export function DashboardView({
       {errorMessage ? (
         <div
           role="alert"
-          className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-800"
+          className="rounded-xl border border-ds-danger/20 bg-ds-danger-soft px-4 py-3 text-sm text-ds-danger"
         >
           {errorMessage}
         </div>
@@ -749,7 +749,7 @@ export function DashboardView({
               <h2 id="dashboard-jobs-heading" className="text-lg font-semibold text-ds-ink">
                 Lista de jobs
               </h2>
-              <p className="text-xs text-ds-subtle">
+              <p className="text-xs text-ds-muted-2">
                 {tab === "done"
                   ? "Entregues ou concluídos ficam aqui para não poluir a fila."
                   : "Ativos, ordenados pelo prazo final mais próximo."}
@@ -763,7 +763,7 @@ export function DashboardView({
                 </label>
                 <div className="relative">
                   <Search
-                    className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ds-subtle"
+                    className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ds-muted-2"
                     aria-hidden
                   />
                   <input
@@ -772,7 +772,7 @@ export function DashboardView({
                     placeholder="Buscar por job, contato, etapa ou tipo…"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    className="w-full rounded-ds-xl border border-app-border bg-app-sidebar py-2.5 pl-10 pr-3 text-sm text-ds-ink shadow-sm placeholder:text-ds-subtle focus:border-app-primary/50 focus:outline-none focus:ring-2 focus:ring-app-primary/20"
+                    className="w-full rounded-ds-xl border border-ds-border bg-ds-surface py-2.5 pl-10 pr-3 text-sm text-ds-ink shadow-ds-sm placeholder:text-ds-muted-2 focus:border-ds-accent/50 focus:outline-none focus:ring-2 focus:ring-ds-accent/20"
                   />
                 </div>
               </div>
@@ -794,13 +794,13 @@ export function DashboardView({
           <Card className="p-4">
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <div className="inline-flex w-full rounded-ds-xl border border-app-border bg-app-sidebar p-1 sm:w-auto">
+                <div className="inline-flex w-full rounded-ds-xl border border-ds-border bg-ds-surface p-1 sm:w-auto">
                   <button
                     type="button"
                     className={cn(
                       "flex-1 rounded-ds-xl px-3 py-2 text-sm font-medium transition-colors sm:flex-none",
                       tab === "active"
-                        ? "bg-app-canvas text-ds-ink shadow-sm"
+                        ? "bg-ds-cream text-ds-ink shadow-sm"
                         : "text-ds-muted hover:text-ds-ink"
                     )}
                     onClick={() => setTab("active")}
@@ -813,7 +813,7 @@ export function DashboardView({
                     className={cn(
                       "flex-1 rounded-ds-xl px-3 py-2 text-sm font-medium transition-colors sm:flex-none",
                       tab === "done"
-                        ? "bg-app-canvas text-ds-ink shadow-sm"
+                        ? "bg-ds-cream text-ds-ink shadow-sm"
                         : "text-ds-muted hover:text-ds-ink"
                     )}
                     onClick={() => setTab("done")}
@@ -873,10 +873,10 @@ export function DashboardView({
                 </div>
               ) : (
                 <>
-                  <div className="hidden overflow-hidden rounded-ds-xl border border-app-border lg:block">
+                  <div className="hidden overflow-hidden rounded-ds-xl border border-ds-border lg:block">
                     <table className="w-full border-collapse text-left text-sm">
                       <thead>
-                        <tr className="border-b border-app-border bg-ds-cream/90">
+                        <tr className="border-b border-ds-border bg-ds-cream/90">
                           <th className="px-4 py-3 font-medium text-ds-muted">Job</th>
                           <th className="px-4 py-3 font-medium text-ds-muted">Trabalho / entrega</th>
                           <th className="px-4 py-3 font-medium text-ds-muted">Prazos</th>
@@ -906,7 +906,7 @@ export function DashboardView({
                               <td className="px-4 py-3">
                                 <div className="flex min-w-0 flex-col gap-1">
                                   <span className="truncate font-medium text-ds-ink">{j.name}</span>
-                                  <span className="text-xs text-ds-subtle">
+                                  <span className="text-xs text-ds-muted-2">
                                     Criado por{" "}
                                     {j.created_by ? membersById.get(j.created_by)?.name ?? "—" : "—"}
                                   </span>
@@ -926,9 +926,11 @@ export function DashboardView({
                                     <span className="text-xs text-ds-muted">
                                       Final {formatDeadlinePt(j.deadline)}
                                     </span>
-                                    {dlBadge ? <Badge kind="deadline" value={dlBadge} /> : null}
+                                    {dlBadge ? (
+                                    <Badge kind="deadline" value={dlBadge} label={formatDeadlinePt(j.deadline)} />
+                                  ) : null}
                                   </div>
-                                  <span className="text-xs text-ds-subtle">
+                                  <span className="text-xs text-ds-muted-2">
                                     Interno {formatDeadlinePt(j.internal_deadline)}
                                   </span>
                                 </div>
@@ -975,7 +977,7 @@ export function DashboardView({
                                     type="button"
                                     variant="ghost"
                                     size="sm"
-                                    className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                                    className="h-8 w-8 p-0 text-ds-danger hover:bg-ds-danger-soft hover:text-ds-danger"
                                     aria-label={`Excluir ${j.name}`}
                                     onClick={() => {
                                       setErrorMessage(null);
@@ -1004,11 +1006,13 @@ export function DashboardView({
                             <div className="min-w-0 flex-1 space-y-2">
                               <p className="font-semibold text-ds-ink">{j.name}</p>
                               <div className="flex flex-wrap items-center gap-2">
-                                <span className="text-xs text-ds-subtle">
+                                <span className="text-xs text-ds-muted-2">
                                   {j.job_work_types?.name ?? "—"}
                                 </span>
                                 <Badge kind="job-type" value={jobTypeBadgeForList(j, jobs)} />
-                                {dlBadge ? <Badge kind="deadline" value={dlBadge} /> : null}
+                                {dlBadge ? (
+                                    <Badge kind="deadline" value={dlBadge} label={formatDeadlinePt(j.deadline)} />
+                                  ) : null}
                               </div>
                               <div className="flex flex-wrap items-center gap-2">
                                 <ProximityPill deadline={j.deadline} />
@@ -1025,7 +1029,7 @@ export function DashboardView({
                               <p className="text-sm text-ds-muted">
                                 Contato: {j.contacts?.name ?? "—"}
                               </p>
-                              <p className="text-sm text-ds-subtle">
+                              <p className="text-sm text-ds-muted-2">
                                 Etapa: {j.kanban_stages?.name ?? "—"}
                               </p>
                               {j.delivery_link ? (
@@ -1058,7 +1062,7 @@ export function DashboardView({
                                 type="button"
                                 variant="ghost"
                                 size="sm"
-                                className="h-8 w-8 p-0 text-red-600 hover:bg-red-50"
+                                className="h-8 w-8 p-0 text-ds-danger hover:bg-ds-danger-soft"
                                 aria-label={`Excluir ${j.name}`}
                                 onClick={() => {
                                   setErrorMessage(null);
@@ -1075,7 +1079,7 @@ export function DashboardView({
                   </div>
 
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-xs text-ds-subtle">
+                    <p className="text-xs text-ds-muted-2">
                       Mostrando{" "}
                       <span className="font-medium text-ds-ink">
                         {Math.min(totalItems, (safePage - 1) * pageSize + 1)}–
@@ -1219,7 +1223,7 @@ export function DashboardView({
                     "rounded-ds-lg px-2.5 py-1.5 text-left text-xs font-medium transition sm:text-sm",
                     editJobTab === t.id
                       ? "bg-ds-cream text-ds-ink shadow-sm"
-                      : "text-ds-subtle hover:bg-ds-cream/60 hover:text-ds-ink"
+                      : "text-ds-muted-2 hover:bg-ds-cream/60 hover:text-ds-ink"
                   )}
                 >
                   {t.label}

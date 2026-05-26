@@ -10,8 +10,8 @@ import { createCard, deleteCard, moveCard, type RoadmapCard, type RoadmapColumn 
 
 const COLUMNS: { id: RoadmapColumn; label: string; color: string }[] = [
   { id: "ideia", label: "Ideia", color: "bg-violet-100 text-violet-800" },
-  { id: "executando", label: "Executando", color: "bg-amber-100 text-amber-800" },
-  { id: "aplicado", label: "Aplicado", color: "bg-green-100 text-green-800" },
+  { id: "executando", label: "Executando", color: "bg-ds-warn-soft text-ds-warn" },
+  { id: "aplicado", label: "Aplicado", color: "bg-ds-success-soft text-ds-success" },
 ];
 
 const COLUMN_ORDER: RoadmapColumn[] = ["ideia", "executando", "aplicado"];
@@ -70,7 +70,7 @@ function KanbanColumn({ column, cards, onCardCreated, onCardMoved, onCardDeleted
   const [showForm, setShowForm] = useState(false);
 
   return (
-    <div className="flex flex-col gap-3 rounded-ds-xl border border-app-border bg-app-canvas p-4">
+    <div className="flex flex-col gap-3 rounded-ds-xl border border-ds-border bg-ds-cream p-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${column.color}`}>
@@ -100,7 +100,7 @@ function KanbanColumn({ column, cards, onCardCreated, onCardMoved, onCardDeleted
 
       <div className="flex flex-col gap-2">
         {cards.length === 0 && !showForm && (
-          <p className="py-4 text-center text-xs text-ds-subtle">Nenhum card ainda.</p>
+          <p className="py-4 text-center text-xs text-ds-muted-2">Nenhum card ainda.</p>
         )}
         {cards.map((card) => (
           <KanbanCard
@@ -152,13 +152,13 @@ function AddCardForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-2 rounded-ds-xl border border-app-border bg-app-sidebar p-3">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-2 rounded-ds-xl border border-ds-border bg-ds-surface p-3">
       <input
         autoFocus
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Título"
-        className="w-full rounded-ds-lg border border-app-border bg-app-canvas px-3 py-1.5 text-sm text-ds-ink placeholder:text-ds-subtle focus:outline-none focus:ring-2 focus:ring-app-primary/25"
+        className="w-full rounded-ds-lg border border-ds-border bg-ds-cream px-3 py-1.5 text-sm text-ds-ink placeholder:text-ds-muted-2 focus:outline-none focus:ring-2 focus:ring-ds-accent/25"
         required
       />
       <textarea
@@ -166,7 +166,7 @@ function AddCardForm({
         onChange={(e) => setDescription(e.target.value)}
         placeholder="Descrição (opcional)"
         rows={2}
-        className="w-full resize-none rounded-ds-lg border border-app-border bg-app-canvas px-3 py-1.5 text-sm text-ds-ink placeholder:text-ds-subtle focus:outline-none focus:ring-2 focus:ring-app-primary/25"
+        className="w-full resize-none rounded-ds-lg border border-ds-border bg-ds-cream px-3 py-1.5 text-sm text-ds-ink placeholder:text-ds-muted-2 focus:outline-none focus:ring-2 focus:ring-ds-accent/25"
       />
       <div className="flex items-center gap-2">
         <Button type="submit" size="sm" disabled={isPending || !title.trim()} className="gap-1.5">
@@ -213,7 +213,7 @@ function KanbanCard({
 
   return (
     <div
-      className={`flex flex-col gap-2 rounded-ds-xl border border-app-border bg-app-sidebar p-3 transition-opacity ${isPending ? "opacity-50" : ""}`}
+      className={`flex flex-col gap-2 rounded-ds-xl border border-ds-border bg-ds-surface p-3 transition-opacity ${isPending ? "opacity-50" : ""}`}
     >
       <p className="text-sm font-semibold leading-snug text-ds-ink">{card.title}</p>
       {card.description && (
@@ -246,7 +246,7 @@ function KanbanCard({
         <button
           onClick={handleDelete}
           disabled={isPending}
-          className="flex h-6 w-6 items-center justify-center rounded text-ds-subtle transition-colors hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed"
+          className="flex h-6 w-6 items-center justify-center rounded text-ds-muted-2 transition-colors hover:bg-ds-danger-soft hover:text-ds-danger disabled:cursor-not-allowed"
           aria-label="Excluir card"
         >
           <Trash2 className="h-3.5 w-3.5" />

@@ -33,8 +33,8 @@ const STATUS_LABELS: Record<SupportTicketStatus, string> = {
 };
 
 const STATUS_CLASSES: Record<SupportTicketStatus, string> = {
-  open: "bg-blue-50 text-blue-700",
-  answered: "bg-green-50 text-green-700",
+  open: "bg-ds-info-soft text-ds-info",
+  answered: "bg-ds-success-soft text-ds-success",
   closed: "bg-ds-cream text-ds-muted",
 };
 
@@ -77,8 +77,8 @@ export function SupportView({ tickets }: SupportViewProps) {
       </div>
 
       {tickets.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-ds-xl border border-dashed border-app-border py-16 text-center">
-          <HeadphonesIcon className="h-10 w-10 text-ds-subtle" />
+        <div className="flex flex-col items-center gap-3 rounded-ds-xl border border-dashed border-ds-border py-16 text-center">
+          <HeadphonesIcon className="h-10 w-10 text-ds-muted-2" />
           <p className="text-sm font-medium text-ds-muted">Nenhum ticket aberto ainda.</p>
           <Button variant="secondary" size="sm" onClick={() => setModalOpen(true)}>
             Abrir primeiro ticket
@@ -101,7 +101,7 @@ export function SupportView({ tickets }: SupportViewProps) {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-5">
           <div className="flex flex-col gap-1.5">
             <label htmlFor="support-category" className="text-sm font-medium text-ds-ink">
-              Assunto <span className="text-red-500">*</span>
+              Assunto <span className="text-ds-danger">*</span>
             </label>
             <select
               id="support-category"
@@ -109,7 +109,7 @@ export function SupportView({ tickets }: SupportViewProps) {
               required
               value={category}
               onChange={(e) => setCategory(e.target.value as SupportTicketCategory)}
-              className="h-10 w-full rounded-ds-xl border border-app-border bg-app-canvas px-3 text-sm text-ds-ink focus:outline-none focus:ring-2 focus:ring-app-primary/25"
+              className="h-10 w-full rounded-ds-xl border border-ds-border bg-ds-cream px-3 text-sm text-ds-ink focus:outline-none focus:ring-2 focus:ring-ds-accent/25"
             >
               {SUPPORT_CATEGORIES.map((c) => (
                 <option key={c.value} value={c.value}>
@@ -121,7 +121,7 @@ export function SupportView({ tickets }: SupportViewProps) {
 
           <div className="flex flex-col gap-1.5">
             <label htmlFor="support-description" className="text-sm font-medium text-ds-ink">
-              Descreva o problema ou dúvida <span className="text-red-500">*</span>
+              Descreva o problema ou dúvida <span className="text-ds-danger">*</span>
             </label>
             <Textarea
               id="support-description"
@@ -165,17 +165,17 @@ function TicketRow({ ticket }: { ticket: TicketSummary }) {
   return (
     <Link
       href={`/support/${ticket.id}`}
-      className="flex items-center gap-4 rounded-ds-xl border border-app-border bg-app-sidebar px-4 py-3.5 transition-shadow hover:shadow-ds-sm"
+      className="flex items-center gap-4 rounded-ds-xl border border-ds-border bg-ds-surface px-4 py-3.5 transition-shadow hover:shadow-ds-sm"
     >
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <p className="truncate text-sm font-semibold text-ds-ink">{categoryLabel}</p>
           {ticket.hasUnreadReply && (
-            <span className="inline-flex h-2 w-2 shrink-0 rounded-full bg-app-primary" />
+            <span className="inline-flex h-2 w-2 shrink-0 rounded-full bg-ds-accent" />
           )}
         </div>
         <p className="mt-0.5 line-clamp-1 text-xs text-ds-muted">{ticket.description}</p>
-        <p className="mt-1 text-xs text-ds-subtle">{date}</p>
+        <p className="mt-1 text-xs text-ds-muted-2">{date}</p>
       </div>
       <div className="flex shrink-0 items-center gap-3">
         <span
@@ -183,7 +183,7 @@ function TicketRow({ ticket }: { ticket: TicketSummary }) {
         >
           {STATUS_LABELS[ticket.status]}
         </span>
-        <ChevronRight className="h-4 w-4 text-ds-subtle" />
+        <ChevronRight className="h-4 w-4 text-ds-muted-2" />
       </div>
     </Link>
   );

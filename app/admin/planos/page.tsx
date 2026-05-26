@@ -11,7 +11,7 @@ export default async function AdminPlanosPage({
   const svc = createServiceRoleClient();
   if (!svc) {
     return (
-      <div className="rounded-ds-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+      <div className="rounded-ds-xl border border-ds-warn/30 bg-ds-warn-soft p-4 text-sm text-ds-ink">
         Configure <code className="rounded bg-white/60 px-1">SUPABASE_SERVICE_ROLE_KEY</code> para
         listar contas.
       </div>
@@ -39,12 +39,12 @@ export default async function AdminPlanosPage({
             name="q"
             placeholder="Nome do estúdio"
             defaultValue={q}
-            className="bg-app-sidebar"
+            className="bg-ds-surface"
           />
         </label>
         <button
           type="submit"
-          className="h-10 shrink-0 rounded-ds-xl bg-app-primary px-4 text-sm font-medium text-white hover:brightness-95"
+          className="h-10 shrink-0 rounded-ds-xl bg-ds-accent px-4 text-sm font-medium text-white hover:brightness-95"
         >
           Buscar
         </button>

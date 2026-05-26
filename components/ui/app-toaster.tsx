@@ -5,18 +5,23 @@ import { Toaster } from "sonner";
 export function AppToaster() {
   return (
     <Toaster
-      position="top-center"
+      position="bottom-right"
       closeButton
       duration={4000}
       toastOptions={{
         classNames: {
           toast:
-            "!rounded-ds-xl !border !border-app-border !bg-app-sidebar !text-ds-ink !shadow-ds-md",
-          title: "!text-ds-ink !font-semibold",
-          description: "!text-ds-muted",
-          success: "!border-l-[3px] !border-l-app-primary",
-          error: "!border-l-[3px] !border-l-red-500 !bg-red-50/90",
-          closeButton: "!text-ds-subtle hover:!text-ds-ink",
+            "!rounded-ds-lg !border-0 !bg-ds-ink !text-white !shadow-ds-pop",
+          title:
+            "!text-white !font-medium",
+          description:
+            "!text-white/70 !text-sm",
+          closeButton:
+            "!border !border-white/20 !bg-ds-ink !text-white/60 hover:!text-white",
+          error:
+            "!bg-ds-danger",
+          success:
+            "!bg-ds-ink",
         },
       }}
     />

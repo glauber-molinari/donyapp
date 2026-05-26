@@ -15,7 +15,7 @@ export function Spinner({ className, label = "Carregando…" }: SpinnerProps) {
       role="status"
       aria-label={label}
     >
-      <Loader2 className="h-4 w-4 shrink-0 animate-spin text-app-primary" aria-hidden />
+      <Loader2 className="h-4 w-4 shrink-0 animate-spin text-ds-accent" aria-hidden />
     </span>
   );
 }

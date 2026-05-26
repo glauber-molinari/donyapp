@@ -18,9 +18,9 @@ export default function AppError({
   }, [error]);
 
   return (
-    <div className="flex min-h-[40vh] flex-col items-start justify-center gap-4 rounded-ds-xl border border-red-100 bg-red-50/80 p-6">
-      <h2 className="text-lg font-semibold text-red-950">Algo deu errado nesta área</h2>
-      <p className="text-sm text-red-900/90">
+    <div className="flex min-h-[40vh] flex-col items-start justify-center gap-4 rounded-ds-xl border border-ds-danger/20 bg-ds-danger-soft p-6">
+      <h2 className="text-lg font-semibold text-ds-danger">Algo deu errado nesta área</h2>
+      <p className="text-sm text-ds-danger">
         Não foi possível carregar o conteúdo. Verifique sua conexão e tente de novo.
       </p>
       <Button type="button" variant="secondary" onClick={reset}>

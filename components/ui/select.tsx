@@ -242,11 +242,13 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             onKeyDown={onKeyDownButton}
             onClick={() => !disabled && setOpen((o) => !o)}
             className={cn(
-              "flex w-full items-center justify-between gap-2 rounded-ds-xl border border-app-border bg-app-sidebar py-2.5 pl-3 pr-3 text-left text-sm shadow-sm transition-colors",
-              "focus:border-app-primary/50 focus:outline-none focus:ring-2 focus:ring-app-primary/20",
-              "disabled:cursor-not-allowed disabled:bg-ds-cream disabled:text-ds-subtle",
-              error && "border-red-200 focus:border-red-300 focus:ring-red-200/40",
-              showPlaceholderStyle && "text-ds-subtle",
+              "flex w-full items-center justify-between gap-2 rounded-ds-lg border border-ds-border bg-ds-surface py-2.5 pl-3 pr-3 text-left text-sm",
+              "transition-[border-color,box-shadow] duration-ds-fast ease-out",
+              "focus:border-ds-accent focus:outline-none focus:ring-2 focus:ring-[rgba(255,85,0,0.18)]",
+              "disabled:cursor-not-allowed disabled:bg-ds-cream disabled:text-ds-muted",
+              error &&
+                "border-ds-danger focus:border-ds-danger focus:ring-[rgba(196,56,56,0.18)]",
+              showPlaceholderStyle && "text-ds-muted-2",
               !showPlaceholderStyle && "text-ds-ink",
               className
             )}
@@ -254,7 +256,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             <span className="min-w-0 truncate">{displayText}</span>
             <ChevronDown
               className={cn(
-                "h-4 w-4 shrink-0 text-ds-subtle transition-transform duration-ds ease-out",
+                "h-4 w-4 shrink-0 text-ds-muted-2 transition-transform duration-ds ease-out",
                 open && "rotate-180"
               )}
               aria-hidden
@@ -268,7 +270,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
               role="listbox"
               tabIndex={-1}
               onKeyDown={onKeyDownList}
-              className="absolute left-0 right-0 top-[calc(100%+4px)] z-50 max-h-60 overflow-auto rounded-ds-xl border border-app-border bg-app-sidebar py-1 shadow-ds-md ring-1 ring-ds-ink/5"
+              className="absolute left-0 right-0 top-[calc(100%+4px)] z-50 max-h-60 overflow-auto rounded-ds-lg border border-ds-border bg-ds-surface py-1 shadow-ds-md"
             >
               {options.map((opt, i) => {
                 const selected = opt.value === currentValue;
@@ -281,8 +283,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
                     aria-selected={selected}
                     data-highlighted={highlighted || undefined}
                     className={cn(
-                      "cursor-pointer px-3 py-2 text-sm outline-none transition-colors",
-                      selected && "bg-app-primary/10 font-medium text-ds-ink",
+                      "cursor-pointer px-3 py-2 text-sm outline-none transition-colors duration-ds-fast",
+                      selected && "bg-ds-accent-soft font-medium text-ds-ink",
                       !selected && "text-ds-ink",
                       highlighted && !selected && "bg-ds-cream",
                       !highlighted && !selected && "hover:bg-ds-cream"
@@ -302,7 +304,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         </div>
 
         {error ? (
-          <p id={`${id}-error`} className="text-xs text-red-600" role="alert">
+          <p id={`${id}-error`} className="text-xs text-ds-danger" role="alert">
             {error}
           </p>
         ) : null}

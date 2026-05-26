@@ -298,7 +298,7 @@ export function EditorView({ template }: Props) {
             role="switch"
             aria-checked={active}
             onClick={() => setActive((v) => !v)}
-            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent/30 ${active ? "bg-green-500" : "bg-ds-elevated"
+            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent/30 ${active ? "bg-ds-accent" : "bg-ds-elevated"
               }`}
           >
             <span
@@ -397,7 +397,7 @@ function FieldCard({
             type="button"
             onClick={onMoveUp}
             disabled={idx === 0}
-            className="rounded p-0.5 text-ds-subtle hover:bg-ds-elevated disabled:opacity-30"
+            className="rounded p-0.5 text-ds-muted-2 hover:bg-ds-elevated disabled:opacity-30"
             title="Mover para cima"
           >
             <ChevronUp className="h-4 w-4" />
@@ -406,7 +406,7 @@ function FieldCard({
             type="button"
             onClick={onMoveDown}
             disabled={idx === total - 1}
-            className="rounded p-0.5 text-ds-subtle hover:bg-ds-elevated disabled:opacity-30"
+            className="rounded p-0.5 text-ds-muted-2 hover:bg-ds-elevated disabled:opacity-30"
             title="Mover para baixo"
           >
             <ChevronDown className="h-4 w-4" />
@@ -449,7 +449,7 @@ function FieldCard({
                   <button
                     type="button"
                     onClick={() => onRemoveOption(oi)}
-                    className="rounded p-1 text-ds-subtle hover:text-red-500"
+                    className="rounded p-1 text-ds-muted-2 hover:text-ds-danger"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
@@ -482,7 +482,7 @@ function FieldCard({
             type="button"
             onClick={onDuplicate}
             title="Duplicar"
-            className="rounded p-1.5 text-ds-subtle hover:bg-ds-elevated hover:text-ds-ink"
+            className="rounded p-1.5 text-ds-muted-2 hover:bg-ds-elevated hover:text-ds-ink"
           >
             <Copy className="h-4 w-4" />
           </button>
@@ -490,7 +490,7 @@ function FieldCard({
             type="button"
             onClick={onRemove}
             title="Excluir"
-            className="rounded p-1.5 text-ds-subtle hover:bg-red-50 hover:text-red-500"
+            className="rounded p-1.5 text-ds-muted-2 hover:bg-ds-danger-soft hover:text-ds-danger"
           >
             <Trash2 className="h-4 w-4" />
           </button>

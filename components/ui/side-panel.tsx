@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 // ─── Shared field primitives ──────────────────────────────────────────────────
 
 export const panelInputCls =
-  "w-full rounded-lg border border-ds-border bg-ds-cream px-3 py-2 text-sm text-ds-ink placeholder:text-ds-subtle focus:border-ds-accent/50 focus:outline-none focus:ring-2 focus:ring-ds-accent/20";
+  "w-full rounded-lg border border-ds-border bg-ds-cream px-3 py-2 text-sm text-ds-ink placeholder:text-ds-muted-2 focus:border-ds-accent/50 focus:outline-none focus:ring-2 focus:ring-ds-accent/20";
 
 export const panelSelectCls =
   "w-full rounded-lg border border-ds-border bg-ds-cream px-3 py-2 text-sm text-ds-ink focus:border-ds-accent/50 focus:outline-none focus:ring-2 focus:ring-ds-accent/20 appearance-none";
@@ -127,7 +127,7 @@ export function SidePanel({
                 type="button"
                 onClick={onClose}
                 aria-label="Fechar"
-                className="rounded-lg p-1.5 text-ds-subtle hover:bg-ds-cream hover:text-ds-ink transition-colors"
+                className="rounded-lg p-1.5 text-ds-muted-2 hover:bg-ds-cream hover:text-ds-ink transition-colors"
               >
                 <X className="h-4 w-4" />
               </button>

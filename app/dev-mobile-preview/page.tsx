@@ -35,7 +35,7 @@ export default function DevMobilePreviewPage() {
         <button
           type="button"
           aria-label="Novo job (FAB demo)"
-          className="fixed right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-app-primary text-white shadow-lg shadow-app-primary/30 md:hidden"
+          className="fixed right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-ds-accent text-white shadow-lg shadow-ds-accent/30 md:hidden"
           style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 5rem)" }}
         >
           <Plus className="h-6 w-6" aria-hidden />
@@ -50,9 +50,9 @@ export default function DevMobilePreviewPage() {
           ].map((card) => (
             <div
               key={card.label}
-              className="rounded-ds-xl border border-app-border bg-app-sidebar p-4 shadow-ds-sm"
+              className="rounded-ds-xl border border-ds-border bg-ds-surface p-4 shadow-ds-sm"
             >
-              <p className="text-xs font-medium uppercase tracking-wide text-ds-subtle">
+              <p className="text-xs font-medium uppercase tracking-wide text-ds-muted-2">
                 {card.label}
               </p>
               <p className="mt-1 text-2xl font-bold text-ds-ink">{card.value}</p>
@@ -60,9 +60,9 @@ export default function DevMobilePreviewPage() {
           ))}
         </div>
 
-        <div className="rounded-ds-xl border border-app-border bg-app-sidebar p-4 shadow-ds-sm">
+        <div className="rounded-ds-xl border border-ds-border bg-ds-surface p-4 shadow-ds-sm">
           <h2 className="text-sm font-semibold text-ds-ink">Próximos prazos</h2>
-          <ul className="mt-3 divide-y divide-app-border">
+          <ul className="mt-3 divide-y divide-ds-border">
             {[
               "Casamento Ana & Pedro — sex 15",
               "Ensaio Maternidade — sáb 16",

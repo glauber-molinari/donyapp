@@ -161,7 +161,7 @@ export function NewJobForm({
       <input type="hidden" name="assignee_picker_option_count" value={assigneePickerOptions.length} />
 
       <div
-        className="flex gap-0.5 rounded-ds-xl border border-app-border bg-ds-cream/40 p-1"
+        className="flex gap-0.5 rounded-ds-lg border border-ds-border bg-ds-cream/40 p-1"
         role="tablist"
         aria-label="Seções do formulário"
       >
@@ -172,7 +172,7 @@ export function NewJobForm({
           className={cn(
             "flex-1 rounded-xl px-3 py-2 text-sm font-medium transition-colors",
             tab === "info"
-              ? "bg-app-sidebar text-ds-ink shadow-sm"
+              ? "bg-ds-surface text-ds-ink shadow-ds-sm"
               : "text-ds-muted hover:text-ds-ink"
           )}
           onClick={() => setTab("info")}
@@ -186,7 +186,7 @@ export function NewJobForm({
           className={cn(
             "flex-1 rounded-xl px-3 py-2 text-sm font-medium transition-colors",
             tab === "prazos"
-              ? "bg-app-sidebar text-ds-ink shadow-sm"
+              ? "bg-ds-surface text-ds-ink shadow-ds-sm"
               : "text-ds-muted hover:text-ds-ink"
           )}
           onClick={() => setTab("prazos")}
@@ -241,7 +241,7 @@ export function NewJobForm({
             defaultValue={initialValues?.work_type_id ?? ""}
           />
           {workTypeOptions.length === 0 ? (
-            <p className="text-xs text-amber-800">
+            <p className="text-xs text-ds-warn">
               Adicione tipos em <strong>Configurações → Kanban</strong>.
             </p>
           ) : null}
@@ -362,9 +362,9 @@ export function NewJobForm({
           </PanelFieldCard>
 
           {deliveryType === "foto_video" ? (
-            <div className="rounded-ds-xl border border-sky-200 bg-sky-50/90 p-4">
-              <p className="text-sm font-semibold text-sky-950">Edição de vídeo</p>
-              <p className="mt-1 text-xs text-sky-900/85">
+            <div className="rounded-ds-lg border border-ds-info/20 bg-ds-info-soft p-4">
+              <p className="text-sm font-semibold text-ds-ink">Edição de vídeo</p>
+              <p className="mt-1 text-xs text-ds-info">
                 Será criado um card adicional no quadro só para acompanhar a edição de vídeo deste
                 job.
               </p>

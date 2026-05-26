@@ -112,7 +112,7 @@ export function ActivationChecklist({
 
   return (
     <section
-      className="rounded-ds-xl border border-app-border bg-gradient-to-br from-app-sidebar to-ds-cream/40 p-4 shadow-sm sm:p-5"
+      className="rounded-ds-card border border-ds-border bg-gradient-to-br from-ds-surface to-ds-cream/40 p-4 shadow-ds-sm sm:p-5"
       aria-labelledby="activation-checklist-heading"
     >
       <div className="flex items-start justify-between gap-3">
@@ -127,16 +127,16 @@ export function ActivationChecklist({
         <button
           type="button"
           onClick={dismiss}
-          className="shrink-0 rounded-ds-xl p-1.5 text-ds-subtle transition hover:bg-white/60 hover:text-ds-ink"
+          className="shrink-0 rounded-ds-lg p-1.5 text-ds-muted transition-colors duration-ds-fast hover:bg-ds-cream hover:text-ds-ink"
           aria-label="Ocultar checklist"
         >
           <X className="h-4 w-4" />
         </button>
       </div>
 
-      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-app-border">
+      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-ds-hairline">
         <div
-          className="h-full rounded-full bg-app-primary transition-[width] duration-300"
+          className="h-full rounded-full bg-ds-accent transition-[width] duration-ds-modal"
           style={{ inlineSize: `${(doneCount / steps.length) * 100}%` }}
         />
       </div>
@@ -147,18 +147,18 @@ export function ActivationChecklist({
             <Link
               href={step.href}
               className={cn(
-                "flex items-center gap-3 rounded-ds-xl border px-3 py-2.5 text-sm transition",
+                "flex items-center gap-3 rounded-ds-lg border px-3 py-2.5 text-sm transition-colors duration-ds-fast",
                 step.done
-                  ? "border-emerald-200/80 bg-emerald-50/50 text-emerald-900"
-                  : "border-app-border bg-app-sidebar/80 text-ds-ink hover:border-app-primary/30 hover:bg-white/70",
+                  ? "border-ds-success/25 bg-ds-success-soft/50 text-ds-ink"
+                  : "border-ds-border bg-ds-surface text-ds-ink hover:border-ds-accent/30 hover:bg-ds-cream/60",
               )}
             >
               <span
                 className={cn(
                   "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-bold",
                   step.done
-                    ? "border-emerald-300 bg-emerald-100 text-emerald-800"
-                    : "border-app-border bg-white text-ds-subtle",
+                    ? "border-ds-success/35 bg-ds-success-soft text-ds-success"
+                    : "border-ds-border bg-ds-surface text-ds-muted",
                 )}
                 aria-hidden
               >
@@ -175,7 +175,7 @@ export function ActivationChecklist({
                 ) : null}
               </span>
               {!step.done ? (
-                <ChevronRight className="h-4 w-4 shrink-0 text-ds-subtle" aria-hidden />
+                <ChevronRight className="h-4 w-4 shrink-0 text-ds-muted-2" aria-hidden />
               ) : null}
             </Link>
           </li>

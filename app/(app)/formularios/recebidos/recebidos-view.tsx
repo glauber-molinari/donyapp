@@ -281,7 +281,7 @@ export function RecebidosView({ submissions, templateMap }: Props) {
                       <button
                         type="button"
                         onClick={() => handleDeleteOne(sub.id)}
-                        className="rounded p-1.5 text-ds-subtle hover:bg-red-50 hover:text-red-500"
+                        className="rounded p-1.5 text-ds-muted-2 hover:bg-ds-danger-soft hover:text-ds-danger"
                         title="Excluir"
                         disabled={isPending}
                       >
@@ -331,7 +331,7 @@ function SubmissionDetail({ submission, fields, data, onDelete, isPending }: Sub
       <p className="text-xs text-ds-muted">
         Recebido em {formatDate(submission.submitted_at)}
         {submission.linked_job_id && (
-          <span className="ml-3 rounded bg-green-100 px-2 py-0.5 font-medium text-green-700">
+          <span className="ml-3 rounded bg-ds-success-soft px-2 py-0.5 font-medium text-ds-success">
             Vinculado a um trabalho
           </span>
         )}

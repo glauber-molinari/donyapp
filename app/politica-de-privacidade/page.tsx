@@ -31,7 +31,7 @@ export default function PrivacyPolicyPage() {
         <h1 className="text-balance text-3xl font-extrabold tracking-tight sm:text-4xl">
           Política de Privacidade
         </h1>
-        <p className="mt-3 text-sm text-ds-subtle">Atualizado em {UPDATED_AT}.</p>
+        <p className="mt-3 text-sm text-ds-muted-2">Atualizado em {UPDATED_AT}.</p>
 
         <div className="mt-10 space-y-10">
           <section className="space-y-3">

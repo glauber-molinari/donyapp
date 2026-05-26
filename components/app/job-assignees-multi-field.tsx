@@ -77,7 +77,7 @@ function AvatarCircle({
 }
 
 const inputCls =
-  "w-full rounded-lg border border-ds-border bg-ds-cream px-3 py-2 text-sm text-ds-ink placeholder:text-ds-subtle focus:border-ds-accent/50 focus:outline-none focus:ring-2 focus:ring-ds-accent/20";
+  "w-full rounded-lg border border-ds-border bg-ds-cream px-3 py-2 text-sm text-ds-ink placeholder:text-ds-muted-2 focus:border-ds-accent/50 focus:outline-none focus:ring-2 focus:ring-ds-accent/20";
 
 export function JobAssigneesMultiField({
   id,
@@ -201,7 +201,7 @@ export function JobAssigneesMultiField({
                       type="button"
                       disabled={disabled}
                       onClick={() => removeToken(token)}
-                      className="ml-0.5 text-ds-subtle hover:text-red-500"
+                      className="ml-0.5 text-ds-muted-2 hover:text-red-500"
                       aria-label={`Remover ${o.label}`}
                     >
                       <X className="h-3 w-3" />
@@ -233,7 +233,7 @@ export function JobAssigneesMultiField({
               />
               <div className="max-h-44 overflow-y-auto rounded-lg border border-ds-border bg-white [scrollbar-width:thin]">
                 {availableFiltered.length === 0 ? (
-                  <p className="px-3 py-4 text-center text-xs text-ds-subtle">
+                  <p className="px-3 py-4 text-center text-xs text-ds-muted-2">
                     {options.length === 0
                       ? "Nenhum membro ou responsável cadastrado."
                       : "Nenhuma pessoa encontrada."}
@@ -250,7 +250,7 @@ export function JobAssigneesMultiField({
                       <AvatarCircle name={o.label} email={o.email} avatarUrl={o.avatarUrl} size="md" />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium text-ds-ink">{o.label}</p>
-                        <p className="truncate text-[11px] text-ds-subtle">{o.email}</p>
+                        <p className="truncate text-[11px] text-ds-muted-2">{o.email}</p>
                       </div>
                     </button>
                   ))
@@ -262,7 +262,7 @@ export function JobAssigneesMultiField({
                   setPickerOpen(false);
                   setQuery("");
                 }}
-                className="self-start text-xs text-ds-subtle hover:text-ds-ink"
+                className="self-start text-xs text-ds-muted-2 hover:text-ds-ink"
               >
                 Cancelar
               </button>
@@ -272,7 +272,7 @@ export function JobAssigneesMultiField({
               type="button"
               disabled={disabled}
               onClick={() => setPickerOpen(true)}
-              className="flex items-center gap-1.5 text-xs text-ds-subtle hover:text-ds-accent"
+              className="flex items-center gap-1.5 text-xs text-ds-muted-2 hover:text-ds-accent"
             >
               <UserPlus className="h-3.5 w-3.5" />
               Adicionar pessoa da equipe

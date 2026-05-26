@@ -86,7 +86,7 @@ export function SettingsWorkTypesSection({ workTypes, isAdmin }: SettingsWorkTyp
       {errorMessage ? (
         <div
           role="alert"
-          className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-800"
+          className="rounded-xl border border-ds-danger/20 bg-ds-danger-soft px-4 py-3 text-sm text-ds-danger"
         >
           {errorMessage}
         </div>
@@ -105,7 +105,7 @@ export function SettingsWorkTypesSection({ workTypes, isAdmin }: SettingsWorkTyp
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 shrink-0 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                  className="h-8 w-8 shrink-0 p-0 text-ds-danger hover:bg-ds-danger-soft hover:text-ds-danger"
                   aria-label={`Excluir tipo ${wt.name}`}
                   disabled={pending}
                   onClick={() => handleDelete(wt.id)}

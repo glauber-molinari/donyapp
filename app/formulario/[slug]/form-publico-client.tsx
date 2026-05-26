@@ -224,7 +224,7 @@ export function FormPublicoClient({ slug, title, description, fields }: Props) {
                   : "Próximo"}
             </button>
             {!isLastStep && (
-              <span className="text-xs text-ds-subtle">
+              <span className="text-xs text-ds-muted-2">
                 ou pressione <kbd className="rounded border border-ds-border px-1 py-0.5 font-mono text-[10px]">Enter ↵</kbd>
               </span>
             )}
@@ -270,7 +270,7 @@ function FieldRenderer({ field, value, onChange, error, inputRef, onKeyDown }: F
   );
 
   const baseInputClass =
-    "w-full rounded-ds-xl border border-ds-border bg-ds-surface px-4 py-3 text-base text-ds-ink placeholder:text-ds-subtle focus:border-ds-accent focus:outline-none focus:ring-2 focus:ring-ds-accent/20 transition-colors";
+    "w-full rounded-ds-xl border border-ds-border bg-ds-surface px-4 py-3 text-base text-ds-ink placeholder:text-ds-muted-2 focus:border-ds-accent focus:outline-none focus:ring-2 focus:ring-ds-accent/20 transition-colors";
 
   if (field.type === "short_text") {
     return (

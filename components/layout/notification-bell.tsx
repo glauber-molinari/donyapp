@@ -192,8 +192,8 @@ export function NotificationBell() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-ds-2xl border border-app-border bg-app-sidebar shadow-lg">
-          <div className="flex items-center justify-between border-b border-app-border px-4 py-3">
+        <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-ds-2xl border border-ds-border bg-ds-surface shadow-lg">
+          <div className="flex items-center justify-between border-b border-ds-border px-4 py-3">
             <h2 className="text-sm font-semibold text-ds-ink">Notificações</h2>
             {unreadCount > 0 && (
               <button
@@ -215,12 +215,12 @@ export function NotificationBell() {
               </div>
             ) : notifications.length === 0 ? (
               <div className="px-4 py-8 text-center">
-                <Bell className="mx-auto h-8 w-8 text-ds-subtle opacity-50" aria-hidden />
+                <Bell className="mx-auto h-8 w-8 text-ds-muted-2 opacity-50" aria-hidden />
                 <p className="mt-2 text-sm font-medium text-ds-muted">Nenhuma notificação</p>
-                <p className="mt-1 text-xs text-ds-subtle">Prazos em dia e caixa zerada.</p>
+                <p className="mt-1 text-xs text-ds-muted-2">Prazos em dia e caixa zerada.</p>
               </div>
             ) : (
-              <div className="divide-y divide-app-border">
+              <div className="divide-y divide-ds-border">
                 {notifications.map((notification) => (
                   <button
                     key={notification.id}
@@ -239,7 +239,7 @@ export function NotificationBell() {
                         />
                       )}
                       <div className="min-w-0 flex-1 space-y-1">
-                        <p className="text-[10px] font-medium uppercase tracking-wide text-ds-subtle">
+                        <p className="text-[10px] font-medium uppercase tracking-wide text-ds-muted-2">
                           {NOTIFICATION_KIND_LABEL[notification.kind]}
                         </p>
                         <p
@@ -251,11 +251,11 @@ export function NotificationBell() {
                           {notification.title}
                         </p>
                         {notification.description && (
-                          <p className="text-xs text-ds-subtle line-clamp-2">
+                          <p className="text-xs text-ds-muted-2 line-clamp-2">
                             {notification.description}
                           </p>
                         )}
-                        <p className="text-xs text-ds-subtle">
+                        <p className="text-xs text-ds-muted-2">
                           {formatTimestamp(notification.timestamp)}
                         </p>
                       </div>

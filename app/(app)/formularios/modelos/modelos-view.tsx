@@ -101,7 +101,7 @@ export function ModelosView({ templates }: Props) {
                         type="button"
                         onClick={() => copyLink(t.slug)}
                         title="Copiar link público"
-                        className="text-ds-subtle hover:text-ds-ink"
+                        className="text-ds-muted-2 hover:text-ds-ink"
                       >
                         {copied === t.slug ? (
                           <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
@@ -114,7 +114,7 @@ export function ModelosView({ templates }: Props) {
                         target="_blank"
                         rel="noopener noreferrer"
                         title="Abrir formulário"
-                        className="text-ds-subtle hover:text-ds-ink"
+                        className="text-ds-muted-2 hover:text-ds-ink"
                       >
                         <ExternalLink className="h-3.5 w-3.5" />
                       </a>
@@ -123,7 +123,7 @@ export function ModelosView({ templates }: Props) {
                   <td className="px-4 py-3 text-center text-ds-muted">{t.fields.length}</td>
                   <td className="px-4 py-3 text-center">
                     {t.active ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-ds-success-soft px-2 py-0.5 text-xs font-medium text-ds-success">
                         <CheckCircle2 className="h-3 w-3" />
                         Ativo
                       </span>
@@ -140,7 +140,7 @@ export function ModelosView({ templates }: Props) {
                         <button
                           type="button"
                           title="Editar"
-                          className="rounded-lg p-1.5 text-ds-subtle hover:bg-ds-elevated hover:text-ds-ink"
+                          className="rounded-lg p-1.5 text-ds-muted-2 hover:bg-ds-elevated hover:text-ds-ink"
                         >
                           <Pencil className="h-4 w-4" />
                         </button>
@@ -149,7 +149,7 @@ export function ModelosView({ templates }: Props) {
                         type="button"
                         title="Excluir"
                         onClick={() => setDeletingId(t.id)}
-                        className="rounded-lg p-1.5 text-ds-subtle hover:bg-red-50 hover:text-red-600"
+                        className="rounded-lg p-1.5 text-ds-muted-2 hover:bg-ds-danger-soft hover:text-ds-danger"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>

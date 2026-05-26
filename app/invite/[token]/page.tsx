@@ -9,15 +9,15 @@ export default async function InvitePage({ params }: { params: { token: string }
   const svc = createServiceRoleClient();
   if (!svc) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-app-canvas px-4">
-        <div className="max-w-md rounded-ds-xl border border-app-border bg-app-sidebar p-8 text-center shadow-ds-sm">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-ds-cream px-4">
+        <div className="max-w-md rounded-ds-xl border border-ds-border bg-ds-surface p-8 text-center shadow-ds-sm">
           <h1 className="text-xl font-bold text-ds-ink">Convite indisponível</h1>
           <p className="mt-2 text-sm text-ds-muted">
             O servidor não está configurado para validar convites (service role).
           </p>
         </div>
-        <div className="mt-6 text-center text-xs text-ds-subtle">
-          <LegalLinks linkClassName="text-ds-subtle hover:text-ds-ink" />
+        <div className="mt-6 text-center text-xs text-ds-muted-2">
+          <LegalLinks linkClassName="text-ds-muted-2 hover:text-ds-ink" />
         </div>
       </div>
     );
@@ -35,21 +35,21 @@ export default async function InvitePage({ params }: { params: { token: string }
 
   if (invalid) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-app-canvas px-4">
-        <div className="max-w-md rounded-ds-xl border border-app-border bg-app-sidebar p-8 text-center shadow-ds-sm">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-ds-cream px-4">
+        <div className="max-w-md rounded-ds-xl border border-ds-border bg-ds-surface p-8 text-center shadow-ds-sm">
           <h1 className="text-xl font-bold text-ds-ink">Convite inválido ou expirado</h1>
           <p className="mt-2 text-sm text-ds-muted">
             Peça um novo convite ao administrador da equipe.
           </p>
           <Link
             href="/"
-            className="mt-6 inline-block text-sm font-medium text-app-primary hover:brightness-95"
+            className="mt-6 inline-block text-sm font-medium text-ds-accent hover:brightness-95"
           >
             Voltar ao início
           </Link>
         </div>
-        <div className="mt-6 text-center text-xs text-ds-subtle">
-          <LegalLinks linkClassName="text-ds-subtle hover:text-ds-ink" />
+        <div className="mt-6 text-center text-xs text-ds-muted-2">
+          <LegalLinks linkClassName="text-ds-muted-2 hover:text-ds-ink" />
         </div>
       </div>
     );
@@ -64,27 +64,27 @@ export default async function InvitePage({ params }: { params: { token: string }
   const loginHref = `/login?next=${encodeURIComponent(`/invite/${token}`)}`;
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-app-canvas px-4">
-      <div className="max-w-md rounded-ds-xl border border-app-border bg-app-sidebar p-8 text-center shadow-ds-sm">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-ds-cream px-4">
+      <div className="max-w-md rounded-ds-xl border border-ds-border bg-ds-surface p-8 text-center shadow-ds-sm">
         <h1 className="text-xl font-bold text-ds-ink">Você foi convidado</h1>
         <p className="mt-3 text-sm text-ds-muted">
           Entre na conta <span className="font-semibold text-ds-ink">{accountName}</span> no dony.
         </p>
-        <p className="mt-2 text-xs text-ds-subtle">
+        <p className="mt-2 text-xs text-ds-muted-2">
           Use o e-mail <span className="font-medium text-ds-muted">{inv.email}</span> para entrar.
         </p>
         <Link
           href={loginHref}
-          className="mt-8 inline-flex w-full items-center justify-center rounded-ds-xl bg-app-primary px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:brightness-95"
+          className="mt-8 inline-flex w-full items-center justify-center rounded-ds-xl bg-ds-accent px-4 py-3 text-sm font-semibold text-white shadow-ds-sm transition hover:brightness-95"
         >
           Continuar
         </Link>
-        <p className="mt-4 text-xs text-ds-subtle">
+        <p className="mt-4 text-xs text-ds-muted-2">
           Você pode entrar com Google ou criar uma conta com email e senha.
         </p>
       </div>
-      <div className="mt-6 text-center text-xs text-ds-subtle">
-        <LegalLinks linkClassName="text-ds-subtle hover:text-ds-ink" />
+      <div className="mt-6 text-center text-xs text-ds-muted-2">
+        <LegalLinks linkClassName="text-ds-muted-2 hover:text-ds-ink" />
       </div>
     </div>
   );

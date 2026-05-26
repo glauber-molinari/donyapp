@@ -29,14 +29,14 @@ export function ProfileTourReset() {
   }
 
   return (
-    <div className="rounded-ds-xl border border-app-border bg-app-sidebar p-4 shadow-sm">
+    <div className="rounded-ds-xl border border-ds-border bg-ds-surface p-4 shadow-ds-sm">
       <h3 className="text-sm font-semibold text-ds-ink">Tour guiado</h3>
       <p className="mt-1 text-sm text-ds-muted">
         Ao recarregar a página, o tour será exibido de novo (sidebar, contatos, quadro e resumo das
         configurações).
       </p>
       {message ? (
-        <p className="mt-2 text-sm text-red-700" role="alert">
+        <p className="mt-2 text-sm text-ds-danger" role="alert">
           {message}
         </p>
       ) : null}

@@ -115,7 +115,7 @@ export default async function TasksPage() {
 
           <div className="pointer-events-none opacity-60 blur-sm">
             <div className="grid gap-4 md:grid-cols-3">
-              <div className="rounded-lg border border-app-border bg-white p-4">
+              <div className="rounded-lg border border-ds-border bg-white p-4">
                 <h3 className="mb-3 font-semibold text-ds-ink">Para Fazer</h3>
                 <div className="space-y-2">
                   <div className="rounded-lg border border-red-200 bg-red-50 p-3">
@@ -137,7 +137,7 @@ export default async function TasksPage() {
                 </div>
               </div>
 
-              <div className="rounded-lg border border-app-border bg-white p-4">
+              <div className="rounded-lg border border-ds-border bg-white p-4">
                 <h3 className="mb-3 font-semibold text-ds-ink">Iniciado</h3>
                 <div className="space-y-2">
                   <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-3">
@@ -151,7 +151,7 @@ export default async function TasksPage() {
                 </div>
               </div>
 
-              <div className="rounded-lg border border-app-border bg-white p-4">
+              <div className="rounded-lg border border-ds-border bg-white p-4">
                 <h3 className="mb-3 font-semibold text-ds-ink">Feito</h3>
                 <div className="space-y-2">
                   <div className="rounded-lg border border-green-200 bg-green-50 p-3 opacity-60">

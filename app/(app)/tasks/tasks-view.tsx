@@ -97,27 +97,27 @@ const TASK_COLUMNS: {
     label: "Para fazer",
     color: "#f97316",
     bg: "#fff7ed",
-    pillCls: "bg-orange-100 text-orange-800 border border-orange-200",
-    bgCls: "bg-orange-50/60",
-    iconCls: "text-orange-600/70",
+    pillCls: "bg-ds-warn-soft text-ds-warn border border-ds-warn/20",
+    bgCls: "bg-ds-warn-soft/60",
+    iconCls: "text-ds-warn/70",
   },
   {
     id: "iniciado",
     label: "Em progresso",
     color: "#f59e0b",
     bg: "#fffbeb",
-    pillCls: "bg-amber-100 text-amber-800 border border-amber-200",
-    bgCls: "bg-amber-50/60",
-    iconCls: "text-amber-600/70",
+    pillCls: "bg-ds-warn-soft text-ds-warn border border-ds-warn/20",
+    bgCls: "bg-ds-warn-soft/60",
+    iconCls: "text-ds-warn/70",
   },
   {
     id: "feito",
     label: "Feito",
     color: "#10b981",
     bg: "#f0fdf4",
-    pillCls: "bg-emerald-100 text-emerald-800 border border-emerald-200",
-    bgCls: "bg-emerald-50/60",
-    iconCls: "text-emerald-600/70",
+    pillCls: "bg-ds-success-soft text-ds-success border border-ds-success/20",
+    bgCls: "bg-ds-success-soft/60",
+    iconCls: "text-ds-success/70",
   },
 ];
 
@@ -130,9 +130,9 @@ const PRIORITY_LABELS: Record<TaskPriority, string> = {
 };
 
 const PRIORITY_CLASSES: Record<TaskPriority, string> = {
-  baixa: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  media: "bg-orange-50 text-orange-700 border-orange-200",
-  alta:  "bg-red-50 text-red-700 border-red-200",
+  baixa: "bg-ds-success-soft text-ds-success border-ds-success/20",
+  media: "bg-ds-warn-soft text-ds-warn border-ds-warn/20",
+  alta:  "bg-ds-danger-soft text-ds-danger border-ds-danger/20",
 };
 
 const TYPE_LABELS: Record<TaskType, string> = {
@@ -145,10 +145,10 @@ const TYPE_LABELS: Record<TaskType, string> = {
 
 const TYPE_CLASSES: Record<TaskType, string> = {
   tarefa:  "bg-violet-50 text-violet-700 border-violet-200",
-  sessao:  "bg-sky-50 text-sky-700 border-sky-200",
-  edicao:  "bg-amber-50 text-amber-700 border-amber-200",
-  revisao: "bg-orange-50 text-orange-700 border-orange-200",
-  entrega: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  sessao:  "bg-ds-info-soft text-ds-info border-ds-info/20",
+  edicao:  "bg-ds-warn-soft text-ds-warn border-ds-warn/20",
+  revisao: "bg-ds-warn-soft text-ds-warn border-ds-warn/20",
+  entrega: "bg-ds-success-soft text-ds-success border-ds-success/20",
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -247,7 +247,7 @@ function AvatarCircle({
 function AvatarStack({ assignees, max = 3 }: { assignees: TaskAssigneeRow[]; max?: number }) {
   const shown = assignees.slice(0, max);
   const extra = assignees.length - max;
-  if (assignees.length === 0) return <span className="text-ds-subtle text-[11px]">—</span>;
+  if (assignees.length === 0) return <span className="text-ds-muted-2 text-[11px]">—</span>;
   return (
     <div className="flex items-center">
       {shown.map((a, i) => (
@@ -489,7 +489,7 @@ function TaskDetailPanel({
 
   const isOpen = panel.mode !== "closed";
   const inputCls =
-    "w-full rounded-lg border border-ds-border bg-ds-cream px-3 py-2 text-sm text-ds-ink placeholder:text-ds-subtle focus:border-ds-accent/50 focus:outline-none focus:ring-2 focus:ring-ds-accent/20";
+    "w-full rounded-lg border border-ds-border bg-ds-cream px-3 py-2 text-sm text-ds-ink placeholder:text-ds-muted-2 focus:border-ds-accent/50 focus:outline-none focus:ring-2 focus:ring-ds-accent/20";
   const selectCls =
     "w-full rounded-lg border border-ds-border bg-ds-cream px-3 py-2 text-sm text-ds-ink focus:border-ds-accent/50 focus:outline-none focus:ring-2 focus:ring-ds-accent/20";
 
@@ -515,7 +515,7 @@ function TaskDetailPanel({
       >
         {/* Panel Header */}
         <div className="flex shrink-0 items-center justify-between border-b border-ds-border px-5 py-3">
-          <div className="flex items-center gap-3 text-xs text-ds-subtle">
+          <div className="flex items-center gap-3 text-xs text-ds-muted-2">
             {task ? (
               <span>Criado em {formatDatePt(task.created_at.slice(0, 10))}</span>
             ) : (
@@ -532,7 +532,7 @@ function TaskDetailPanel({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg p-1.5 text-ds-subtle hover:bg-ds-cream hover:text-ds-ink transition-colors"
+              className="rounded-lg p-1.5 text-ds-muted-2 hover:bg-ds-cream hover:text-ds-ink transition-colors"
             >
               <X className="h-4 w-4" />
             </button>
@@ -547,7 +547,7 @@ function TaskDetailPanel({
             onChange={(e) => setName(e.target.value)}
             placeholder="Nome da tarefa…"
             rows={2}
-            className="mb-5 w-full resize-none border-0 bg-transparent text-xl font-bold text-ds-ink placeholder:text-ds-subtle focus:outline-none"
+            className="mb-5 w-full resize-none border-0 bg-transparent text-xl font-bold text-ds-ink placeholder:text-ds-muted-2 focus:outline-none"
           />
 
           {/* Fields grid */}
@@ -570,7 +570,7 @@ function TaskDetailPanel({
                             <button
                               type="button"
                               onClick={() => handleRemovePending(p.id)}
-                              className="ml-0.5 text-ds-subtle hover:text-red-500"
+                              className="ml-0.5 text-ds-muted-2 hover:text-ds-danger"
                             >
                               <X className="h-3 w-3" />
                             </button>
@@ -586,7 +586,7 @@ function TaskDetailPanel({
                             <button
                               type="button"
                               onClick={() => handleRemoveAssignee(a.id)}
-                              className="ml-0.5 text-ds-subtle hover:text-red-500"
+                              className="ml-0.5 text-ds-muted-2 hover:text-ds-danger"
                             >
                               <X className="h-3 w-3" />
                             </button>
@@ -622,7 +622,7 @@ function TaskDetailPanel({
                         );
                         if (filtered.length === 0) {
                           return (
-                            <p className="px-3 py-4 text-center text-xs text-ds-subtle">
+                            <p className="px-3 py-4 text-center text-xs text-ds-muted-2">
                               {availablePeople.length === 0
                                 ? "Nenhum membro ou responsável cadastrado."
                                 : "Nenhuma pessoa encontrada."}
@@ -640,7 +640,7 @@ function TaskDetailPanel({
                             <AvatarCircle name={p.name} email={p.email} avatarUrl={p.avatar_url} size="md" />
                             <div className="min-w-0 flex-1">
                               <p className="truncate text-sm font-medium text-ds-ink">{p.name}</p>
-                              <p className="truncate text-[11px] text-ds-subtle">{p.email}</p>
+                              <p className="truncate text-[11px] text-ds-muted-2">{p.email}</p>
                             </div>
                           </button>
                         ));
@@ -649,7 +649,7 @@ function TaskDetailPanel({
                     <button
                       type="button"
                       onClick={() => { setPersonDropdownOpen(false); setPersonSearch(""); }}
-                      className="self-start text-xs text-ds-subtle hover:text-ds-ink"
+                      className="self-start text-xs text-ds-muted-2 hover:text-ds-ink"
                     >
                       Cancelar
                     </button>
@@ -658,7 +658,7 @@ function TaskDetailPanel({
                   <button
                     type="button"
                     onClick={() => setPersonDropdownOpen(true)}
-                    className="flex items-center gap-1.5 text-xs text-ds-subtle hover:text-ds-accent"
+                    className="flex items-center gap-1.5 text-xs text-ds-muted-2 hover:text-ds-accent"
                   >
                     <UserPlus className="h-3.5 w-3.5" />
                     Adicionar pessoa da equipe
@@ -672,7 +672,7 @@ function TaskDetailPanel({
               <span className="w-24 shrink-0 pt-2 text-xs font-medium text-ds-muted">Período</span>
               <div className="min-w-0 flex-1 grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-[10px] text-ds-subtle">Início</span>
+                  <span className="text-[10px] text-ds-muted-2">Início</span>
                   <input
                     type="date"
                     value={startDate}
@@ -681,7 +681,7 @@ function TaskDetailPanel({
                   />
                 </div>
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-[10px] text-ds-subtle">Prazo <span className="text-red-400">*</span></span>
+                  <span className="text-[10px] text-ds-muted-2">Prazo <span className="text-ds-danger">*</span></span>
                   <input
                     type="date"
                     value={deadline}
@@ -759,7 +759,7 @@ function TaskDetailPanel({
                 <button
                   type="button"
                   onClick={() => setSubtaskInputOpen(true)}
-                  className="flex items-center gap-1 text-xs text-ds-subtle hover:text-ds-accent"
+                  className="flex items-center gap-1 text-xs text-ds-muted-2 hover:text-ds-accent"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   Adicionar
@@ -777,18 +777,18 @@ function TaskDetailPanel({
                       className="shrink-0 text-ds-muted hover:text-ds-accent"
                     >
                       {s.done ? (
-                        <CheckSquare className="h-4 w-4 text-emerald-600" />
+                        <CheckSquare className="h-4 w-4 text-ds-success" />
                       ) : (
                         <Square className="h-4 w-4" />
                       )}
                     </button>
-                    <span className={cn("flex-1 text-sm text-ds-ink", s.done && "line-through text-ds-subtle")}>
+                    <span className={cn("flex-1 text-sm text-ds-ink", s.done && "line-through text-ds-muted-2")}>
                       {s.name}
                     </span>
                     <button
                       type="button"
                       onClick={() => handleRemoveSubtask(s.id)}
-                      className="shrink-0 opacity-0 group-hover:opacity-100 text-ds-subtle hover:text-red-500"
+                      className="shrink-0 opacity-0 group-hover:opacity-100 text-ds-muted-2 hover:text-ds-danger"
                     >
                       <X className="h-3.5 w-3.5" />
                     </button>
@@ -839,7 +839,7 @@ function TaskDetailPanel({
                     <div className="flex-1 rounded-xl border border-ds-border bg-ds-cream/60 px-3 py-2">
                       <div className="mb-1 flex items-center justify-between">
                         <span className="text-xs font-semibold text-ds-ink">{c.user_name}</span>
-                        <span className="text-[10px] text-ds-subtle">{timeAgo(c.created_at)}</span>
+                        <span className="text-[10px] text-ds-muted-2">{timeAgo(c.created_at)}</span>
                       </div>
                       <p className="text-sm text-ds-muted leading-relaxed">{c.content}</p>
                     </div>
@@ -869,7 +869,7 @@ function TaskDetailPanel({
             </div>
           )}
 
-          {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
+          {error && <p className="mt-2 text-xs text-ds-danger">{error}</p>}
         </div>
 
         {/* Panel Footer */}
@@ -882,7 +882,7 @@ function TaskDetailPanel({
                   type="button"
                   disabled={deleting}
                   onClick={handleDelete}
-                  className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-60"
+                  className="rounded-lg bg-ds-danger px-3 py-1.5 text-xs font-semibold text-white hover:bg-ds-danger/90 disabled:opacity-60"
                 >
                   {deleting ? "Excluindo…" : "Confirmar exclusão"}
                 </button>
@@ -899,7 +899,7 @@ function TaskDetailPanel({
               <button
                 type="button"
                 onClick={() => setConfirmDelete(true)}
-                className="flex items-center gap-1.5 rounded-lg border border-red-200 px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
+                className="flex items-center gap-1.5 rounded-lg border border-ds-danger/20 px-2.5 py-1.5 text-xs font-medium text-ds-danger hover:bg-ds-danger-soft"
               >
                 <Trash2 className="h-3.5 w-3.5" />
                 Excluir
@@ -956,7 +956,7 @@ function StatusGroupHeader({
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); onAdd(); }}
-          className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-ds-subtle hover:bg-white/70 hover:text-ds-ink"
+          className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-ds-muted-2 hover:bg-white/70 hover:text-ds-ink"
         >
           <Plus className="h-3.5 w-3.5" />
           Adicionar
@@ -989,7 +989,7 @@ const TaskListRow = memo(function TaskListRow({
           className={cn(
             "flex h-4 w-4 items-center justify-center rounded border transition-colors",
             isDone
-              ? "border-emerald-400 bg-emerald-400 text-white"
+              ? "border-ds-success bg-ds-success text-white"
               : "border-ds-border bg-white hover:border-ds-accent"
           )}
           aria-label={isDone ? "Marcar como não feito" : "Marcar como feito"}
@@ -1003,7 +1003,7 @@ const TaskListRow = memo(function TaskListRow({
       </td>
       {/* Name + description */}
       <td className="px-3 py-3 min-w-[180px]">
-        <p className={cn("text-sm font-semibold text-ds-ink leading-snug", isDone && "line-through text-ds-subtle")}>
+        <p className={cn("text-sm font-semibold text-ds-ink leading-snug", isDone && "line-through text-ds-muted-2")}>
           {task.name}
         </p>
         {task.description && (
@@ -1034,7 +1034,7 @@ const TaskListRow = memo(function TaskListRow({
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); onOpen(); }}
-          className="rounded-lg p-1 text-ds-subtle opacity-0 group-hover:opacity-100 hover:bg-ds-cream hover:text-ds-ink transition-opacity"
+          className="rounded-lg p-1 text-ds-muted-2 opacity-0 group-hover:opacity-100 hover:bg-ds-cream hover:text-ds-ink transition-opacity"
         >
           <MoreHorizontal className="h-4 w-4" />
         </button>
@@ -1084,7 +1084,7 @@ function ListView({
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-ds-border bg-white shadow-sm">
+    <div className="overflow-hidden rounded-xl border border-ds-border bg-white shadow-ds-sm">
       {/* Table header */}
       <div className="hidden lg:block">
         <table className="w-full border-collapse text-left">
@@ -1163,7 +1163,7 @@ function ListView({
                           className={cn(
                             "flex h-4 w-4 items-center justify-center rounded border",
                             task.status === "feito"
-                              ? "border-emerald-400 bg-emerald-400 text-white"
+                              ? "border-ds-success bg-ds-success text-white"
                               : "border-ds-border bg-white"
                           )}
                         >
@@ -1175,7 +1175,7 @@ function ListView({
                         </button>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className={cn("text-sm font-semibold text-ds-ink", task.status === "feito" && "line-through text-ds-subtle")}>
+                        <p className={cn("text-sm font-semibold text-ds-ink", task.status === "feito" && "line-through text-ds-muted-2")}>
                           {task.name}
                         </p>
                         {task.description && (
@@ -1185,7 +1185,7 @@ function ListView({
                           <TypeBadge type={task.type ?? "tarefa"} />
                           <PriorityBadge priority={task.priority} />
                           {task.deadline && (
-                            <span className="text-[11px] text-ds-subtle">{formatDateShort(task.deadline)}</span>
+                            <span className="text-[11px] text-ds-muted-2">{formatDateShort(task.deadline)}</span>
                           )}
                           <AvatarStack assignees={task.task_assignees} />
                         </div>
@@ -1269,7 +1269,7 @@ const KanbanCard = memo(function KanbanCard({
   return (
     <div
       className={cn(
-        "rounded-lg border border-ds-border/70 bg-white p-3 shadow-sm",
+        "rounded-lg border border-ds-border/70 bg-white p-3 shadow-ds-sm",
         isDragging && "opacity-60",
         overlay && "shadow-md ring-2 ring-ds-accent/15",
         onEdit && !overlay && "cursor-pointer"
@@ -1286,7 +1286,7 @@ const KanbanCard = memo(function KanbanCard({
       </div>
       <div className="mt-2 flex items-center justify-between">
         <AvatarStack assignees={task.task_assignees} max={3} />
-        <span className="text-[10px] text-ds-subtle">{formatDateShort(task.deadline)}</span>
+        <span className="text-[10px] text-ds-muted-2">{formatDateShort(task.deadline)}</span>
       </div>
     </div>
   );
@@ -1326,7 +1326,7 @@ const KanbanColumn = memo(function KanbanColumn({
   return (
     <div
       className={cn(
-        "flex min-h-0 flex-col overflow-hidden rounded-xl border border-ds-border/60 shadow-sm transition-[box-shadow,colors]",
+        "flex min-h-0 flex-col overflow-hidden rounded-xl border border-ds-border/60 shadow-ds-sm transition-[box-shadow,colors]",
         col.bgCls,
         "max-lg:w-[min(92vw,20rem)] max-lg:max-w-[20rem] max-lg:shrink-0 max-lg:flex-none",
         "lg:min-w-[128px] lg:max-w-[280px] lg:flex-1 lg:basis-0"
@@ -1340,7 +1340,7 @@ const KanbanColumn = memo(function KanbanColumn({
           <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold", col.pillCls)}>
             {col.label}
           </span>
-          <span className="text-[10px] font-medium text-ds-subtle">{taskIds.length}</span>
+          <span className="text-[10px] font-medium text-ds-muted-2">{taskIds.length}</span>
         </div>
       </div>
       <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
@@ -1356,7 +1356,7 @@ const KanbanColumn = memo(function KanbanColumn({
         <button
           type="button"
           onClick={() => onAddTask(col.id)}
-          className="flex w-full items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11px] font-medium text-ds-subtle transition-colors hover:bg-white/60 hover:text-ds-muted"
+          className="flex w-full items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11px] font-medium text-ds-muted-2 transition-colors hover:bg-white/60 hover:text-ds-muted"
         >
           <Plus className="h-3.5 w-3.5" />
           Adicionar tarefa
@@ -1432,7 +1432,7 @@ export function TasksView({ tasks }: { tasks: TaskWithAssignees[] }) {
               onClick={() => setView("list")}
               className={cn(
                 "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
-                view === "list" ? "bg-white text-ds-ink shadow-sm" : "text-ds-muted hover:text-ds-ink"
+                view === "list" ? "bg-white text-ds-ink shadow-ds-sm" : "text-ds-muted hover:text-ds-ink"
               )}
             >
               <List className="h-3.5 w-3.5" />
@@ -1443,7 +1443,7 @@ export function TasksView({ tasks }: { tasks: TaskWithAssignees[] }) {
               onClick={() => setView("kanban")}
               className={cn(
                 "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
-                view === "kanban" ? "bg-white text-ds-ink shadow-sm" : "text-ds-muted hover:text-ds-ink"
+                view === "kanban" ? "bg-white text-ds-ink shadow-ds-sm" : "text-ds-muted hover:text-ds-ink"
               )}
             >
               <KanbanSquare className="h-3.5 w-3.5" />

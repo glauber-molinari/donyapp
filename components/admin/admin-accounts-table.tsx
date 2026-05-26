@@ -62,10 +62,10 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccountRow[] }
   }
 
   return (
-    <div className="overflow-x-auto rounded-ds-xl border border-app-border">
+    <div className="overflow-x-auto rounded-ds-xl border border-ds-border">
       <table className="w-full min-w-[720px] border-collapse text-left text-sm">
         <thead>
-          <tr className="border-b border-app-border bg-ds-cream/80">
+          <tr className="border-b border-ds-border bg-ds-cream/80">
             <th className="px-3 py-2.5 font-medium text-ds-muted">Conta</th>
             <th className="px-3 py-2.5 font-medium text-ds-muted">Membros</th>
             <th className="px-3 py-2.5 font-medium text-ds-muted">Plano</th>
@@ -82,7 +82,7 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccountRow[] }
             const asaas = sub?.asaas_subscription_id;
 
             return (
-              <tr key={a.id} className="border-b border-app-border/80 hover:bg-ds-cream/40">
+              <tr key={a.id} className="border-b border-ds-border/80 hover:bg-ds-cream/40">
                 <td className="px-3 py-2 align-top">
                   <div className="font-medium text-ds-ink">{a.name}</div>
                   {a.ownerEmail ? (
@@ -90,8 +90,8 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccountRow[] }
                   ) : (
                     <div className="text-xs text-red-500">Sem membros</div>
                   )}
-                  <div className="mt-0.5 font-mono text-xs text-ds-subtle">{a.id}</div>
-                  <div className="text-xs text-ds-subtle">Criada {formatDatePtBr(a.created_at)}</div>
+                  <div className="mt-0.5 font-mono text-xs text-ds-muted-2">{a.id}</div>
+                  <div className="text-xs text-ds-muted-2">Criada {formatDatePtBr(a.created_at)}</div>
                 </td>
                 <td className="px-3 py-2 align-top tabular-nums">{a.memberCount}</td>
                 <td className="px-3 py-2 align-top">{planLabel(sub?.plan)}</td>
@@ -114,7 +114,7 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccountRow[] }
                       <>
                         {openGrant === a.id ? (
                           <form
-                            className="flex flex-col gap-2 rounded-lg border border-app-border bg-app-canvas p-2"
+                            className="flex flex-col gap-2 rounded-lg border border-ds-border bg-ds-cream p-2"
                             action={(fd) => {
                               fd.set("accountId", a.id);
                               fd.set("clearAsaas", "true");
@@ -125,7 +125,7 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccountRow[] }
                               Meses de Pro (cortesia)
                               <select
                                 name="mode"
-                                className="mt-1 w-full rounded-ds-lg border border-app-border bg-app-sidebar px-2 py-1.5 text-sm text-ds-ink"
+                                className="mt-1 w-full rounded-ds-lg border border-ds-border bg-ds-surface px-2 py-1.5 text-sm text-ds-ink"
                                 defaultValue="1"
                               >
                                 {[1, 3, 6, 12].map((m) => (
@@ -141,7 +141,7 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccountRow[] }
                               <input
                                 type="date"
                                 name="periodEnd"
-                                className="mt-1 w-full rounded-ds-lg border border-app-border bg-app-sidebar px-2 py-1.5 text-sm text-ds-ink"
+                                className="mt-1 w-full rounded-ds-lg border border-ds-border bg-ds-surface px-2 py-1.5 text-sm text-ds-ink"
                               />
                             </label>
                             <p className="text-[11px] leading-snug text-ds-muted">
