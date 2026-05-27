@@ -46,7 +46,7 @@ import {
   jobTypeBadgeForList,
   videoAssigneeSourceForSplitEdit,
 } from "@/lib/job-foto-video-split";
-import { deadlineBadge, formatDeadlinePt } from "@/lib/job-display";
+import { deadlineBadge, formatDatePt, formatDeadlinePt } from "@/lib/job-display";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import type { Database, Plan, UserRole } from "@/types/database";
@@ -924,14 +924,14 @@ export function DashboardView({
                                 <div className="flex flex-col gap-1">
                                   <div className="flex flex-wrap items-center gap-2">
                                     <span className="text-xs text-ds-muted">
-                                      Final {formatDeadlinePt(j.deadline)}
+                                      Final {formatDatePt(j.deadline)}
                                     </span>
                                     {dlBadge ? (
-                                    <Badge kind="deadline" value={dlBadge} label={formatDeadlinePt(j.deadline)} />
+                                    <Badge kind="deadline" value={dlBadge} label={formatDatePt(j.deadline)} />
                                   ) : null}
                                   </div>
                                   <span className="text-xs text-ds-muted-2">
-                                    Interno {formatDeadlinePt(j.internal_deadline)}
+                                    Interno {formatDatePt(j.internal_deadline)}
                                   </span>
                                 </div>
                               </td>
@@ -1011,7 +1011,7 @@ export function DashboardView({
                                 </span>
                                 <Badge kind="job-type" value={jobTypeBadgeForList(j, jobs)} />
                                 {dlBadge ? (
-                                    <Badge kind="deadline" value={dlBadge} label={formatDeadlinePt(j.deadline)} />
+                                    <Badge kind="deadline" value={dlBadge} label={formatDatePt(j.deadline)} />
                                   ) : null}
                               </div>
                               <div className="flex flex-wrap items-center gap-2">
@@ -1021,10 +1021,10 @@ export function DashboardView({
                                 </div>
                               </div>
                               <p className="text-sm text-ds-muted">
-                                Final: {formatDeadlinePt(j.deadline)}
+                                Final: {formatDatePt(j.deadline)}
                               </p>
                               <p className="text-sm text-ds-muted">
-                                Interno: {formatDeadlinePt(j.internal_deadline)}
+                                Interno: {formatDatePt(j.internal_deadline)}
                               </p>
                               <p className="text-sm text-ds-muted">
                                 Contato: {j.contacts?.name ?? "—"}

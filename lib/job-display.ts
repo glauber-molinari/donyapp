@@ -43,6 +43,18 @@ export function formatDeadlinePt(ymd: string): string {
   return `${dd}/${mm}`;
 }
 
+/** Sempre retorna "DD/MM" (ou "DD/MM/AA" em outro ano) — nunca texto relativo. */
+export function formatDatePt(ymd: string): string {
+  const d = parseLocalDate(ymd.slice(0, 10));
+  const today = new Date();
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  if (d.getFullYear() !== today.getFullYear()) {
+    return `${dd}/${mm}/${String(d.getFullYear()).slice(2)}`;
+  }
+  return `${dd}/${mm}`;
+}
+
 /** Badge de prazo (jobs não entregues): atrasado ou próximo (≤5 dias, per DS). */
 export function deadlineBadge(
   deadlineYmd: string,
