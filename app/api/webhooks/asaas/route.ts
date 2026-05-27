@@ -18,26 +18,24 @@ import {
 
 /**
  * Webhook Asaas — cobranças e assinaturas.
- * Token: header `asaas-access-token` ou query `?token=` — `ASAAS_WEBHOOK_TOKEN`.
- * Em produção (Vercel ou NODE_ENV=production) o token é obrigatório.
+ * Autenticação: header `asaas-access-token` com valor de `ASAAS_WEBHOOK_TOKEN`.
+ * Obrigatório em todos os ambientes exceto desenvolvimento local.
  * @see https://docs.asaas.com/docs/receba-eventos-do-asaas-no-seu-endpoint-de-webhook
  */
 export async function POST(req: Request) {
   const token = process.env.ASAAS_WEBHOOK_TOKEN?.trim();
-  const mustAuth =
-    process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
+  const isLocalDev =
+    process.env.NODE_ENV === "development" && !process.env.VERCEL;
 
-  if (mustAuth && !token) {
-    return NextResponse.json(
-      { ok: false, error: "ASAAS_WEBHOOK_TOKEN não configurada." },
-      { status: 500 }
-    );
-  }
-
-  if (token) {
-    const q = new URL(req.url).searchParams.get("token");
+  if (!isLocalDev) {
+    if (!token) {
+      return NextResponse.json(
+        { ok: false, error: "ASAAS_WEBHOOK_TOKEN não configurada." },
+        { status: 500 }
+      );
+    }
     const h = req.headers.get("asaas-access-token");
-    if (q !== token && h !== token) {
+    if (h !== token) {
       return NextResponse.json({ ok: false }, { status: 401 });
     }
   }
