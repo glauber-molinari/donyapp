@@ -46,7 +46,7 @@ import {
   jobTypeBadgeForList,
   videoAssigneeSourceForSplitEdit,
 } from "@/lib/job-foto-video-split";
-import { formatDatePt, formatDeadlinePt } from "@/lib/job-display";
+import { formatDatePt } from "@/lib/job-display";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import type { Database, Plan, UserRole } from "@/types/database";
