@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { Resend } from "resend";
 
 import { buildTicketReplyEmailHtml } from "@/lib/email/support-email-html";
+import { getResendFrom } from "@/lib/email/resend-from";
 import { isPlatformAdminEmail } from "@/lib/admin/platform-admin";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
@@ -63,7 +64,7 @@ export async function replyToTicket(ticketId: string, content: string): Promise<
 
   // Send email notification to user
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.RESEND_FROM;
+  const from = getResendFrom();
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
   const userEmail = ticket.users?.email;
   const userName = ticket.users?.name ?? "usuário";

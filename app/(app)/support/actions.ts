@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { Resend } from "resend";
 
 import { buildNewTicketEmailHtml } from "@/lib/email/support-email-html";
+import { getResendFrom } from "@/lib/email/resend-from";
 import { getSupportEmail } from "@/lib/support";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
@@ -78,7 +79,7 @@ export async function createSupportTicket(formData: FormData): Promise<ActionRes
 
   // Send email to support team
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.RESEND_FROM;
+  const from = getResendFrom();
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
 
   if (apiKey && from) {

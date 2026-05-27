@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
 import { buildInviteEmailHtml, buildInviteEmailText } from "@/lib/email/invite-email-html";
+import { getResendFrom } from "@/lib/email/resend-from";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 
@@ -17,7 +18,7 @@ function appOrigin(): string {
 
 export async function POST(req: Request) {
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.RESEND_FROM;
+  const from = getResendFrom();
 
   if (!apiKey || !from) {
     return NextResponse.json(

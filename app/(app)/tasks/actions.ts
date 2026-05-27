@@ -5,6 +5,7 @@ import { Resend } from "resend";
 
 import { createClient } from "@/lib/supabase/server";
 import { buildTaskAssignmentHtml } from "@/lib/email/task-assignment-html";
+import { getResendFrom } from "@/lib/email/resend-from";
 import type {
   TaskPriority,
   TaskStatus,
@@ -401,7 +402,7 @@ export async function addTaskAssignee(
   }
 
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.RESEND_FROM;
+  const from = getResendFrom();
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.dony.com.br";
 
   if (apiKey && from) {

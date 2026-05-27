@@ -3,6 +3,7 @@ import { Resend } from "resend";
 
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import { buildFormNotificationHtml, buildFormFieldsHtml } from "@/lib/email/form-notification-html";
+import { getResendFrom } from "@/lib/email/resend-from";
 import type { FormField } from "@/lib/formularios/types";
 
 export async function POST(req: Request, { params }: { params: { slug: string } }) {
@@ -66,7 +67,7 @@ export async function POST(req: Request, { params }: { params: { slug: string } 
 
   // Notificação à equipe: RESEND_API_KEY + RESEND_FROM + TEAM_NOTIFY_EMAIL no .env (ver .env.example).
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.RESEND_FROM;
+  const from = getResendFrom();
   const teamEmail = process.env.TEAM_NOTIFY_EMAIL;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
 
