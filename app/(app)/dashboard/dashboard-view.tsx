@@ -46,7 +46,7 @@ import {
   jobTypeBadgeForList,
   videoAssigneeSourceForSplitEdit,
 } from "@/lib/job-foto-video-split";
-import { deadlineBadge, formatDatePt, formatDeadlinePt } from "@/lib/job-display";
+import { formatDatePt, formatDeadlinePt } from "@/lib/job-display";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import type { Database, Plan, UserRole } from "@/types/database";
@@ -895,8 +895,6 @@ export function DashboardView({
                       </thead>
                       <tbody>
                         {pagedJobs.map((j) => {
-                          const stageFinal = Boolean(j.kanban_stages?.is_final);
-                          const dlBadge = deadlineBadge(j.deadline, stageFinal);
                           const editors = assigneesForJob(j);
                           return (
                             <tr
@@ -922,14 +920,9 @@ export function DashboardView({
                               </td>
                               <td className="px-4 py-3">
                                 <div className="flex flex-col gap-1">
-                                  <div className="flex flex-wrap items-center gap-2">
-                                    <span className="text-xs text-ds-muted">
-                                      Final {formatDatePt(j.deadline)}
-                                    </span>
-                                    {dlBadge ? (
-                                    <Badge kind="deadline" value={dlBadge} label={formatDatePt(j.deadline)} />
-                                  ) : null}
-                                  </div>
+                                  <span className="text-xs text-ds-muted">
+                                    Final {formatDatePt(j.deadline)}
+                                  </span>
                                   <span className="text-xs text-ds-muted-2">
                                     Interno {formatDatePt(j.internal_deadline)}
                                   </span>
@@ -997,8 +990,6 @@ export function DashboardView({
 
                   <div className="flex flex-col gap-4 lg:hidden">
                     {pagedJobs.map((j) => {
-                      const stageFinal = Boolean(j.kanban_stages?.is_final);
-                      const dlBadge = deadlineBadge(j.deadline, stageFinal);
                       const editors = assigneesForJob(j);
                       return (
                         <Card key={j.id} className="p-4">
@@ -1010,9 +1001,6 @@ export function DashboardView({
                                   {j.job_work_types?.name ?? "—"}
                                 </span>
                                 <Badge kind="job-type" value={jobTypeBadgeForList(j, jobs)} />
-                                {dlBadge ? (
-                                    <Badge kind="deadline" value={dlBadge} label={formatDatePt(j.deadline)} />
-                                  ) : null}
                               </div>
                               <div className="flex flex-wrap items-center gap-2">
                                 <ProximityPill deadline={j.deadline} />
