@@ -4,6 +4,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { publicAppOrigin } from "@/lib/app-url";
 import { acceptInvitationForNewUser } from "@/lib/auth/accept-invitation";
 import { inviteTokenFromNext, normalizeNextPath } from "@/lib/auth/next-path";
+import { inviteTokenFromUserMetadata, resolveInviteToken } from "@/lib/auth/resolve-invite-token";
 import { oauthAvatarUrlFromUser } from "@/lib/auth/oauth-profile";
 import { provisionNewStudio } from "@/lib/auth/provision-new-studio";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
@@ -82,7 +83,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const inviteToken = inviteTokenFromNext(nextPath);
+    const inviteToken = service
+      ? await resolveInviteToken(service, user, nextPath)
+      : inviteTokenFromNext(nextPath) ?? inviteTokenFromUserMetadata(user);
 
     if (inviteToken) {
       if (!service) {

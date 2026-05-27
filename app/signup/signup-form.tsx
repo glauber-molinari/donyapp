@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 
-import { normalizeNextPath } from "@/lib/auth/next-path";
+import { inviteTokenFromNext, normalizeNextPath } from "@/lib/auth/next-path";
 import { PASSWORD_HINT, validatePassword, validatePasswordMatch } from "@/lib/auth/password-validation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -15,6 +15,7 @@ const btnPrimaryCls =
 
 export function SignupForm({ next = "/dashboard" }: { next?: string }) {
   const safeNext = normalizeNextPath(next);
+  const inviteToken = inviteTokenFromNext(safeNext);
   const loginHref =
     safeNext === "/dashboard" ? "/login" : `/login?next=${encodeURIComponent(safeNext)}`;
   const [name, setName] = useState("");
@@ -45,7 +46,10 @@ export function SignupForm({ next = "/dashboard" }: { next?: string }) {
       email,
       password,
       options: {
-        data: { name: name.trim() || email.split("@")[0] },
+        data: {
+          name: name.trim() || email.split("@")[0],
+          ...(inviteToken ? { invite_token: inviteToken } : {}),
+        },
         emailRedirectTo: `${base}/auth/callback?next=${encodeURIComponent(safeNext)}`,
       },
     });

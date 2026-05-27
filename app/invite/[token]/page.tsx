@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { acceptInvitationForNewUser } from "@/lib/auth/accept-invitation";
+import { repairMisprovisionedInvite } from "@/lib/auth/repair-misprovisioned-invite";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import { LegalLinks } from "@/components/legal/legal-links";
@@ -95,7 +96,18 @@ export default async function InvitePage({ params }: { params: { token: string }
       redirect("/dashboard");
     }
 
-    const { data: existingUser } = await svc.from("users").select("id").eq("id", user.id).maybeSingle();
+    const { data: existingUser } = await svc
+      .from("users")
+      .select("id, account_id")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (existingUser && existingUser.account_id !== inv.account_id) {
+      const repaired = await repairMisprovisionedInvite(svc, user, token);
+      if (repaired.ok) {
+        redirect("/dashboard");
+      }
+    }
 
     if (!existingUser) {
       const accepted = await acceptInvitationForNewUser(svc, user, token);
