@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Calendar, Columns3, CreditCard, Mail, ShieldCheck, Upload, UserCircle, Users } from "lucide-react";
+import { Calendar, Columns3, CreditCard, Mail, ShieldCheck, Upload, UserCircle, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -12,7 +12,6 @@ const items = [
   { href: "/settings/kanban", label: "Kanban", icon: Columns3 },
   { href: "/settings/team", label: "Equipe", icon: Users },
   { href: "/settings/email", label: "E-mail", icon: Mail },
-  { href: "/settings/notifications", label: "Notificações", icon: Bell },
   { href: "/settings/agenda", label: "Agenda", icon: Calendar },
   { href: "/settings/plan", label: "Plano", icon: CreditCard },
   { href: "/settings/import", label: "Importar", icon: Upload },
