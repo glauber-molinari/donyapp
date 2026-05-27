@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { normalizeNextPath } from "@/lib/auth/next-path";
 import { createClient } from "@/lib/supabase/client";
 
 const inputCls =
@@ -19,8 +20,9 @@ export function LoginForm({ next = "/dashboard" }: { next?: string }) {
   const [loading, setLoading] = useState<"google" | "email" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const safeNext =
-    next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
+  const safeNext = normalizeNextPath(next);
+  const signupHref =
+    safeNext === "/dashboard" ? "/signup" : `/signup?next=${encodeURIComponent(safeNext)}`;
 
   async function signInWithGoogle() {
     setLoading("google");
@@ -139,7 +141,7 @@ export function LoginForm({ next = "/dashboard" }: { next?: string }) {
           Esqueci a senha
         </Link>
         <Link
-          href="/signup"
+          href={signupHref}
           className="font-medium text-ds-accent transition hover:brightness-90"
         >
           Criar conta

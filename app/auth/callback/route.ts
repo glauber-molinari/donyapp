@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 
 import { publicAppOrigin } from "@/lib/app-url";
 import { acceptInvitationForNewUser } from "@/lib/auth/accept-invitation";
+import { inviteTokenFromNext, normalizeNextPath } from "@/lib/auth/next-path";
 import { oauthAvatarUrlFromUser } from "@/lib/auth/oauth-profile";
 import { provisionNewStudio } from "@/lib/auth/provision-new-studio";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
@@ -14,10 +15,7 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const type = searchParams.get("type");
 
-  let nextPath = searchParams.get("next") ?? "/dashboard";
-  if (!nextPath.startsWith("/") || nextPath.startsWith("//")) {
-    nextPath = "/dashboard";
-  }
+  const nextPath = normalizeNextPath(searchParams.get("next"));
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -31,9 +29,9 @@ export async function GET(request: NextRequest) {
   }
 
   // Destino final: recovery vai para redefinição de senha; demais fluxos seguem nextPath.
-  const finalPath = type === "recovery" ? "/auth/reset-password" : nextPath;
+  let redirectPath = type === "recovery" ? "/auth/reset-password" : nextPath;
 
-  let response = NextResponse.redirect(`${origin}${finalPath}`);
+  let response = NextResponse.redirect(`${origin}${redirectPath}`);
 
   const supabase = createServerClient<Database>(url, key, {
     cookies: {
@@ -41,7 +39,7 @@ export async function GET(request: NextRequest) {
         return request.cookies.getAll();
       },
       setAll(cookiesToSet) {
-        response = NextResponse.redirect(`${origin}${finalPath}`);
+        response = NextResponse.redirect(`${origin}${redirectPath}`);
         cookiesToSet.forEach(({ name, value, options }) => {
           response.cookies.set(name, value, options);
         });
@@ -84,8 +82,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const inviteMatch = /^\/invite\/([^/?#]+)/.exec(nextPath);
-    const inviteToken = inviteMatch?.[1];
+    const inviteToken = inviteTokenFromNext(nextPath);
 
     if (inviteToken) {
       if (!service) {
@@ -93,7 +90,12 @@ export async function GET(request: NextRequest) {
       }
       const accepted = await acceptInvitationForNewUser(service, user, inviteToken);
       if (accepted.ok) {
-        return response;
+        redirectPath = "/dashboard";
+        const dashResponse = NextResponse.redirect(`${origin}${redirectPath}`);
+        response.cookies.getAll().forEach((c) => {
+          dashResponse.cookies.set(c.name, c.value);
+        });
+        return dashResponse;
       }
       const err =
         accepted.reason === "email"

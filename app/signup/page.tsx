@@ -10,7 +10,15 @@ export const metadata: Metadata = {
   title: "Criar conta | Donyapp",
 };
 
-export default function SignupPage() {
+export default function SignupPage({
+  searchParams,
+}: {
+  searchParams: Record<string, string | string[] | undefined>;
+}) {
+  const nextRaw = typeof searchParams.next === "string" ? searchParams.next : undefined;
+  const next =
+    nextRaw && nextRaw.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : "/dashboard";
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-ds-cream px-4">
       <div className="w-full max-w-sm rounded-ds-xl border border-ds-border bg-ds-surface p-8 shadow-ds-sm">
@@ -28,7 +36,7 @@ export default function SignupPage() {
         <p className="mb-6 text-center text-sm text-ds-muted">
           Gestão de pós-produção para fotógrafos e videomakers.
         </p>
-        <SignupForm />
+        <SignupForm next={next} />
         <p className="mt-6 text-center text-xs text-ds-muted-2">
           Ao criar conta, você concorda com os{" "}
           <Link href="/termos-de-servico" className="underline-offset-4 hover:underline">

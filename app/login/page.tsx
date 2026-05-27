@@ -9,7 +9,7 @@ const errorMessages: Record<string, string> = {
   provision: "Conta criada parcialmente. Entre em contato com o suporte.",
   config: "Configuração do servidor incompleta (Supabase).",
   invite_invalid: "Este convite é inválido ou expirou. Peça um novo convite ao administrador.",
-  invite_email: "Entre com a mesma conta Google do e-mail que recebeu o convite.",
+  invite_email: "Entre com o mesmo e-mail que recebeu o convite.",
   invite_exists: "Esta conta já está cadastrada. Entre normalmente pelo login.",
   invite_config: "Convites exigem configuração do servidor (service role). Contate o suporte.",
 };

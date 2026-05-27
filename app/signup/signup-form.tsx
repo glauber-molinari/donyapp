@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 
+import { normalizeNextPath } from "@/lib/auth/next-path";
 import { PASSWORD_HINT, validatePassword, validatePasswordMatch } from "@/lib/auth/password-validation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -12,7 +13,10 @@ const inputCls =
 const btnPrimaryCls =
   "flex w-full items-center justify-center gap-2 rounded-ds-xl bg-ds-accent px-4 py-3 text-sm font-semibold text-white shadow-ds-sm transition duration-ds ease-out hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-ds-accent/40 focus:ring-offset-2 focus:ring-offset-ds-cream disabled:opacity-60";
 
-export function SignupForm() {
+export function SignupForm({ next = "/dashboard" }: { next?: string }) {
+  const safeNext = normalizeNextPath(next);
+  const loginHref =
+    safeNext === "/dashboard" ? "/login" : `/login?next=${encodeURIComponent(safeNext)}`;
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -42,7 +46,7 @@ export function SignupForm() {
       password,
       options: {
         data: { name: name.trim() || email.split("@")[0] },
-        emailRedirectTo: `${base}/auth/callback`,
+        emailRedirectTo: `${base}/auth/callback?next=${encodeURIComponent(safeNext)}`,
       },
     });
 
@@ -61,7 +65,7 @@ export function SignupForm() {
             instantes.
           </p>
         </div>
-        <Link href="/login" className="text-sm text-ds-muted transition hover:text-ds-ink">
+        <Link href={loginHref} className="text-sm text-ds-muted transition hover:text-ds-ink">
           Voltar para o login
         </Link>
       </div>
@@ -125,7 +129,7 @@ export function SignupForm() {
       </button>
       <p className="text-center text-xs text-ds-muted-2">
         Já tem conta?{" "}
-        <Link href="/login" className="font-medium text-ds-accent hover:brightness-90">
+        <Link href={loginHref} className="font-medium text-ds-accent hover:brightness-90">
           Entrar
         </Link>
       </p>
