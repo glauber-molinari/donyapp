@@ -6,9 +6,11 @@ import {
   ChevronLeft,
   ChevronRight,
   Columns3,
+  Crown,
   FileText,
   LaptopMinimal,
   LayoutDashboard,
+  Lock,
   Mail,
   NotebookPen,
   Settings,
@@ -239,6 +241,47 @@ const slides = [
                     />
                   ))}
                 </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="rounded-ds-xl border border-ds-border bg-white p-4 shadow-ds-sm">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-ds-muted">
+            4 estados de prazo
+          </p>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {[
+              {
+                label: "Em dia",
+                dot: "bg-ds-success",
+                text: "text-ds-success",
+                bg: "bg-ds-success-soft border-ds-success/25",
+              },
+              {
+                label: "Próximo",
+                dot: "bg-yellow-400",
+                text: "text-yellow-700",
+                bg: "bg-yellow-50 border-yellow-200",
+              },
+              {
+                label: "Urgente",
+                dot: "bg-ds-accent",
+                text: "text-ds-accent",
+                bg: "bg-orange-50 border-orange-200",
+              },
+              {
+                label: "Atrasado",
+                dot: "bg-ds-danger",
+                text: "text-ds-danger",
+                bg: "bg-ds-danger-soft border-ds-danger/25",
+              },
+            ].map((state, i) => (
+              <div
+                key={i}
+                className={cn("flex items-center gap-2 rounded-lg border p-2", state.bg)}
+              >
+                <div className={cn("h-2 w-2 shrink-0 rounded-full", state.dot)} />
+                <span className={cn("text-xs font-medium", state.text)}>{state.label}</span>
               </div>
             ))}
           </div>
@@ -719,6 +762,92 @@ const slides = [
               </div>
             </div>
           ))}
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: "planos",
+    title: "Planos Free & Pro",
+    subtitle: "Comece grátis, cresça quando precisar",
+    icon: Crown,
+    content: (
+      <div className="flex flex-col gap-5">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-4 rounded-ds-xl border border-ds-border bg-white p-5 shadow-ds-sm">
+            <div>
+              <p className="text-lg font-bold text-ds-ink">Free</p>
+              <p className="text-sm text-ds-muted">Para começar</p>
+            </div>
+            <ul className="space-y-2">
+              {[
+                "3 jobs ativos",
+                "1 membro na equipe",
+                "Kanban básico",
+                "Contatos ilimitados",
+                "Anotações e tarefas",
+              ].map((item, i) => (
+                <li key={i} className="flex items-center gap-2 text-sm text-ds-muted">
+                  <div className="h-1.5 w-1.5 rounded-full bg-ds-border" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="flex flex-col gap-4 rounded-ds-xl border-2 border-ds-accent bg-white p-5 shadow-ds-card">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-lg font-bold text-ds-ink">Pro</p>
+                <p className="text-sm text-ds-muted">Para estúdios em crescimento</p>
+              </div>
+              <span className="flex items-center gap-1 rounded-full bg-ds-accent px-2.5 py-1 text-xs font-bold text-white">
+                <Crown className="h-3 w-3" />
+                PRO
+              </span>
+            </div>
+            <ul className="space-y-2">
+              {[
+                "Jobs ilimitados",
+                "Equipe ilimitada",
+                "Etapas customizáveis",
+                "E-mail automático",
+                "Agenda Google integrada",
+                "Relatórios avançados",
+              ].map((item, i) => (
+                <li key={i} className="flex items-center gap-2 text-sm text-ds-muted">
+                  <div className="h-1.5 w-1.5 rounded-full bg-ds-accent" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="rounded-ds-xl border border-ds-border bg-ds-cream p-4">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-ds-muted">
+            Badge Pro — aparece em 3 contextos
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <div className="flex items-center gap-2 rounded-lg border border-ds-border bg-white px-3 py-2">
+              <span className="text-sm text-ds-muted">Menu</span>
+              <Lock className="h-3.5 w-3.5 text-ds-muted-2" />
+              <span className="rounded-full bg-ds-accent px-1.5 py-0.5 text-[10px] font-bold text-white">
+                PRO
+              </span>
+            </div>
+            <div className="flex items-center gap-2 rounded-lg border border-ds-border bg-white px-3 py-2">
+              <span className="text-sm text-ds-muted">Inline</span>
+              <span className="rounded-full bg-orange-100 px-1.5 py-0.5 text-[10px] font-bold text-ds-accent">
+                PRO
+              </span>
+            </div>
+            <div className="flex items-center gap-2 rounded-lg border border-ds-border bg-white px-3 py-2">
+              <Lock className="h-3.5 w-3.5 text-ds-muted-2" />
+              <span className="text-sm text-ds-muted">Paywall</span>
+              <span className="text-xs font-semibold text-ds-accent">→ Fazer upgrade</span>
+            </div>
+          </div>
         </div>
       </div>
     ),
