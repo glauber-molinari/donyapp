@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
-import type { JobType } from "@/types/database";
+import type { BoardType, JobType } from "@/types/database";
 import { ContactDetailView } from "./contact-detail-view";
 
 type JobRowForView = {
   id: string;
   name: string;
   type: JobType;
+  board_type: BoardType;
   deadline: string;
   internal_deadline: string;
   job_date: string | null;
@@ -62,7 +63,7 @@ export default async function ContactDetailPage({ params }: PageProps) {
       .from("jobs")
       .select(
         `
-        id, name, type, job_kind, deadline, internal_deadline, job_date,
+        id, name, type, job_kind, board_type, deadline, internal_deadline, job_date,
         delivery_link, created_at, updated_at,
         stage:kanban_stages(id, name, color, is_final),
         work_type:job_work_types(id, name)
@@ -97,11 +98,18 @@ export default async function ContactDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  const { data: account } = await supabase
+    .from("accounts")
+    .select("album_board_enabled")
+    .eq("id", contact.account_id)
+    .maybeSingle();
+
   return (
     <ContactDetailView
       contact={contact}
       jobs={(jobs ?? []) as unknown as JobRowForView[]}
       notes={(notes ?? []) as unknown as NoteRowForView[]}
+      albumBoardEnabled={Boolean(account?.album_board_enabled)}
     />
   );
 }
