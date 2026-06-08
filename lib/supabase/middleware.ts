@@ -66,7 +66,8 @@ export async function updateSession(request: NextRequest) {
     path === "/login" ||
     path === "/signup" ||
     path === "/forgot-password" ||
-    (process.env.NODE_ENV === "development" && path.startsWith("/dev-mobile-preview")) ||
+    (process.env.NODE_ENV === "development" &&
+      path.startsWith("/dev-mobile-preview")) ||
     path === "/sitemap.xml" ||
     path === "/robots.txt" ||
     path.startsWith("/auth/") ||
@@ -86,7 +87,8 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Redireciona usuários autenticados que tentam acessar páginas de autenticação pública.
-  const isAuthPage = path === "/login" || path === "/signup" || path === "/forgot-password";
+  const isAuthPage =
+    path === "/login" || path === "/signup" || path === "/forgot-password";
   if (user && isAuthPage) {
     const next = request.nextUrl.searchParams.get("next");
     if (next?.startsWith("/invite/")) {

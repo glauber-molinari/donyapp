@@ -3,12 +3,16 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { JobAssigneesMultiField } from "@/components/app/job-assignees-multi-field";
-import { ContactSearchField, type ContactSearchOption } from "@/components/app/contact-search-field";
+import {
+  ContactSearchField,
+  type ContactSearchOption,
+} from "@/components/app/contact-search-field";
 import { SdCardTagsField } from "@/components/app/sd-card-tags-field";
 import type { JobAssigneePickerOption } from "@/lib/build-job-assignee-picker-options";
 import { Input } from "@/components/ui/input";
 import { Select, type SelectOption } from "@/components/ui/select";
 import { PanelFieldCard } from "@/components/ui/side-panel";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import type { Database } from "@/types/database";
@@ -89,6 +93,9 @@ export type NewJobFormProps = {
    */
   tab?: NewJobTab;
   onTabChange?: (tab: NewJobTab) => void;
+  /** Mostrar toggle "Ativar portal do cliente" (apenas no modo criação). */
+  enablePortalOnCreate?: boolean;
+  onPortalToggleChange?: (enabled: boolean) => void;
 };
 
 export function NewJobForm({
@@ -104,6 +111,8 @@ export function NewJobForm({
   onSubmit,
   tab: tabControlled,
   onTabChange,
+  enablePortalOnCreate = false,
+  onPortalToggleChange,
 }: NewJobFormProps) {
   const [tabInternal, setTabInternal] = useState<NewJobTab>("info");
   const tab = tabControlled ?? tabInternal;
@@ -129,11 +138,13 @@ export function NewJobForm({
   );
 
   const defaultPhotoTokens = useMemo(() => {
-    const fromProp = (initialAssigneePhotoTokens ?? []).filter((t) => validTokenSet.has(t));
+    const fromProp = (initialAssigneePhotoTokens ?? []).filter((t) =>
+      validTokenSet.has(t)
+    );
     if (fromProp.length > 0) return fromProp;
     if (initialValues) {
-      const fromLegacy = legacyAssigneeTokensFromInitial(initialValues, "photo").filter((t) =>
-        validTokenSet.has(t)
+      const fromLegacy = legacyAssigneeTokensFromInitial(initialValues, "photo").filter(
+        (t) => validTokenSet.has(t)
       );
       if (fromLegacy.length > 0) return fromLegacy;
     }
@@ -142,11 +153,13 @@ export function NewJobForm({
   }, [initialAssigneePhotoTokens, initialValues, assigneePickerOptions, validTokenSet]);
 
   const defaultVideoTokens = useMemo(() => {
-    const fromProp = (initialAssigneeVideoTokens ?? []).filter((t) => validTokenSet.has(t));
+    const fromProp = (initialAssigneeVideoTokens ?? []).filter((t) =>
+      validTokenSet.has(t)
+    );
     if (fromProp.length > 0) return fromProp;
     if (initialValues) {
-      const fromLegacy = legacyAssigneeTokensFromInitial(initialValues, "video").filter((t) =>
-        validTokenSet.has(t)
+      const fromLegacy = legacyAssigneeTokensFromInitial(initialValues, "video").filter(
+        (t) => validTokenSet.has(t)
       );
       if (fromLegacy.length > 0) return fromLegacy;
     }
@@ -158,7 +171,11 @@ export function NewJobForm({
 
   return (
     <form id={formId} className="flex flex-col gap-4" onSubmit={onSubmit}>
-      <input type="hidden" name="assignee_picker_option_count" value={assigneePickerOptions.length} />
+      <input
+        type="hidden"
+        name="assignee_picker_option_count"
+        value={assigneePickerOptions.length}
+      />
 
       <div
         className="flex gap-0.5 rounded-ds-lg border border-ds-border bg-ds-cream/40 p-1"
@@ -204,7 +221,7 @@ export function NewJobForm({
           <Select
             id={`${fieldIdPrefix}-stage`}
             name="stage_id"
-            label="Coluna Inicial"
+            label="Status inicial"
             required
             placeholder="Selecione a etapa"
             options={stageOptions}
@@ -235,7 +252,9 @@ export function NewJobForm({
             name="work_type_id"
             label="Tipo do Job"
             required={workTypeOptions.length > 0}
-            placeholder={workTypeOptions.length ? "Selecione" : "Cadastre tipos em Configurações"}
+            placeholder={
+              workTypeOptions.length ? "Selecione" : "Cadastre tipos em Configurações"
+            }
             options={workTypeOptions}
             disabled={workTypeOptions.length === 0}
             defaultValue={initialValues?.work_type_id ?? ""}
@@ -278,7 +297,9 @@ export function NewJobForm({
               type="date"
               label="Prazo interno"
               required
-              defaultValue={initialValues?.internal_deadline?.slice(0, 10) ?? initialYmd}
+              defaultValue={
+                initialValues?.internal_deadline?.slice(0, 10) ?? initialYmd
+              }
             />
             <Input
               id={`${fieldIdPrefix}-final`}
@@ -304,8 +325,11 @@ export function NewJobForm({
               <SdCardTagsField
                 id={`${fieldIdPrefix}-prof-photo`}
                 name="professional_photo_tags"
-                label={deliveryType === "foto_video" ? "Quem fotografou" : "Profissional"}
+                label={
+                  deliveryType === "foto_video" ? "Quem fotografou" : "Profissional"
+                }
                 hint="Opcional. Vários nomes: vírgula, ponto e vírgula ou Enter para cada um."
+                placeholder="Ex.: Mariana ou Rafael"
                 initialTags={initialValues?.professional_photo_tags ?? []}
               />
             </div>
@@ -315,6 +339,7 @@ export function NewJobForm({
                 name="professional_video_tags"
                 label={deliveryType === "foto_video" ? "Quem filmou" : "Profissional"}
                 hint="Opcional. Vários nomes: vírgula, ponto e vírgula ou Enter para cada um."
+                placeholder="Ex.: Mariana ou Rafael"
                 initialTags={initialValues?.professional_video_tags ?? []}
               />
             </div>
@@ -326,6 +351,18 @@ export function NewJobForm({
               placeholder="https://… (opcional)"
               defaultValue={initialValues?.delivery_link ?? ""}
             />
+
+            {onPortalToggleChange !== undefined ? (
+              <div className="rounded-ds-lg border border-ds-border bg-ds-cream/60 px-4 py-3">
+                <Switch
+                  id={`${fieldIdPrefix}-portal-toggle`}
+                  checked={enablePortalOnCreate}
+                  onChange={onPortalToggleChange}
+                  label="Ativar portal do cliente"
+                  hint="Gera um link público para o cliente acompanhar o andamento do job."
+                />
+              </div>
+            ) : null}
 
             {deliveryType === "foto_video" ? (
               <div className="flex min-w-0 flex-col gap-5">
@@ -354,7 +391,9 @@ export function NewJobForm({
                 name={deliveryType === "video" ? "assignee_video" : "assignee_photo"}
                 label="Responsáveis"
                 options={assigneePickerOptions}
-                defaultSelectedTokens={deliveryType === "video" ? defaultVideoTokens : defaultPhotoTokens}
+                defaultSelectedTokens={
+                  deliveryType === "video" ? defaultVideoTokens : defaultPhotoTokens
+                }
                 requireSelection={requireAssigneePick}
                 disabled={twoStepCreate && tab !== "prazos"}
               />
@@ -365,8 +404,8 @@ export function NewJobForm({
             <div className="rounded-ds-lg border border-ds-info/20 bg-ds-info-soft p-4">
               <p className="text-sm font-semibold text-ds-ink">Edição de vídeo</p>
               <p className="mt-1 text-xs text-ds-info">
-                Será criado um card adicional no quadro só para acompanhar a edição de vídeo deste
-                job.
+                Será criado um card adicional no quadro só para acompanhar a edição de
+                vídeo deste job.
               </p>
             </div>
           ) : null}

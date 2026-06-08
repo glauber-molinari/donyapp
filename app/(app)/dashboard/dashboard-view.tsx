@@ -53,7 +53,10 @@ import type { Database, Plan, UserRole } from "@/types/database";
 import { createJob, deleteJob, updateJob } from "../jobs/actions";
 
 type JobRow = Database["public"]["Tables"]["jobs"]["Row"];
-type ContactPick = Pick<Database["public"]["Tables"]["contacts"]["Row"], "id" | "name" | "email" | "phone">;
+type ContactPick = Pick<
+  Database["public"]["Tables"]["contacts"]["Row"],
+  "id" | "name" | "email" | "phone"
+>;
 type StagePick = Pick<
   Database["public"]["Tables"]["kanban_stages"]["Row"],
   "id" | "name" | "position" | "is_final"
@@ -83,11 +86,25 @@ const EDIT_JOB_TABS = [
 type EditJobTabId = (typeof EDIT_JOB_TABS)[number]["id"];
 
 interface DashboardViewProps {
-  members: { id: string; name: string; email: string | null; avatarUrl: string | null; role: UserRole }[];
-  manualAssignees: { id: string; name: string; email: string | null; photo_url: string | null }[];
+  members: {
+    id: string;
+    name: string;
+    email: string | null;
+    avatarUrl: string | null;
+    role: UserRole;
+  }[];
+  manualAssignees: {
+    id: string;
+    name: string;
+    email: string | null;
+    photo_url: string | null;
+  }[];
   jobs: JobWithRelations[];
   contacts: ContactPick[];
-  stages: Pick<Database["public"]["Tables"]["kanban_stages"]["Row"], "id" | "name" | "position">[];
+  stages: Pick<
+    Database["public"]["Tables"]["kanban_stages"]["Row"],
+    "id" | "name" | "position"
+  >[];
   workTypes: WorkTypeRow[];
   metrics: DashboardMetrics;
   agendaConnected: boolean;
@@ -98,7 +115,8 @@ interface DashboardViewProps {
 type DateBase = "deadline" | "internal_deadline";
 type DashboardTab = "active" | "done";
 
-const TEAM_PRO_INVITE_BANNER_STORAGE_KEY = "dony:dashboard:team-pro-invite-banner-dismissed";
+const TEAM_PRO_INVITE_BANNER_STORAGE_KEY =
+  "dony:dashboard:team-pro-invite-banner-dismissed";
 const ATTENTION_BANNER_STORAGE_KEY = "dony:dashboard:attention-banner-dismissed";
 
 function clampPage(page: number, maxPage: number) {
@@ -108,8 +126,10 @@ function clampPage(page: number, maxPage: number) {
 
 function deadlineProximity(deadlineIso: string) {
   const days = differenceInCalendarDays(parseISO(deadlineIso), new Date());
-  if (Number.isNaN(days)) return { label: "—", tone: "muted" as const, days: null as number | null };
-  if (days < 0) return { label: `Atrasado ${Math.abs(days)}d`, tone: "danger" as const, days };
+  if (Number.isNaN(days))
+    return { label: "—", tone: "muted" as const, days: null as number | null };
+  if (days < 0)
+    return { label: `Atrasado ${Math.abs(days)}d`, tone: "danger" as const, days };
   if (days === 0) return { label: "Hoje", tone: "warn" as const, days };
   if (days <= 3) return { label: `Em ${days}d`, tone: "warn" as const, days };
   if (days <= 10) return { label: `Em ${days}d`, tone: "ok" as const, days };
@@ -209,7 +229,9 @@ export function DashboardView({
 
   const attentionParam = searchParams.get("attention");
   const attentionFilter =
-    attentionParam === "overdue" || attentionParam === "dueSoon" ? attentionParam : null;
+    attentionParam === "overdue" || attentionParam === "dueSoon"
+      ? attentionParam
+      : null;
 
   const [query, setQuery] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
@@ -229,10 +251,12 @@ export function DashboardView({
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(1);
 
-  const [teamProInviteBannerDismissed, setTeamProInviteBannerDismissed] = useState<boolean | null>(
-    null,
-  );
-  const [attentionBannerDismissed, setAttentionBannerDismissed] = useState<boolean | null>(null);
+  const [teamProInviteBannerDismissed, setTeamProInviteBannerDismissed] = useState<
+    boolean | null
+  >(null);
+  const [attentionBannerDismissed, setAttentionBannerDismissed] = useState<
+    boolean | null
+  >(null);
 
   const stageOptions = useMemo(
     () =>
@@ -275,7 +299,10 @@ export function DashboardView({
   );
 
   const manualById = useMemo(() => {
-    const map = new Map<string, { id: string; name: string; avatarUrl: string | null }>();
+    const map = new Map<
+      string,
+      { id: string; name: string; avatarUrl: string | null }
+    >();
     for (const a of manualAssignees) {
       map.set(a.id, { id: a.id, name: a.name, avatarUrl: a.photo_url ?? null });
     }
@@ -293,7 +320,9 @@ export function DashboardView({
 
     return jobs
       .filter((j) => j.kanban_stages)
-      .filter((j) => (tab === "done" ? Boolean(j.kanban_stages?.is_final) : !j.kanban_stages?.is_final))
+      .filter((j) =>
+        tab === "done" ? Boolean(j.kanban_stages?.is_final) : !j.kanban_stages?.is_final
+      )
       .filter((j) => {
         if (!q) return true;
         const contactName = j.contacts?.name?.toLowerCase() ?? "";
@@ -302,8 +331,10 @@ export function DashboardView({
         const tagHit =
           j.sd_card_tags?.some((tag) => tag.toLowerCase().includes(q)) ?? false;
         const profHit =
-          (j.professional_photo_tags?.some((tag) => tag.toLowerCase().includes(q)) ?? false) ||
-          (j.professional_video_tags?.some((tag) => tag.toLowerCase().includes(q)) ?? false);
+          (j.professional_photo_tags?.some((tag) => tag.toLowerCase().includes(q)) ??
+            false) ||
+          (j.professional_video_tags?.some((tag) => tag.toLowerCase().includes(q)) ??
+            false);
         return (
           j.name.toLowerCase().includes(q) ||
           contactName.includes(q) ||
@@ -335,7 +366,7 @@ export function DashboardView({
 
   const jobsForChecklist = useMemo(
     () => jobs.filter((j) => j.job_kind !== "video_edit"),
-    [jobs],
+    [jobs]
   );
 
   const totalItems = filteredJobs.length;
@@ -353,9 +384,11 @@ export function DashboardView({
   useEffect(() => {
     try {
       setTeamProInviteBannerDismissed(
-        localStorage.getItem(TEAM_PRO_INVITE_BANNER_STORAGE_KEY) === "1",
+        localStorage.getItem(TEAM_PRO_INVITE_BANNER_STORAGE_KEY) === "1"
       );
-      setAttentionBannerDismissed(localStorage.getItem(ATTENTION_BANNER_STORAGE_KEY) === "1");
+      setAttentionBannerDismissed(
+        localStorage.getItem(ATTENTION_BANNER_STORAGE_KEY) === "1"
+      );
     } catch {
       setTeamProInviteBannerDismissed(false);
       setAttentionBannerDismissed(false);
@@ -371,7 +404,9 @@ export function DashboardView({
     if (typeof window === "undefined") return;
     if (window.location.hash !== "#btn-novo-job") return;
     window.requestAnimationFrame(() => {
-      document.getElementById("btn-novo-job")?.scrollIntoView({ block: "center", behavior: "smooth" });
+      document
+        .getElementById("btn-novo-job")
+        ?.scrollIntoView({ block: "center", behavior: "smooth" });
     });
   }, [pathname]);
 
@@ -385,7 +420,10 @@ export function DashboardView({
   }, [editJob?.id]);
 
   useEffect(() => {
-    if (createOpen) setCreateJobTab("info");
+    if (createOpen) {
+      setCreateJobTab("info");
+      setCreatePortalEnabled(false);
+    }
   }, [createOpen]);
 
   const editJobTabsVisible = EDIT_JOB_TABS;
@@ -498,7 +536,9 @@ export function DashboardView({
         tourCompleted={tourCompleted}
       />
 
-      {plan === "pro" && members.length === 1 && teamProInviteBannerDismissed === false ? (
+      {plan === "pro" &&
+      members.length === 1 &&
+      teamProInviteBannerDismissed === false ? (
         <Card className="relative border border-ds-accent/25 bg-ds-cream/40 p-4 pr-12 shadow-sm sm:pr-14">
           <button
             type="button"
@@ -546,8 +586,9 @@ export function DashboardView({
       {metrics.activeJobs > 0 ? (
         <p className="text-sm text-ds-muted">
           <span className="font-medium text-ds-ink">Neste mês:</span>{" "}
-          {metrics.deliveredThisMonth} entrega(s) registrada(s) e {metrics.toEditThisMonth} item(ns) com
-          prazo no mês. Vale conferir o quadro para não perder o ritmo.
+          {metrics.deliveredThisMonth} entrega(s) registrada(s) e{" "}
+          {metrics.toEditThisMonth} item(ns) com prazo no mês. Vale conferir o quadro
+          para não perder o ritmo.
         </p>
       ) : null}
 
@@ -609,7 +650,12 @@ export function DashboardView({
               <ExternalLink className="h-3.5 w-3.5" aria-hidden />
             </Link>
             {attentionFilter ? (
-              <Button type="button" variant="ghost" size="sm" onClick={() => router.push("/dashboard")}>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push("/dashboard")}
+              >
                 Limpar filtro
               </Button>
             ) : null}
@@ -625,7 +671,9 @@ export function DashboardView({
                 <ClipboardList className="h-5 w-5 shrink-0" aria-hidden />
               </div>
               <div className="min-w-0">
-                <p className="text-2xl font-bold tabular-nums text-ds-ink">{metrics.activeJobs}</p>
+                <p className="text-2xl font-bold tabular-nums text-ds-ink">
+                  {metrics.activeJobs}
+                </p>
                 <p className="text-xs leading-snug text-ds-muted">Jobs ativos</p>
               </div>
             </div>
@@ -636,7 +684,9 @@ export function DashboardView({
                 <AlertCircle className="h-5 w-5 shrink-0" aria-hidden />
               </div>
               <div className="min-w-0">
-                <p className="text-2xl font-bold tabular-nums text-ds-ink">{metrics.overdue}</p>
+                <p className="text-2xl font-bold tabular-nums text-ds-ink">
+                  {metrics.overdue}
+                </p>
                 <p className="text-xs leading-snug text-ds-muted">Atrasados</p>
               </div>
             </div>
@@ -647,8 +697,12 @@ export function DashboardView({
                 <CalendarClock className="h-5 w-5 shrink-0" aria-hidden />
               </div>
               <div className="min-w-0">
-                <p className="text-2xl font-bold tabular-nums text-ds-ink">{metrics.dueSoon}</p>
-                <p className="text-xs leading-snug text-ds-muted">Prazo em até 3 dias</p>
+                <p className="text-2xl font-bold tabular-nums text-ds-ink">
+                  {metrics.dueSoon}
+                </p>
+                <p className="text-xs leading-snug text-ds-muted">
+                  Prazo em até 3 dias
+                </p>
               </div>
             </div>
           </Card>
@@ -680,7 +734,9 @@ export function DashboardView({
           </Card>
         </div>
         <details className="mt-3 rounded-ds-xl border border-ds-border bg-ds-surface/60 px-3 py-2 lg:hidden">
-          <summary className="cursor-pointer text-sm font-medium text-ds-ink">Mais indicadores</summary>
+          <summary className="cursor-pointer text-sm font-medium text-ds-ink">
+            Mais indicadores
+          </summary>
           <div className="mt-3 grid grid-cols-2 gap-3 pb-2">
             <Card className="p-4 shadow-sm">
               <div className="flex items-start gap-3">
@@ -704,7 +760,9 @@ export function DashboardView({
                   <p className="text-xl font-bold tabular-nums text-ds-ink">
                     {metrics.toEditThisMonth}
                   </p>
-                  <p className="text-xs leading-snug text-ds-muted">A editar neste mês</p>
+                  <p className="text-xs leading-snug text-ds-muted">
+                    A editar neste mês
+                  </p>
                 </div>
               </div>
             </Card>
@@ -743,10 +801,16 @@ export function DashboardView({
           </EmptyState>
         </div>
       ) : !noStages ? (
-        <section className="flex flex-col gap-4" aria-labelledby="dashboard-jobs-heading">
+        <section
+          className="flex flex-col gap-4"
+          aria-labelledby="dashboard-jobs-heading"
+        >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
             <div className="flex flex-col gap-1">
-              <h2 id="dashboard-jobs-heading" className="text-lg font-semibold text-ds-ink">
+              <h2
+                id="dashboard-jobs-heading"
+                className="text-lg font-semibold text-ds-ink"
+              >
                 Lista de jobs
               </h2>
               <p className="text-xs text-ds-muted-2">
@@ -758,7 +822,10 @@ export function DashboardView({
 
             <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-end">
               <div className="flex w-full flex-col gap-1 sm:w-[22rem]">
-                <label htmlFor="dashboard-search" className="text-xs font-medium text-ds-muted">
+                <label
+                  htmlFor="dashboard-search"
+                  className="text-xs font-medium text-ds-muted"
+                >
                   Buscar
                 </label>
                 <div className="relative">
@@ -866,7 +933,12 @@ export function DashboardView({
                             : "Nenhum job ativo na fila. Pode ser que todos estejam na etapa final."}
                   </p>
                   {attentionFilter ? (
-                    <Button type="button" variant="secondary" size="sm" onClick={() => router.push("/dashboard")}>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => router.push("/dashboard")}
+                    >
                       Limpar filtro de atenção
                     </Button>
                   ) : null}
@@ -878,13 +950,19 @@ export function DashboardView({
                       <thead>
                         <tr className="border-b border-ds-border bg-ds-cream/90">
                           <th className="px-4 py-3 font-medium text-ds-muted">Job</th>
-                          <th className="px-4 py-3 font-medium text-ds-muted">Trabalho / entrega</th>
-                          <th className="px-4 py-3 font-medium text-ds-muted">Prazos</th>
+                          <th className="px-4 py-3 font-medium text-ds-muted">
+                            Trabalho / entrega
+                          </th>
+                          <th className="px-4 py-3 font-medium text-ds-muted">
+                            Prazos
+                          </th>
                           <th className="px-4 py-3 font-medium text-ds-muted">
                             Perto do prazo
                           </th>
                           <th className="px-4 py-3 font-medium text-ds-muted">Etapa</th>
-                          <th className="px-4 py-3 font-medium text-ds-muted">Contato</th>
+                          <th className="px-4 py-3 font-medium text-ds-muted">
+                            Contato
+                          </th>
                           <th className="px-4 py-3 text-right font-medium text-ds-muted">
                             Editando
                           </th>
@@ -903,10 +981,14 @@ export function DashboardView({
                             >
                               <td className="px-4 py-3">
                                 <div className="flex min-w-0 flex-col gap-1">
-                                  <span className="truncate font-medium text-ds-ink">{j.name}</span>
+                                  <span className="truncate font-medium text-ds-ink">
+                                    {j.name}
+                                  </span>
                                   <span className="text-xs text-ds-muted-2">
                                     Criado por{" "}
-                                    {j.created_by ? membersById.get(j.created_by)?.name ?? "—" : "—"}
+                                    {j.created_by
+                                      ? (membersById.get(j.created_by)?.name ?? "—")
+                                      : "—"}
                                   </span>
                                 </div>
                               </td>
@@ -915,7 +997,10 @@ export function DashboardView({
                                   <span className="text-xs text-ds-muted">
                                     {j.job_work_types?.name ?? "—"}
                                   </span>
-                                  <Badge kind="job-type" value={jobTypeBadgeForList(j, jobs)} />
+                                  <Badge
+                                    kind="job-type"
+                                    value={jobTypeBadgeForList(j, jobs)}
+                                  />
                                 </div>
                               </td>
                               <td className="px-4 py-3">
@@ -1000,7 +1085,10 @@ export function DashboardView({
                                 <span className="text-xs text-ds-muted-2">
                                   {j.job_work_types?.name ?? "—"}
                                 </span>
-                                <Badge kind="job-type" value={jobTypeBadgeForList(j, jobs)} />
+                                <Badge
+                                  kind="job-type"
+                                  value={jobTypeBadgeForList(j, jobs)}
+                                />
                               </div>
                               <div className="flex flex-wrap items-center gap-2">
                                 <ProximityPill deadline={j.deadline} />
@@ -1086,7 +1174,8 @@ export function DashboardView({
                         Anterior
                       </Button>
                       <span className="text-xs text-ds-muted tabular-nums">
-                        Página <span className="font-medium text-ds-ink">{safePage}</span> de{" "}
+                        Página{" "}
+                        <span className="font-medium text-ds-ink">{safePage}</span> de{" "}
                         <span className="font-medium text-ds-ink">{totalPages}</span>
                       </span>
                       <Button
@@ -1193,7 +1282,11 @@ export function DashboardView({
             className="flex min-w-0 flex-col gap-3 p-5"
             onSubmit={handleEdit}
           >
-            <input type="hidden" name="assignee_picker_option_count" value={assigneePickerOptions.length} />
+            <input
+              type="hidden"
+              name="assignee_picker_option_count"
+              value={assigneePickerOptions.length}
+            />
 
             <div
               role="tablist"
@@ -1221,7 +1314,11 @@ export function DashboardView({
 
             <div className="min-w-0 flex-1">
               {/* Todas as seções permanecem no DOM para FormData e validação HTML5 ao salvar. */}
-              <div role="tabpanel" hidden={editJobTab !== "geral"} className="space-y-4">
+              <div
+                role="tabpanel"
+                hidden={editJobTab !== "geral"}
+                className="space-y-4"
+              >
                 <Input
                   id="job-edit-name"
                   name="name"
@@ -1257,7 +1354,9 @@ export function DashboardView({
                   label="Tipo de entrega"
                   required
                   value={editDeliveryType}
-                  onChange={(e) => setEditDeliveryType(e.target.value as JobRow["type"])}
+                  onChange={(e) =>
+                    setEditDeliveryType(e.target.value as JobRow["type"])
+                  }
                   options={JOB_DELIVERY_OPTIONS}
                 />
                 <ContactSearchField
@@ -1268,7 +1367,11 @@ export function DashboardView({
                 />
               </div>
 
-              <div role="tabpanel" hidden={editJobTab !== "prazos"} className="space-y-4">
+              <div
+                role="tabpanel"
+                hidden={editJobTab !== "prazos"}
+                className="space-y-4"
+              >
                 <Input
                   id="job-edit-internal"
                   name="internal_deadline"
@@ -1287,14 +1390,21 @@ export function DashboardView({
                 />
               </div>
 
-              <div role="tabpanel" hidden={editJobTab !== "equipe"} className="space-y-4">
+              <div
+                role="tabpanel"
+                hidden={editJobTab !== "equipe"}
+                className="space-y-4"
+              >
                 {editJob.job_kind === "video_edit" ? (
                   <JobAssigneesMultiField
                     id={`job-edit-${editJob.id}-assign-video`}
                     name="assignee_video"
                     label="Responsáveis pelo vídeo"
                     options={assigneePickerOptions}
-                    defaultSelectedTokens={initialAssigneeTokensForJob(editJob, "video")}
+                    defaultSelectedTokens={initialAssigneeTokensForJob(
+                      editJob,
+                      "video"
+                    )}
                     requireSelection={assigneePickerOptions.length > 1}
                   />
                 ) : editDeliveryType === "foto_video" ? (
@@ -1304,7 +1414,10 @@ export function DashboardView({
                       name="assignee_photo"
                       label="Responsáveis pela foto"
                       options={assigneePickerOptions}
-                      defaultSelectedTokens={initialAssigneeTokensForJob(editJob, "photo")}
+                      defaultSelectedTokens={initialAssigneeTokensForJob(
+                        editJob,
+                        "photo"
+                      )}
                       requireSelection={assigneePickerOptions.length > 1}
                     />
                     <JobAssigneesMultiField
@@ -1322,7 +1435,9 @@ export function DashboardView({
                 ) : (
                   <JobAssigneesMultiField
                     id={`job-edit-${editJob.id}-assign`}
-                    name={editDeliveryType === "video" ? "assignee_video" : "assignee_photo"}
+                    name={
+                      editDeliveryType === "video" ? "assignee_video" : "assignee_photo"
+                    }
                     label="Responsáveis"
                     options={assigneePickerOptions}
                     defaultSelectedTokens={initialAssigneeTokensForJob(
@@ -1334,7 +1449,11 @@ export function DashboardView({
                 )}
               </div>
 
-              <div role="tabpanel" hidden={editJobTab !== "etapa"} className="space-y-4">
+              <div
+                role="tabpanel"
+                hidden={editJobTab !== "etapa"}
+                className="space-y-4"
+              >
                 <Select
                   id="job-edit-stage"
                   name="stage_id"
@@ -1361,7 +1480,6 @@ export function DashboardView({
                 />
               </div>
             </div>
-
           </form>
         ) : null}
       </Modal>
@@ -1396,8 +1514,8 @@ export function DashboardView({
           <div className="p-5">
             <p className="text-sm text-ds-muted">
               Tem certeza que deseja excluir{" "}
-              <span className="font-medium text-ds-ink">{deleteJobRow.name}</span>? Esta ação não
-              pode ser desfeita.
+              <span className="font-medium text-ds-ink">{deleteJobRow.name}</span>? Esta
+              ação não pode ser desfeita.
             </p>
           </div>
         ) : null}

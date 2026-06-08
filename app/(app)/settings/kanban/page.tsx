@@ -35,7 +35,8 @@ export default async function SettingsKanbanPage() {
     );
   }
 
-  const [stagesRes, subRes, workTypesRes, usersCountRes, manualRes] = await Promise.all([
+  const [stagesRes, subRes, workTypesRes, usersCountRes, manualRes, accountRes] =
+    await Promise.all([
     supabase
       .from("kanban_stages")
       .select("*")
@@ -60,9 +61,20 @@ export default async function SettingsKanbanPage() {
       .select("*")
       .eq("account_id", profile.account_id)
       .order("position", { ascending: true }),
+    supabase
+      .from("accounts")
+      .select("album_board_enabled")
+      .eq("id", profile.account_id)
+      .maybeSingle(),
   ]);
 
-  if (stagesRes.error || workTypesRes.error || usersCountRes.error || manualRes.error) {
+  if (
+    stagesRes.error ||
+    workTypesRes.error ||
+    usersCountRes.error ||
+    manualRes.error ||
+    accountRes.error
+  ) {
     return (
       <div>
         <p className="mt-2 text-sm text-red-600" role="alert">
@@ -84,6 +96,7 @@ export default async function SettingsKanbanPage() {
       isAdmin={isAdmin}
       manualAssignees={manualRes.data ?? []}
       accountUserCount={accountUserCount}
+      albumBoardEnabled={accountRes.data?.album_board_enabled ?? false}
     />
   );
 }

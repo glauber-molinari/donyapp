@@ -25,10 +25,10 @@ export default function robots(): MetadataRoute.Robots {
           "/agenda/",
           "/settings",
           "/settings/",
+          "/p/",
         ],
       },
     ],
     sitemap: new URL("/sitemap.xml", base).toString(),
   };
 }
-

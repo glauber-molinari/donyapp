@@ -1,12 +1,16 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 
+import { toggleAlbumBoard } from "./kanban-actions";
 import { SettingsKanbanSection } from "./settings-kanban-section";
 import { SettingsManualAssigneesSection } from "./settings-manual-assignees-section";
 import { SettingsWorkTypesSection } from "./settings-work-types-section";
+import { canCreateAlbum } from "@/lib/plan-limits";
+import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import type { Database } from "@/types/database";
+import type { BoardType, Database } from "@/types/database";
 
 type Stage = Database["public"]["Tables"]["kanban_stages"]["Row"];
 type WorkType = Database["public"]["Tables"]["job_work_types"]["Row"];
@@ -22,6 +26,7 @@ export function SettingsKanbanTabs({
   isAdmin,
   manualAssignees,
   accountUserCount,
+  albumBoardEnabled,
 }: {
   stages: Stage[];
   workTypes: WorkType[];
@@ -29,8 +34,38 @@ export function SettingsKanbanTabs({
   isAdmin: boolean;
   manualAssignees: ManualAssignee[];
   accountUserCount: number;
+  albumBoardEnabled: boolean;
 }) {
+  const router = useRouter();
   const [tab, setTab] = useState<KanbanSettingsTab>("stages");
+  const [albumToggleBusy, setAlbumToggleBusy] = useState(false);
+  const proAlbum = canCreateAlbum(plan);
+
+  const edicaoStages = useMemo(
+    () => stages.filter((s) => (s.board_type as BoardType) !== "album"),
+    [stages]
+  );
+  const albumStages = useMemo(
+    () => stages.filter((s) => (s.board_type as BoardType) === "album"),
+    [stages]
+  );
+
+  async function handleAlbumToggle(next: boolean) {
+    setAlbumToggleBusy(true);
+    try {
+      const res = await toggleAlbumBoard(next);
+      if (!res.ok) {
+        toast.error(res.error);
+        return;
+      }
+      toast.success(
+        next ? "Quadro de Álbuns ativado." : "Quadro de Álbuns desativado."
+      );
+      router.refresh();
+    } finally {
+      setAlbumToggleBusy(false);
+    }
+  }
 
   const tabs: { id: KanbanSettingsTab; label: string; suffix?: ReactNode }[] = [
     { id: "stages", label: "Etapas" },
@@ -81,9 +116,89 @@ export function SettingsKanbanTabs({
         role="tabpanel"
         aria-labelledby="kanban-tab-stages"
         hidden={tab !== "stages"}
-        className={tab === "stages" ? "flex flex-col gap-4" : "hidden"}
+        className={tab === "stages" ? "flex flex-col gap-8" : "hidden"}
       >
-        <SettingsKanbanSection stages={stages} plan={plan} isAdmin={isAdmin} />
+        <SettingsKanbanSection
+          stages={edicaoStages}
+          plan={plan}
+          isAdmin={isAdmin}
+          boardType="edicao"
+        />
+
+        <div className="h-px w-full bg-ds-border/60" aria-hidden />
+
+        <section
+          className="flex flex-col gap-4"
+          aria-labelledby="settings-album-board-toggle"
+        >
+          <div className="flex flex-col gap-3 rounded-ds-lg border border-ds-border bg-ds-cream/30 p-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex-1">
+              <h3
+                id="settings-album-board-toggle"
+                className="text-sm font-semibold text-ds-ink"
+              >
+                Quadro de Álbuns
+                {!proAlbum ? (
+                  <span className="ml-2 rounded-md bg-ds-ink/10 px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide text-ds-muted">
+                    Pro
+                  </span>
+                ) : null}
+              </h3>
+              <p className="mt-1 text-xs text-ds-muted">
+                Adiciona um quadro separado pra acompanhar a produção física do
+                álbum.
+              </p>
+            </div>
+            <label
+              className={cn(
+                "inline-flex shrink-0 cursor-pointer items-center gap-2 text-xs font-medium",
+                (!isAdmin || !proAlbum || albumToggleBusy) &&
+                  "cursor-not-allowed opacity-60"
+              )}
+            >
+              <span className="text-ds-muted">
+                {albumBoardEnabled ? "Ativado" : "Desativado"}
+              </span>
+              <span
+                role="switch"
+                aria-checked={albumBoardEnabled}
+                tabIndex={isAdmin && proAlbum && !albumToggleBusy ? 0 : -1}
+                onClick={() => {
+                  if (!isAdmin || !proAlbum || albumToggleBusy) return;
+                  void handleAlbumToggle(!albumBoardEnabled);
+                }}
+                onKeyDown={(e) => {
+                  if (!isAdmin || !proAlbum || albumToggleBusy) return;
+                  if (e.key === " " || e.key === "Enter") {
+                    e.preventDefault();
+                    void handleAlbumToggle(!albumBoardEnabled);
+                  }
+                }}
+                className={cn(
+                  "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                  albumBoardEnabled ? "bg-ds-accent" : "bg-ds-border"
+                )}
+              >
+                <span
+                  aria-hidden
+                  className={cn(
+                    "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
+                    albumBoardEnabled ? "translate-x-5" : "translate-x-0.5"
+                  )}
+                />
+              </span>
+            </label>
+          </div>
+
+          {albumBoardEnabled ? (
+            <SettingsKanbanSection
+              stages={albumStages}
+              plan={plan}
+              isAdmin={isAdmin}
+              boardType="album"
+            />
+          ) : null}
+        </section>
       </div>
 
       <div

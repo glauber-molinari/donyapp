@@ -15,6 +15,8 @@ export type SdCardTagsFieldProps = {
   label: string;
   hint?: string;
   initialTags?: string[];
+  /** Placeholder exibido quando não há tags. */
+  placeholder?: string;
 };
 
 function normalizeInitial(tags: string[] | undefined): string[] {
@@ -43,6 +45,7 @@ export function SdCardTagsField({
   label,
   hint,
   initialTags,
+  placeholder = "Ex.: 001 ou CARTÃO 1",
 }: SdCardTagsFieldProps) {
   const [tags, setTags] = useState<string[]>(() => normalizeInitial(initialTags));
   const [draft, setDraft] = useState("");
@@ -118,7 +121,7 @@ export function SdCardTagsField({
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={onKeyDown}
           onBlur={commitDraft}
-          placeholder={tags.length ? "Outro cartão…" : "Ex.: 001 ou CARTÃO 1"}
+          placeholder={tags.length ? "Adicionar…" : placeholder}
           autoComplete="off"
           className="min-w-[8rem] flex-1 border-0 bg-transparent px-1 py-1 text-sm text-ds-ink outline-none placeholder:text-ds-muted-2"
         />

@@ -11,3 +11,8 @@ export const PRO_PRICE_YEARLY_CENTS = Math.round(PRO_PRICE_MONTHLY_CENTS * 12 * 
 /** Preço original ("de") antes do desconto — usado na landing page para mostrar o risco. */
 export const PRO_PRICE_ORIGINAL_MONTHLY_CENTS = 5790;
 export const PRO_PRICE_ORIGINAL_YEARLY_CENTS = PRO_PRICE_ORIGINAL_MONTHLY_CENTS * 12;
+
+/** Álbum (board físico) é feature Pro: Free pode visualizar mas não criar. */
+export function canCreateAlbum(plan: string | null | undefined): boolean {
+  return plan === "pro";
+}

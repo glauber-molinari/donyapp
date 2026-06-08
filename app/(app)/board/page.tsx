@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { resolveDisplayAvatarUrl } from "@/lib/auth/resolve-display-avatar";
 import { createClient } from "@/lib/supabase/server";
+import type { BoardType } from "@/types/database";
 
 import type { JobWithRelations } from "../dashboard/dashboard-view";
 import { BoardView } from "./board-view";
@@ -13,7 +14,20 @@ export const metadata: Metadata = {
   title: "Edições",
 };
 
-export default async function BoardPage() {
+type BoardSearchParams = {
+  board?: string | string[];
+};
+
+export default async function BoardPage({
+  searchParams,
+}: {
+  searchParams?: BoardSearchParams;
+}) {
+  const rawBoard = Array.isArray(searchParams?.board)
+    ? searchParams?.board[0]
+    : searchParams?.board;
+  const boardType: BoardType = rawBoard === "album" ? "album" : "edicao";
+
   const supabase = createClient();
   const {
     data: { user },
@@ -40,8 +54,17 @@ export default async function BoardPage() {
     );
   }
 
-  const [jobsRes, stagesRes, contactsRes, workTypesRes, subRes, accountRes, membersRes, manualRes] =
-    await Promise.all([
+  const [
+    jobsRes,
+    stagesRes,
+    contactsRes,
+    workTypesRes,
+    subRes,
+    accountRes,
+    membersRes,
+    manualRes,
+    albumStagesRes,
+  ] = await Promise.all([
     supabase
       .from("jobs")
       .select(
@@ -53,9 +76,14 @@ export default async function BoardPage() {
         job_assignees ( id, user_id, manual_job_assignee_id, role )
       `
       )
+      .eq("board_type", boardType)
       .order("stage_id", { ascending: true })
       .order("position", { ascending: true }),
-    supabase.from("kanban_stages").select("*").order("position", { ascending: true }),
+    supabase
+      .from("kanban_stages")
+      .select("*")
+      .eq("board_type", boardType)
+      .order("position", { ascending: true }),
     supabase.from("contacts").select("id, name, email").order("name", { ascending: true }),
     supabase
       .from("job_work_types")
@@ -79,6 +107,14 @@ export default async function BoardPage() {
       .from("manual_job_assignees")
       .select("id, name, email, photo_url")
       .eq("account_id", profile.account_id)
+      .order("position", { ascending: true }),
+    // Carregado separado (não filtrado pelo boardType) para o fluxo "Gerar álbum"
+    // disparado a partir de um job de edição.
+    supabase
+      .from("kanban_stages")
+      .select("id, name, position")
+      .eq("account_id", profile.account_id)
+      .eq("board_type", "album")
       .order("position", { ascending: true }),
   ]);
 
@@ -106,8 +142,24 @@ export default async function BoardPage() {
     );
   }
 
+  const albumBoardEnabled = Boolean(accountRes.data?.album_board_enabled);
+
+  // Se o usuário acessou ?board=album com o quadro desativado, redireciona
+  // para o quadro de Edições — a feature está oculta nesse caso.
+  if (boardType === "album" && !albumBoardEnabled) {
+    redirect("/board");
+  }
+
+  const albumStageOptions = (albumStagesRes.data ?? []).map((s) => ({
+    value: s.id,
+    label: s.name,
+  }));
+
   return (
     <BoardView
+      boardType={boardType}
+      albumBoardEnabled={albumBoardEnabled}
+      albumStageOptions={albumStageOptions}
       jobs={(jobsRes.data ?? []) as JobWithRelations[]}
       stages={stagesRes.data ?? []}
       contacts={contactsRes.data ?? []}

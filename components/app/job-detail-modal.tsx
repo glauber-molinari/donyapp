@@ -1,13 +1,24 @@
 "use client";
 
-import { ArrowRight, ExternalLink, Pencil, Send, Trash2 } from "lucide-react";
+import { ArrowRight, BookOpen, ExternalLink, Pencil, Send, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type ManualLite = { id: string; name: string; email: string | null };
 
 import type { JobWithRelations } from "@/app/(app)/dashboard/dashboard-view";
-import { deleteJob, getJobHistory, updateJob, type JobHistoryEntry } from "@/app/(app)/jobs/actions";
+import {
+  createJob,
+  deleteJob,
+  getJobHistory,
+  getParentJobSummary,
+  getRelatedAlbumChild,
+  updateJob,
+  type JobHistoryEntry,
+  type ParentJobSummary,
+  type RelatedAlbumSummary,
+} from "@/app/(app)/jobs/actions";
+import { NewAlbumForm } from "@/components/app/new-album-form";
 import { NewJobForm } from "@/components/app/new-job-form";
 import type { ContactSearchOption } from "@/components/app/contact-search-field";
 import type { JobAssigneePickerOption } from "@/lib/build-job-assignee-picker-options";
@@ -18,12 +29,15 @@ import {
   videoAssigneeSourceForSplitEdit,
 } from "@/lib/job-foto-video-split";
 import { formatDeadlinePt } from "@/lib/job-display";
+import { canCreateAlbum } from "@/lib/plan-limits";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
+import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import type { SelectOption } from "@/components/ui/select";
+import type { Plan } from "@/types/database";
 
 function formatOptionalDate(ymd: string | null | undefined): string {
   if (!ymd) return "—";
@@ -38,7 +52,9 @@ function formatOptionalDate(ymd: string | null | undefined): string {
 function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="grid gap-0.5 border-b border-ds-border/60 py-2.5 last:border-0 sm:grid-cols-[minmax(7.5rem,32%)_1fr] sm:gap-3">
-      <dt className="text-xs font-medium uppercase tracking-wide text-ds-muted-2">{label}</dt>
+      <dt className="text-xs font-medium uppercase tracking-wide text-ds-muted-2">
+        {label}
+      </dt>
       <dd className="text-sm text-ds-ink">{children}</dd>
     </div>
   );
@@ -46,7 +62,11 @@ function DetailRow({ label, children }: { label: string; children: React.ReactNo
 
 // ─── History helpers ──────────────────────────────────────────────────────────
 
-function historyLabel(entry: JobHistoryEntry): { icon: string; text: string; sub?: string } {
+function historyLabel(entry: JobHistoryEntry): {
+  icon: string;
+  text: string;
+  sub?: string;
+} {
   switch (entry.field) {
     case "created":
       return { icon: "✦", text: `Job criado: "${entry.new_value ?? ""}"` };
@@ -164,7 +184,9 @@ function JobHistoryTimeline({
               ) : null}
               <p className="mt-1 text-[11px] text-ds-muted-2">
                 {entry.changed_by_name ? (
-                  <span className="font-medium text-ds-muted">{entry.changed_by_name} · </span>
+                  <span className="font-medium text-ds-muted">
+                    {entry.changed_by_name} ·{" "}
+                  </span>
                 ) : null}
                 {formatHistoryDate(entry.created_at)}
               </p>
@@ -176,7 +198,12 @@ function JobHistoryTimeline({
   );
 }
 
-type MemberLite = { id: string; name: string; email: string | null; avatarUrl: string | null };
+type MemberLite = {
+  id: string;
+  name: string;
+  email: string | null;
+  avatarUrl: string | null;
+};
 
 function assigneeNamesForRole(
   job: JobWithRelations,
@@ -221,6 +248,12 @@ const DETAIL_TABS = [
   { id: "historico" as const, label: "Histórico" },
 ];
 
+const ALBUM_DETAIL_TABS = [
+  { id: "geral" as const, label: "Informações do álbum" },
+  { id: "prazos" as const, label: "Prazos" },
+  { id: "historico" as const, label: "Histórico" },
+];
+
 type DetailTabId = (typeof DETAIL_TABS)[number]["id"];
 
 export function JobDetailModal({
@@ -230,8 +263,10 @@ export function JobDetailModal({
   manualAssignees,
   contacts,
   stageOptions,
+  albumStageOptions = [],
   workTypeOptions,
   assigneePickerOptions,
+  plan,
   open,
   onClose,
   onSendMaterial,
@@ -242,8 +277,10 @@ export function JobDetailModal({
   manualAssignees: ManualLite[];
   contacts: ContactSearchOption[];
   stageOptions: SelectOption[];
+  albumStageOptions?: SelectOption[];
   workTypeOptions: SelectOption[];
   assigneePickerOptions: JobAssigneePickerOption[];
+  plan: Plan;
   open: boolean;
   onClose: () => void;
   onSendMaterial?: () => void;
@@ -257,8 +294,15 @@ export function JobDetailModal({
   const [history, setHistory] = useState<JobHistoryEntry[]>([]);
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [albumChild, setAlbumChild] = useState<RelatedAlbumSummary>(null);
+  const [parentSummary, setParentSummary] = useState<ParentJobSummary>(null);
+  const [generateAlbumOpen, setGenerateAlbumOpen] = useState(false);
+  const [generatingAlbum, setGeneratingAlbum] = useState(false);
   const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
-  const manualById = useMemo(() => new Map(manualAssignees.map((m) => [m.id, m])), [manualAssignees]);
+  const manualById = useMemo(
+    () => new Map(manualAssignees.map((m) => [m.id, m])),
+    [manualAssignees]
+  );
 
   useEffect(() => {
     if (job?.id) {
@@ -267,8 +311,27 @@ export function JobDetailModal({
       setEditing(false);
       setHistory([]);
       setHistoryLoaded(false);
+      setAlbumChild(null);
+      setParentSummary(null);
     }
   }, [job?.id]);
+
+  useEffect(() => {
+    if (!open || !job) return;
+    const currentId = job.id;
+    const currentBoardType = job.board_type;
+    const currentParentId = job.parent_job_id;
+
+    if (currentBoardType === "edicao") {
+      getRelatedAlbumChild(currentId).then((res) => {
+        if (res.ok && job.id === currentId) setAlbumChild(res.album);
+      });
+    } else if (currentBoardType === "album" && currentParentId) {
+      getParentJobSummary(currentParentId).then((res) => {
+        if (res.ok && job.id === currentId) setParentSummary(res.parent);
+      });
+    }
+  }, [open, job]);
 
   useEffect(() => {
     if (tab === "historico" && job?.id && !historyLoaded && !historyLoading) {
@@ -284,6 +347,8 @@ export function JobDetailModal({
   if (!open || !job) return null;
 
   const single = members.length === 1 ? members[0]! : null;
+  const isAlbumJob = job.board_type === "album";
+  const isProAlbumAllowed = canCreateAlbum(plan);
 
   const parentJob = job.parent_job_id
     ? allJobs.find((j) => j.id === job.parent_job_id)
@@ -291,6 +356,26 @@ export function JobDetailModal({
   const videoSidecar = allJobs.find(
     (j) => j.parent_job_id === job.id && j.job_kind === "video_edit"
   );
+
+  async function handleGenerateAlbumSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!job) return;
+    const fd = new FormData(e.currentTarget);
+    setGeneratingAlbum(true);
+    try {
+      const res = await createJob(fd);
+      if (!res.ok) {
+        toast.error(res.error);
+        return;
+      }
+      toast.success("Álbum criado.");
+      setGenerateAlbumOpen(false);
+      onClose();
+      router.push("/board?board=album");
+    } finally {
+      setGeneratingAlbum(false);
+    }
+  }
 
   const photoLine =
     job.job_kind === "video_edit"
@@ -377,7 +462,7 @@ export function JobDetailModal({
     </div>
   ) : (
     <div className="flex items-center justify-between gap-3">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Button
           type="button"
           variant="ghost"
@@ -392,10 +477,34 @@ export function JobDetailModal({
             type="button"
             variant="ghost"
             size="sm"
-            onClick={() => { onClose(); onSendMaterial(); }}
+            onClick={() => {
+              onClose();
+              onSendMaterial();
+            }}
           >
             <Send className="h-3.5 w-3.5" aria-hidden />
             Enviar material
+          </Button>
+        ) : null}
+        {!isAlbumJob && !job.parent_job_id && !albumChild ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            disabled={
+              generatingAlbum || !isProAlbumAllowed || albumStageOptions.length === 0
+            }
+            onClick={() => setGenerateAlbumOpen(true)}
+            title={
+              !isProAlbumAllowed
+                ? "Gerar álbum é uma feature do plano Pro."
+                : albumStageOptions.length === 0
+                  ? "Ative o quadro de Álbuns em Configurações → Kanban."
+                  : undefined
+            }
+          >
+            <BookOpen className="h-3.5 w-3.5" aria-hidden />
+            Gerar álbum
           </Button>
         ) : null}
       </div>
@@ -421,48 +530,103 @@ export function JobDetailModal({
     >
       {editing ? (
         <div className="p-5">
-          <NewJobForm
-            formId={editFormId}
-            fieldIdPrefix={`job-edit-${job.id}`}
-            contacts={contacts}
-            stageOptions={stageOptions}
-            workTypeOptions={workTypeOptions}
-            assigneePickerOptions={assigneePickerOptions}
-            initialAssigneePhotoTokens={initialAssigneeTokensForJob(job, "photo")}
-            initialAssigneeVideoTokens={initialAssigneeTokensForJob(
-              videoAssigneeSourceForSplitEdit(job, allJobs),
-              "video"
-            )}
-            initialValues={{
-              name: job.name,
-              stage_id: job.stage_id,
-              job_date: job.job_date,
-              contact_id: job.contact_id,
-              work_type_id: job.work_type_id,
-              sd_card_tags: job.sd_card_tags ?? [],
-              notes: job.notes,
-              professional_photo_tags: job.professional_photo_tags ?? [],
-              professional_video_tags: job.professional_video_tags ?? [],
-              internal_deadline: job.internal_deadline,
-              deadline: job.deadline,
-              type: editFormDeliveryType(job, allJobs),
-              delivery_link: job.delivery_link,
-              photo_editor_id: job.photo_editor_id,
-              video_editor_id: job.video_editor_id,
-              photo_manual_assignee_id: job.photo_manual_assignee_id,
-              video_manual_assignee_id: job.video_manual_assignee_id,
-            }}
-            onSubmit={handleEditSubmit}
-          />
+          {isAlbumJob ? (
+            <NewAlbumForm
+              formId={editFormId}
+              fieldIdPrefix={`album-edit-${job.id}`}
+              contacts={contacts}
+              stageOptions={stageOptions}
+              workTypeOptions={workTypeOptions}
+              initialValues={{
+                name: job.name,
+                stage_id: job.stage_id,
+                contact_id: job.contact_id,
+                job_date: job.job_date,
+                internal_deadline: job.internal_deadline,
+                deadline: job.deadline,
+                notes: job.notes,
+                delivery_link: job.delivery_link,
+                work_type_id: job.work_type_id,
+              }}
+              onSubmit={handleEditSubmit}
+            />
+          ) : (
+            <NewJobForm
+              formId={editFormId}
+              fieldIdPrefix={`job-edit-${job.id}`}
+              contacts={contacts}
+              stageOptions={stageOptions}
+              workTypeOptions={workTypeOptions}
+              assigneePickerOptions={assigneePickerOptions}
+              initialAssigneePhotoTokens={initialAssigneeTokensForJob(job, "photo")}
+              initialAssigneeVideoTokens={initialAssigneeTokensForJob(
+                videoAssigneeSourceForSplitEdit(job, allJobs),
+                "video"
+              )}
+              initialValues={{
+                name: job.name,
+                stage_id: job.stage_id,
+                job_date: job.job_date,
+                contact_id: job.contact_id,
+                work_type_id: job.work_type_id,
+                sd_card_tags: job.sd_card_tags ?? [],
+                notes: job.notes,
+                professional_photo_tags: job.professional_photo_tags ?? [],
+                professional_video_tags: job.professional_video_tags ?? [],
+                internal_deadline: job.internal_deadline,
+                deadline: job.deadline,
+                type: editFormDeliveryType(job, allJobs),
+                delivery_link: job.delivery_link,
+                photo_editor_id: job.photo_editor_id,
+                video_editor_id: job.video_editor_id,
+                photo_manual_assignee_id: job.photo_manual_assignee_id,
+                video_manual_assignee_id: job.video_manual_assignee_id,
+              }}
+              onSubmit={handleEditSubmit}
+            />
+          )}
         </div>
       ) : (
         <div className="flex flex-col gap-3 p-5">
+          {isAlbumJob && parentSummary ? (
+            <a
+              href="/board"
+              onClick={(e) => {
+                e.preventDefault();
+                onClose();
+                router.push("/board");
+              }}
+              className="inline-flex items-center gap-2 self-start rounded-ds-lg border border-ds-border bg-ds-cream/40 px-3 py-2 text-xs text-ds-muted hover:bg-ds-cream"
+            >
+              <span className="font-medium text-ds-ink">Origem:</span>
+              <span className="truncate">{parentSummary.name}</span>
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+            </a>
+          ) : null}
+          {!isAlbumJob && albumChild ? (
+            <a
+              href="/board?board=album"
+              onClick={(e) => {
+                e.preventDefault();
+                onClose();
+                router.push("/board?board=album");
+              }}
+              className="inline-flex items-center gap-2 self-start rounded-ds-lg border border-ds-accent/30 bg-ds-cream/40 px-3 py-2 text-xs text-ds-ink hover:bg-ds-cream"
+            >
+              <BookOpen className="h-3.5 w-3.5 text-ds-accent" aria-hidden />
+              <span className="font-medium">Álbum em produção</span>
+              {albumChild.stageName ? (
+                <span className="text-ds-muted">· {albumChild.stageName}</span>
+              ) : null}
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+            </a>
+          ) : null}
           <div
             role="tablist"
             aria-label="Seções dos detalhes"
             className="-mx-1 flex shrink-0 flex-wrap gap-1 px-1"
           >
-            {DETAIL_TABS.map((t) => (
+            {(isAlbumJob ? ALBUM_DETAIL_TABS : DETAIL_TABS).map((t) => (
               <button
                 key={t.id}
                 type="button"
@@ -482,11 +646,65 @@ export function JobDetailModal({
           </div>
 
           <div role="tabpanel">
-            {tab === "geral" ? (
+            {tab === "geral" && isAlbumJob ? (
+              <dl>
+                <DetailRow label="Título do álbum">{job.name}</DetailRow>
+                <DetailRow label="Etapa">{job.kanban_stages?.name ?? "—"}</DetailRow>
+                <DetailRow label="Cliente">
+                  {job.contacts ? (
+                    <>
+                      {job.contacts.name}
+                      {job.contacts.email ? (
+                        <span className="mt-0.5 block text-xs text-ds-muted">
+                          {job.contacts.email}
+                        </span>
+                      ) : null}
+                    </>
+                  ) : (
+                    "—"
+                  )}
+                </DetailRow>
+                <DetailRow label="Data do evento">
+                  {formatOptionalDate(job.job_date)}
+                </DetailRow>
+                <DetailRow label="Entrega ao cliente">
+                  {formatOptionalDate(job.deadline)}
+                </DetailRow>
+                <DetailRow label="Alterações do álbum">
+                  {job.client_revision ?? 0}
+                </DetailRow>
+                <DetailRow label="Link">
+                  {job.delivery_link ? (
+                    <a
+                      href={job.delivery_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-ds-accent hover:underline"
+                    >
+                      Abrir link
+                      <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+                    </a>
+                  ) : (
+                    <span className="text-ds-muted">—</span>
+                  )}
+                </DetailRow>
+                <DetailRow label="Detalhes do álbum">
+                  {job.notes?.trim() ? (
+                    <span className="whitespace-pre-wrap">{job.notes}</span>
+                  ) : (
+                    <span className="text-ds-muted">—</span>
+                  )}
+                </DetailRow>
+              </dl>
+            ) : null}
+
+            {tab === "geral" && !isAlbumJob ? (
               <dl>
                 <DetailRow label="Nome">{job.name}</DetailRow>
                 <DetailRow label="Coluna">{job.kanban_stages?.name ?? "—"}</DetailRow>
-                <DetailRow label="Data job">{formatOptionalDate(job.job_date)}</DetailRow>
+                <DetailRow label="Data job">
+                  {formatOptionalDate(job.job_date)}
+                </DetailRow>
                 {(job.professional_photo_tags?.length ?? 0) > 0 ? (
                   <DetailRow label="Quem fotografou">
                     <span className="flex flex-wrap gap-1.5">
@@ -524,14 +742,18 @@ export function JobDetailModal({
                     <>
                       {job.contacts.name}
                       {job.contacts.email ? (
-                        <span className="mt-0.5 block text-xs text-ds-muted">{job.contacts.email}</span>
+                        <span className="mt-0.5 block text-xs text-ds-muted">
+                          {job.contacts.email}
+                        </span>
                       ) : null}
                     </>
                   ) : (
                     "—"
                   )}
                 </DetailRow>
-                <DetailRow label="Tipo do job">{job.job_work_types?.name ?? "—"}</DetailRow>
+                <DetailRow label="Tipo do job">
+                  {job.job_work_types?.name ?? "—"}
+                </DetailRow>
                 <DetailRow label="Tipo de entrega">
                   <Badge kind="job-type" value={jobTypeBadgeForList(job, allJobs)} />
                 </DetailRow>
@@ -562,8 +784,12 @@ export function JobDetailModal({
 
             {tab === "prazos" ? (
               <dl>
-                <DetailRow label="Prazo interno">{formatOptionalDate(job.internal_deadline)}</DetailRow>
-                <DetailRow label="Prazo final">{formatOptionalDate(job.deadline)}</DetailRow>
+                <DetailRow label="Prazo interno">
+                  {formatOptionalDate(job.internal_deadline)}
+                </DetailRow>
+                <DetailRow label="Prazo final">
+                  {formatOptionalDate(job.deadline)}
+                </DetailRow>
               </dl>
             ) : null}
 
@@ -576,7 +802,9 @@ export function JobDetailModal({
 
             {tab === "extras" ? (
               <dl>
-                <DetailRow label="Alteração cliente">{job.client_revision ?? 0}</DetailRow>
+                <DetailRow label="Alteração cliente">
+                  {job.client_revision ?? 0}
+                </DetailRow>
                 <DetailRow label="Observações">
                   {job.notes?.trim() ? (
                     <span className="whitespace-pre-wrap">{job.notes}</span>
@@ -610,9 +838,70 @@ export function JobDetailModal({
               />
             ) : null}
           </div>
-
         </div>
       )}
+      {!isAlbumJob ? (
+        <Modal
+          open={generateAlbumOpen}
+          onClose={() => {
+            if (generatingAlbum) return;
+            setGenerateAlbumOpen(false);
+          }}
+          title="Gerar álbum a partir deste job"
+          size="lg"
+          footer={
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={generatingAlbum}
+                onClick={() => setGenerateAlbumOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                form={`generate-album-${job.id}-form`}
+                type="submit"
+                size="sm"
+                disabled={
+                  generatingAlbum ||
+                  workTypeOptions.length === 0 ||
+                  albumStageOptions.length === 0
+                }
+              >
+                {generatingAlbum ? "Gerando…" : "Criar álbum"}
+              </Button>
+            </div>
+          }
+        >
+          <div className="flex flex-col gap-3 p-5">
+            <Alert variant="info">
+              Título, cliente e data vieram de <strong>{job.name}</strong>. Ajuste e
+              complete os detalhes específicos do álbum.
+            </Alert>
+            <NewAlbumForm
+              formId={`generate-album-${job.id}-form`}
+              fieldIdPrefix={`generate-album-${job.id}`}
+              contacts={contacts}
+              stageOptions={albumStageOptions}
+              workTypeOptions={workTypeOptions}
+              parentJobId={job.id}
+              initialValues={{
+                name: job.name,
+                contact_id: job.contact_id,
+                job_date: job.job_date,
+                internal_deadline: null,
+                deadline: null,
+                notes: null,
+                delivery_link: null,
+                work_type_id: job.work_type_id,
+              }}
+              onSubmit={handleGenerateAlbumSubmit}
+            />
+          </div>
+        </Modal>
+      ) : null}
     </Modal>
   );
 }

@@ -19,6 +19,7 @@ export type FormFieldType =
   | "checkbox";
 export type JobType = "foto" | "video" | "foto_video";
 export type JobKind = "standard" | "video_edit";
+export type BoardType = "edicao" | "album";
 export type Plan = "free" | "pro";
 export type TaskPriority = "baixa" | "media" | "alta";
 export type TaskStatus = "para_fazer" | "iniciado" | "feito";
@@ -46,6 +47,27 @@ export type SupportMessageSender = "user" | "support";
 export interface Database {
   public: {
     Tables: {
+      feature_flags: {
+        Row: {
+          key: string;
+          enabled: boolean;
+          note: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          key: string;
+          enabled?: boolean;
+          note?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          key?: string;
+          enabled?: boolean;
+          note?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       tasks: {
         Row: {
           id: string;
@@ -244,6 +266,7 @@ export interface Database {
           created_at: string;
           delivery_email_subject_template: string | null;
           delivery_email_body_template: string | null;
+          album_board_enabled: boolean;
           whatsapp_number: string | null;
           whatsapp_notifications_enabled: boolean;
           whatsapp_notify_days_before: number[];
@@ -263,6 +286,7 @@ export interface Database {
           created_at?: string;
           delivery_email_subject_template?: string | null;
           delivery_email_body_template?: string | null;
+          album_board_enabled?: boolean;
           whatsapp_number?: string | null;
           whatsapp_notifications_enabled?: boolean;
           whatsapp_notify_days_before?: number[];
@@ -282,6 +306,7 @@ export interface Database {
           created_at?: string;
           delivery_email_subject_template?: string | null;
           delivery_email_body_template?: string | null;
+          album_board_enabled?: boolean;
           whatsapp_number?: string | null;
           whatsapp_notifications_enabled?: boolean;
           whatsapp_notify_days_before?: number[];
@@ -303,7 +328,11 @@ export interface Database {
           account_id: string;
           entity_type: "job" | "task" | "weekly";
           entity_id: string;
-          notification_type: "deadline" | "internal_deadline" | "overdue" | "weekly_summary";
+          notification_type:
+            | "deadline"
+            | "internal_deadline"
+            | "overdue"
+            | "weekly_summary";
           days_before: number | null;
           phone: string;
           sent_at: string;
@@ -314,7 +343,11 @@ export interface Database {
           account_id: string;
           entity_type: "job" | "task" | "weekly";
           entity_id: string;
-          notification_type: "deadline" | "internal_deadline" | "overdue" | "weekly_summary";
+          notification_type:
+            | "deadline"
+            | "internal_deadline"
+            | "overdue"
+            | "weekly_summary";
           days_before?: number | null;
           phone: string;
           sent_at?: string;
@@ -325,7 +358,11 @@ export interface Database {
           account_id?: string;
           entity_type?: "job" | "task" | "weekly";
           entity_id?: string;
-          notification_type?: "deadline" | "internal_deadline" | "overdue" | "weekly_summary";
+          notification_type?:
+            | "deadline"
+            | "internal_deadline"
+            | "overdue"
+            | "weekly_summary";
           days_before?: number | null;
           phone?: string;
           sent_at?: string;
@@ -725,6 +762,7 @@ export interface Database {
           position: number;
           color: string;
           is_final: boolean;
+          board_type: BoardType;
           created_at: string;
         };
         Insert: {
@@ -734,6 +772,7 @@ export interface Database {
           position: number;
           color: string;
           is_final?: boolean;
+          board_type?: BoardType;
           created_at?: string;
         };
         Update: {
@@ -743,6 +782,7 @@ export interface Database {
           position?: number;
           color?: string;
           is_final?: boolean;
+          board_type?: BoardType;
           created_at?: string;
         };
         Relationships: [
@@ -769,6 +809,7 @@ export interface Database {
           work_type_id: string;
           parent_job_id: string | null;
           job_kind: JobKind;
+          board_type: BoardType;
           notes: string | null;
           professional_photo_tags: string[];
           professional_video_tags: string[];
@@ -797,6 +838,7 @@ export interface Database {
           work_type_id: string;
           parent_job_id?: string | null;
           job_kind?: JobKind;
+          board_type?: BoardType;
           notes?: string | null;
           professional_photo_tags?: string[];
           professional_video_tags?: string[];
@@ -825,6 +867,7 @@ export interface Database {
           work_type_id?: string;
           parent_job_id?: string | null;
           job_kind?: JobKind;
+          board_type?: BoardType;
           notes?: string | null;
           professional_photo_tags?: string[];
           professional_video_tags?: string[];

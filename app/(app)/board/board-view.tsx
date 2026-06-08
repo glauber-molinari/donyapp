@@ -54,27 +54,49 @@ import {
   deadlineTimelineVisual,
   formatDeadlinePt,
 } from "@/lib/job-display";
-import { jobTypeBadgeForList, type JobFotoVideoListPick } from "@/lib/job-foto-video-split";
+import {
+  jobTypeBadgeForList,
+  type JobFotoVideoListPick,
+} from "@/lib/job-foto-video-split";
+import { canCreateAlbum } from "@/lib/plan-limits";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import type { Database, Plan, UserRole } from "@/types/database";
+import type { BoardType, Database, Plan, UserRole } from "@/types/database";
 
 type StageRow = Database["public"]["Tables"]["kanban_stages"]["Row"];
 type WorkTypeRow = Database["public"]["Tables"]["job_work_types"]["Row"];
-type ContactPick = Pick<Database["public"]["Tables"]["contacts"]["Row"], "id" | "name" | "email">;
+type ContactPick = Pick<
+  Database["public"]["Tables"]["contacts"]["Row"],
+  "id" | "name" | "email"
+>;
 
 const JobDetailModal = dynamic(
-  () => import("@/components/app/job-detail-modal").then((m) => ({ default: m.JobDetailModal })),
+  () =>
+    import("@/components/app/job-detail-modal").then((m) => ({
+      default: m.JobDetailModal,
+    })),
   { ssr: false, loading: () => null }
 );
 
 const NewJobForm = dynamic(
-  () => import("@/components/app/new-job-form").then((m) => ({ default: m.NewJobForm })),
+  () =>
+    import("@/components/app/new-job-form").then((m) => ({ default: m.NewJobForm })),
+  { ssr: false, loading: () => null }
+);
+
+const NewAlbumForm = dynamic(
+  () =>
+    import("@/components/app/new-album-form").then((m) => ({
+      default: m.NewAlbumForm,
+    })),
   { ssr: false, loading: () => null }
 );
 
 const DeliveryEmailModal = dynamic(
-  () => import("@/components/app/delivery-email-modal").then((m) => ({ default: m.DeliveryEmailModal })),
+  () =>
+    import("@/components/app/delivery-email-modal").then((m) => ({
+      default: m.DeliveryEmailModal,
+    })),
   { ssr: false, loading: () => null }
 );
 
@@ -112,7 +134,10 @@ function updatedAtInCalendarMonth(iso: string, ym: string): boolean {
  * ou (entregue) se tiver sido atualizado na etapa final naquele mês.
  */
 function jobVisibleInBoardMonth(job: JobWithRelations, ym: string): boolean {
-  if (ymdInCalendarMonth(job.deadline, ym) || ymdInCalendarMonth(job.internal_deadline, ym)) {
+  if (
+    ymdInCalendarMonth(job.deadline, ym) ||
+    ymdInCalendarMonth(job.internal_deadline, ym)
+  ) {
     return true;
   }
   const isFinal = job.kanban_stages?.is_final === true;
@@ -127,7 +152,11 @@ const CLIENT_REVISION_OPTIONS = [0, 1, 2, 3, 4, 5].map((n) => ({
   label: n === 0 ? "0 (sem alteração)" : `${n}ª alteração`,
 }));
 
-const ClientRevisionSelect = memo(function ClientRevisionSelect({ job }: { job: JobWithRelations }) {
+const ClientRevisionSelect = memo(function ClientRevisionSelect({
+  job,
+}: {
+  job: JobWithRelations;
+}) {
   const router = useRouter();
   const [value, setValue] = useState(String(job.client_revision ?? 0));
   const [pending, setPending] = useState(false);
@@ -295,8 +324,10 @@ function jobMatchesQuery(job: JobWithRelations | undefined, q: string): boolean 
     job.sd_card_tags?.some((tag) => tag.toLowerCase().includes(t)) ?? false;
   return (
     job.name.toLowerCase().includes(t) ||
-    (job.professional_photo_tags?.some((tag) => tag.toLowerCase().includes(t)) ?? false) ||
-    (job.professional_video_tags?.some((tag) => tag.toLowerCase().includes(t)) ?? false) ||
+    (job.professional_photo_tags?.some((tag) => tag.toLowerCase().includes(t)) ??
+      false) ||
+    (job.professional_video_tags?.some((tag) => tag.toLowerCase().includes(t)) ??
+      false) ||
     (job.contacts?.name?.toLowerCase().includes(t) ?? false) ||
     (job.job_work_types?.name?.toLowerCase().includes(t) ?? false) ||
     tagHit
@@ -304,13 +335,27 @@ function jobMatchesQuery(job: JobWithRelations | undefined, q: string): boolean 
 }
 
 interface BoardViewProps {
+  boardType: BoardType;
+  albumBoardEnabled: boolean;
+  albumStageOptions: { value: string; label: string }[];
   jobs: JobWithRelations[];
   stages: StageRow[];
   contacts: ContactPick[];
   workTypes: WorkTypeRow[];
   plan: Plan;
-  members: { id: string; name: string; email: string | null; avatarUrl: string | null; role: UserRole }[];
-  manualAssignees: { id: string; name: string; email: string | null; photo_url: string | null }[];
+  members: {
+    id: string;
+    name: string;
+    email: string | null;
+    avatarUrl: string | null;
+    role: UserRole;
+  }[];
+  manualAssignees: {
+    id: string;
+    name: string;
+    email: string | null;
+    photo_url: string | null;
+  }[];
   senderName: string | null;
   replyToEmail: string | null;
   accountSubjectTemplate: string | null;
@@ -379,7 +424,10 @@ const DeadlineTimelineBar = memo(function DeadlineTimelineBar({
       aria-label="Proximidade do prazo final"
     >
       <span
-        className={cn("block h-full max-w-full rounded-full transition-[width]", barClass)}
+        className={cn(
+          "block h-full max-w-full rounded-full transition-[width]",
+          barClass
+        )}
         style={{ width: `${fillPct}%` }}
       />
     </div>
@@ -418,15 +466,58 @@ const JobCardContent = memo(function JobCardContent({
   const rev = job.client_revision ?? 0;
   const openEnabled = Boolean(onOpen && !overlay);
   const cardShadow = `inset 3px 0 0 0 ${accentHex}, 0 1px 2px rgb(12 10 9 / 0.05)`;
+  const isAlbumCard = job.board_type === "album";
 
-  const main = (
+  const main = isAlbumCard ? (
+    <>
+      <p className="text-sm font-semibold leading-snug text-ds-ink">{job.name}</p>
+      <div className="mt-1 flex flex-wrap items-center gap-1.5">
+        <span className="inline-flex items-center gap-1 rounded-full border border-ds-accent/30 bg-ds-cream/50 px-1.5 py-px text-[10px] font-medium text-ds-accent">
+          Álbum
+        </span>
+        {job.parent_job_id ? (
+          <span className="rounded-full border border-ds-border/60 bg-white px-1.5 py-px text-[10px] font-medium text-ds-muted">
+            Vinculado
+          </span>
+        ) : null}
+        {overlay || !revisionInteractive ? (
+          <span className="inline-flex items-center rounded-full border border-ds-border/60 bg-ds-cream px-1.5 py-px text-[10px] font-medium text-ds-muted">
+            Alt. {rev}
+          </span>
+        ) : null}
+      </div>
+      {revisionInteractive && !overlay ? <ClientRevisionSelect job={job} /> : null}
+      {job.contacts?.name ? (
+        <p className="mt-1.5 text-[11px] text-ds-muted">{job.contacts.name}</p>
+      ) : null}
+      <p className="mt-1 text-[10px] leading-tight text-ds-muted-2">
+        Entrega {formatDeadlinePt(job.deadline.slice(0, 10))}
+      </p>
+      <DeadlineTimelineBar job={job} stageFinal={stageFinal} />
+      {job.delivery_link && !overlay ? (
+        <a
+          href={job.delivery_link}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="mt-2 inline-flex items-center gap-1 text-[10px] font-medium text-ds-accent hover:underline"
+        >
+          Rastreio
+        </a>
+      ) : null}
+    </>
+  ) : (
     <>
       <p className="text-sm font-semibold leading-snug text-ds-ink">{job.name}</p>
       {job.job_work_types?.name ? (
         <p className="mt-0.5 text-[11px] text-ds-muted">{job.job_work_types.name}</p>
       ) : null}
       <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-        <Badge kind="job-type" value={jobTypeBadgeForList(job, jobsForBadgeList)} className="text-[10px] font-medium" />
+        <Badge
+          kind="job-type"
+          value={jobTypeBadgeForList(job, jobsForBadgeList)}
+          className="text-[10px] font-medium"
+        />
         {overlay || !revisionInteractive ? (
           <span className="inline-flex items-center rounded-full border border-ds-border/60 bg-ds-cream px-1.5 py-px text-[10px] font-medium text-ds-muted">
             Alt. {rev}
@@ -453,7 +544,10 @@ const JobCardContent = memo(function JobCardContent({
       {stageFinal && onSendMaterial && !overlay ? (
         <button
           type="button"
-          onClick={(e) => { e.stopPropagation(); onSendMaterial(); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onSendMaterial();
+          }}
           className="mt-2 flex items-center gap-1 text-[10px] font-medium text-ds-accent hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ds-accent rounded"
         >
           <Send className="h-3 w-3" aria-hidden />
@@ -514,10 +608,11 @@ const SortableJobCard = memo(function SortableJobCard({
   onOpenJob: (j: JobWithRelations) => void;
   onSendMaterial?: () => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: job.id,
-    disabled: dragDisabled,
-  });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({
+      id: job.id,
+      disabled: dragDisabled,
+    });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -571,7 +666,10 @@ const KanbanColumn = memo(function KanbanColumn({
   jobsForBadgeList: JobFotoVideoListPick[];
   dragDisabled: boolean;
   searchQuery: string;
-  assigneesByJobId: Map<string, { id: string; name: string; avatarUrl: string | null }[]>;
+  assigneesByJobId: Map<
+    string,
+    { id: string; name: string; avatarUrl: string | null }[]
+  >;
   onOpenJob: (j: JobWithRelations) => void;
   onSendMaterial?: (j: JobWithRelations) => void;
 }) {
@@ -646,7 +744,10 @@ const KanbanColumn = memo(function KanbanColumn({
         <SortableContext items={jobIds} strategy={verticalListSortingStrategy}>
           <div
             ref={setNodeRef}
-            className={cn("flex flex-col gap-2 px-2 pb-2 pt-1.5", jobIds.length === 0 && "min-h-[72px]")}
+            className={cn(
+              "flex flex-col gap-2 px-2 pb-2 pt-1.5",
+              jobIds.length === 0 && "min-h-[72px]"
+            )}
           >
             {jobIds.map((id) => {
               const job = jobsById.get(id);
@@ -662,7 +763,9 @@ const KanbanColumn = memo(function KanbanColumn({
                   revisionInteractive
                   assignees={assigneesByJobId.get(id) ?? []}
                   onOpenJob={onOpenJob}
-                  onSendMaterial={onSendMaterial ? () => onSendMaterial(job) : undefined}
+                  onSendMaterial={
+                    onSendMaterial ? () => onSendMaterial(job) : undefined
+                  }
                 />
               );
             })}
@@ -674,6 +777,9 @@ const KanbanColumn = memo(function KanbanColumn({
 });
 
 export function BoardView({
+  boardType,
+  albumBoardEnabled,
+  albumStageOptions,
   jobs,
   stages,
   contacts,
@@ -687,6 +793,13 @@ export function BoardView({
   accountBodyTemplate,
 }: BoardViewProps) {
   const router = useRouter();
+
+  const isAlbumBoard = boardType === "album";
+  const allowAlbumCreate = canCreateAlbum(plan);
+  const createDisabled = isAlbumBoard && !allowAlbumCreate;
+  const newButtonLabel = isAlbumBoard ? "Novo álbum" : "Novo job";
+  const modalTitle = isAlbumBoard ? "Novo álbum" : "Novo job";
+  const pageTitle = isAlbumBoard ? "Álbuns" : "Edições";
 
   const sortedStages = useMemo(
     () => [...stages].sort((a, b) => a.position - b.position),
@@ -742,7 +855,10 @@ export function BoardView({
   );
 
   const manualById = useMemo(() => {
-    const map = new Map<string, { id: string; name: string; avatarUrl: string | null }>();
+    const map = new Map<
+      string,
+      { id: string; name: string; avatarUrl: string | null }
+    >();
     for (const a of manualAssignees) {
       map.set(a.id, { id: a.id, name: a.name, avatarUrl: a.photo_url ?? null });
     }
@@ -750,7 +866,10 @@ export function BoardView({
   }, [manualAssignees]);
 
   const assigneesByJobId = useMemo(() => {
-    const map = new Map<string, { id: string; name: string; avatarUrl: string | null }[]>();
+    const map = new Map<
+      string,
+      { id: string; name: string; avatarUrl: string | null }[]
+    >();
     for (const j of filteredJobs) {
       map.set(j.id, assigneesForJobCard(j, membersById, singleMemberId, manualById));
     }
@@ -794,7 +913,10 @@ export function BoardView({
   const [emailStub, setEmailStub] = useState<JobWithRelations | null>(null);
 
   useEffect(() => {
-    if (createOpen) setCreateJobTab("info");
+    if (createOpen) {
+      setCreateJobTab("info");
+      setCreatePortalEnabled(false);
+    }
   }, [createOpen]);
 
   const stageOptions = useMemo(
@@ -814,11 +936,11 @@ export function BoardView({
     [workTypes]
   );
 
-  const activeJob = activeId ? jobsById.get(activeId) ?? null : null;
+  const activeJob = activeId ? (jobsById.get(activeId) ?? null) : null;
   const activeStage = useMemo(() => {
     if (!activeId) return null;
     const sid = jobIdToStageId.get(activeId);
-    return sid ? sortedStages.find((s) => s.id === sid) ?? null : null;
+    return sid ? (sortedStages.find((s) => s.id === sid) ?? null) : null;
   }, [activeId, jobIdToStageId, sortedStages]);
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
@@ -859,7 +981,9 @@ export function BoardView({
 
       if (!res || res.ok !== true) {
         setColumnItems(snapshot);
-        setErrorMessage(res && "error" in res ? res.error : "Não foi possível salvar o quadro.");
+        setErrorMessage(
+          res && "error" in res ? res.error : "Não foi possível salvar o quadro."
+        );
         return;
       }
 
@@ -877,13 +1001,7 @@ export function BoardView({
         setEmailStub(jobBefore);
       }
     },
-    [
-      dragDisabled,
-      jobsById,
-      router,
-      sortedStages,
-      stageIdsOrdered,
-    ]
+    [dragDisabled, jobsById, router, sortedStages, stageIdsOrdered]
   );
 
   const handleDragCancel = useCallback(() => {
@@ -896,6 +1014,7 @@ export function BoardView({
     e.preventDefault();
     const form = e.currentTarget;
     const fd = new FormData(form);
+    fd.set("board_type", boardType);
     setErrorMessage(null);
     setIsPending(true);
     try {
@@ -906,7 +1025,7 @@ export function BoardView({
       }
       setCreateOpen(false);
       form.reset();
-      toast.success("Job criado.");
+      toast.success(isAlbumBoard ? "Álbum criado." : "Job criado.");
       router.refresh();
     } finally {
       setIsPending(false);
@@ -917,9 +1036,58 @@ export function BoardView({
     <div className="flex min-w-0 flex-col gap-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
-          <h1 className="text-xl font-bold tracking-tight text-ds-ink">Edições</h1>
+          <div className="flex flex-col gap-2">
+            <h1 className="text-xl font-bold tracking-tight text-ds-ink">
+              {pageTitle}
+            </h1>
+            {albumBoardEnabled ? (
+              <div
+                role="tablist"
+                aria-label="Tipo de quadro"
+                className="inline-flex gap-0.5 rounded-ds-lg border border-ds-border bg-ds-cream/40 p-1"
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={!isAlbumBoard}
+                  onClick={() => {
+                    if (!isAlbumBoard) return;
+                    router.push("/board");
+                  }}
+                  className={cn(
+                    "rounded-xl px-3 py-1.5 text-xs font-medium transition-colors",
+                    !isAlbumBoard
+                      ? "bg-ds-surface text-ds-ink shadow-ds-sm"
+                      : "text-ds-muted hover:text-ds-ink"
+                  )}
+                >
+                  Edições
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={isAlbumBoard}
+                  onClick={() => {
+                    if (isAlbumBoard) return;
+                    router.push("/board?board=album");
+                  }}
+                  className={cn(
+                    "rounded-xl px-3 py-1.5 text-xs font-medium transition-colors",
+                    isAlbumBoard
+                      ? "bg-ds-surface text-ds-ink shadow-ds-sm"
+                      : "text-ds-muted hover:text-ds-ink"
+                  )}
+                >
+                  Álbuns
+                </button>
+              </div>
+            ) : null}
+          </div>
           <div className="flex flex-col gap-1">
-            <label htmlFor="board-month-filter" className="text-xs font-medium text-ds-muted">
+            <label
+              htmlFor="board-month-filter"
+              className="text-xs font-medium text-ds-muted"
+            >
               Mês do quadro
             </label>
             <input
@@ -952,21 +1120,25 @@ export function BoardView({
             type="button"
             size="md"
             className="hidden w-full sm:inline-flex sm:w-auto"
-            disabled={noStages}
+            disabled={noStages || createDisabled}
             onClick={() => {
               setErrorMessage(null);
               setCreateOpen(true);
             }}
+            title={
+              createDisabled ? "Criar álbuns é uma feature do plano Pro." : undefined
+            }
           >
             <Plus className="h-4 w-4" aria-hidden />
-            Novo job
+            {newButtonLabel}
           </Button>
         </div>
       </div>
 
       {dragDisabled ? (
         <p className="text-xs text-ds-muted" role="status">
-          Com busca ativa, o arraste está desligado para não desalinhar a ordem com o servidor.
+          Com busca ativa, o arraste está desligado para não desalinhar a ordem com o
+          servidor.
         </p>
       ) : null}
 
@@ -979,22 +1151,56 @@ export function BoardView({
         </div>
       ) : null}
 
-      {noStages ? (
+      {isAlbumBoard && !allowAlbumCreate ? (
+        <div
+          className="rounded-ds-lg border border-ds-accent/30 bg-ds-cream/40 px-4 py-4 text-sm text-ds-ink"
+          role="status"
+        >
+          <p className="font-medium">Álbuns são uma feature do plano Pro.</p>
+          <p className="mt-1 text-ds-muted">
+            Acompanhe a produção física dos álbuns no mesmo lugar dos seus jobs:
+            diagramação, aprovação, gráfica, transporte e entrega.{" "}
+            <a
+              href="/settings/plan"
+              className="font-medium text-ds-accent hover:underline"
+            >
+              Assine o Pro
+            </a>{" "}
+            para liberar.
+          </p>
+        </div>
+      ) : null}
+
+      {noStages && !(isAlbumBoard && !allowAlbumCreate) ? (
         <p className="text-sm text-ds-warn" role="status">
-          Não há etapas no kanban. Configure em Configurações quando disponível.
+          {isAlbumBoard
+            ? "As etapas de álbum serão criadas automaticamente ao gerar o primeiro álbum."
+            : "Não há etapas no kanban. Configure em Configurações quando disponível."}
         </p>
       ) : null}
 
       {jobs.length === 0 && !noStages ? (
         <p className="text-sm text-ds-muted">
-          Nenhum job no quadro ainda. Use &quot;Novo job&quot; para cadastrar.
+          {isAlbumBoard
+            ? "Nenhum álbum no quadro ainda. Use “Novo álbum” ou gere um a partir de um job de edição."
+            : "Nenhum job no quadro ainda. Use “Novo job” para cadastrar."}
         </p>
       ) : null}
 
       {jobs.length > 0 && filteredJobs.length === 0 && !noStages ? (
         <p className="text-sm text-ds-muted" role="status">
-          Nenhuma edição neste mês: prazos interno/final fora de <strong>{boardMonthYm}</strong> e
-          nenhuma entrega (etapa final) atualizada nesse período. Ajuste o mês acima.
+          {isAlbumBoard ? (
+            <>
+              Nenhum álbum neste mês: prazos fora de <strong>{boardMonthYm}</strong>.
+              Ajuste o mês acima.
+            </>
+          ) : (
+            <>
+              Nenhuma edição neste mês: prazos interno/final fora de{" "}
+              <strong>{boardMonthYm}</strong> e nenhuma entrega (etapa final) atualizada
+              nesse período. Ajuste o mês acima.
+            </>
+          )}
         </p>
       ) : null}
 
@@ -1054,8 +1260,10 @@ export function BoardView({
         manualAssignees={manualAssignees}
         contacts={contacts}
         stageOptions={stageOptions}
+        albumStageOptions={albumStageOptions}
         workTypeOptions={workTypeOptions}
         assigneePickerOptions={assigneePickerOptions}
+        plan={plan}
         open={Boolean(detailJob)}
         onClose={() => setDetailJob(null)}
         onSendMaterial={() => {
@@ -1068,7 +1276,7 @@ export function BoardView({
       <Modal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        title="Novo job"
+        title={modalTitle}
         size="lg"
         footer={
           <div className="flex justify-end gap-2">
@@ -1081,7 +1289,18 @@ export function BoardView({
             >
               Fechar
             </Button>
-            {createJobTab === "info" ? (
+            {isAlbumBoard ? (
+              <Button
+                form="board-job-create-form"
+                type="submit"
+                size="sm"
+                disabled={
+                  isPending || workTypeOptions.length === 0 || sortedStages.length === 0
+                }
+              >
+                {isPending ? "Salvando…" : "Criar álbum"}
+              </Button>
+            ) : createJobTab === "info" ? (
               <Button
                 type="button"
                 size="sm"
@@ -1109,17 +1328,28 @@ export function BoardView({
         }
       >
         <div className="p-5">
-          <NewJobForm
-            formId="board-job-create-form"
-            fieldIdPrefix="board-job-create"
-            contacts={contacts}
-            stageOptions={stageOptions}
-            workTypeOptions={workTypeOptions}
-            assigneePickerOptions={assigneePickerOptions}
-            tab={createJobTab}
-            onTabChange={setCreateJobTab}
-            onSubmit={handleCreate}
-          />
+          {isAlbumBoard ? (
+            <NewAlbumForm
+              formId="board-job-create-form"
+              fieldIdPrefix="board-album-create"
+              contacts={contacts}
+              stageOptions={stageOptions}
+              workTypeOptions={workTypeOptions}
+              onSubmit={handleCreate}
+            />
+          ) : (
+            <NewJobForm
+              formId="board-job-create-form"
+              fieldIdPrefix="board-job-create"
+              contacts={contacts}
+              stageOptions={stageOptions}
+              workTypeOptions={workTypeOptions}
+              assigneePickerOptions={assigneePickerOptions}
+              tab={createJobTab}
+              onTabChange={setCreateJobTab}
+              onSubmit={handleCreate}
+            />
+          )}
         </div>
       </Modal>
 
@@ -1143,8 +1373,8 @@ export function BoardView({
 
       <button
         type="button"
-        aria-label="Novo job"
-        disabled={noStages}
+        aria-label={newButtonLabel}
+        disabled={noStages || createDisabled}
         onClick={() => {
           setErrorMessage(null);
           setCreateOpen(true);

@@ -24,6 +24,7 @@ import { useMemo, useState } from "react";
 import {
   addKanbanStage,
   deleteKanbanStage,
+  initializeAlbumStages,
   reorderKanbanStages,
   setFinalKanbanStage,
   updateKanbanStageDetails,
@@ -41,7 +42,7 @@ import {
 } from "@/lib/kanban-stage-colors";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import type { Database } from "@/types/database";
+import type { BoardType, Database } from "@/types/database";
 
 type Stage = Database["public"]["Tables"]["kanban_stages"]["Row"];
 type Plan = Database["public"]["Tables"]["subscriptions"]["Row"]["plan"];
@@ -182,10 +183,20 @@ interface SettingsKanbanSectionProps {
   stages: Stage[];
   plan: Plan;
   isAdmin: boolean;
+  boardType?: BoardType;
 }
 
-export function SettingsKanbanSection({ stages, plan, isAdmin }: SettingsKanbanSectionProps) {
+export function SettingsKanbanSection({
+  stages,
+  plan,
+  isAdmin,
+  boardType = "edicao",
+}: SettingsKanbanSectionProps) {
   const router = useRouter();
+  const isAlbumBoard = boardType === "album";
+  const isProRequiredForBoard = isAlbumBoard;
+  const albumLocked = isAlbumBoard && plan !== "pro";
+
   const sorted = useMemo(
     () => [...stages].sort((a, b) => a.position - b.position),
     [stages]
@@ -207,7 +218,12 @@ export function SettingsKanbanSection({ stages, plan, isAdmin }: SettingsKanbanS
     [sorted]
   );
 
-  const canAdd = isAdmin && (plan !== "free" || stages.length < FREE_MAX_STAGES);
+  const canAdd =
+    isAdmin &&
+    !albumLocked &&
+    (isProRequiredForBoard || plan !== "free" || stages.length < FREE_MAX_STAGES);
+
+  const canInitializeAlbum = isAlbumBoard && plan === "pro" && stages.length === 0;
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -226,7 +242,7 @@ export function SettingsKanbanSection({ stages, plan, isAdmin }: SettingsKanbanS
     setErrorMessage(null);
     setPending(true);
     try {
-      const res = await reorderKanbanStages(nextIds);
+      const res = await reorderKanbanStages(nextIds, boardType);
       if (!res.ok) {
         setErrorMessage(res.error);
         return;
@@ -245,13 +261,29 @@ export function SettingsKanbanSection({ stages, plan, isAdmin }: SettingsKanbanS
     setErrorMessage(null);
     setPending(true);
     try {
-      const res = await addKanbanStage(t);
+      const res = await addKanbanStage(t, boardType);
       if (!res.ok) {
         setErrorMessage(res.error);
         return;
       }
       setNewName("");
       toast.success("Etapa criada.");
+      router.refresh();
+    } finally {
+      setPending(false);
+    }
+  }
+
+  async function handleInitializeAlbum() {
+    setErrorMessage(null);
+    setPending(true);
+    try {
+      const res = await initializeAlbumStages();
+      if (!res.ok) {
+        setErrorMessage(res.error);
+        return;
+      }
+      toast.success("Etapas padrão de álbum criadas.");
       router.refresh();
     } finally {
       setPending(false);
@@ -315,16 +347,19 @@ export function SettingsKanbanSection({ stages, plan, isAdmin }: SettingsKanbanS
     }
   }
 
+  const headingId = `settings-kanban-heading-${boardType}`;
+  const heading = isAlbumBoard ? "Etapas do quadro de Álbuns" : "Etapas do quadro de Edições";
+  const description = isAlbumBoard
+    ? "Etapas da produção física do álbum (diagramação, gráfica, transporte). Disponível no plano Pro."
+    : "Etapas do quadro de edição, cores e etapa final. O quadro em Edições usa estas colunas.";
+
   return (
-    <section className="flex flex-col gap-4" aria-labelledby="settings-kanban-heading">
+    <section className="flex flex-col gap-4" aria-labelledby={headingId}>
       <div>
-        <h2 id="settings-kanban-heading" className="text-lg font-semibold text-ds-ink">
-          Etapas do quadro
+        <h2 id={headingId} className="text-lg font-semibold text-ds-ink">
+          {heading}
         </h2>
-        <p className="mt-1 text-sm text-ds-muted">
-          Etapas do quadro de edição, cores e etapa final. Ordene, renomeie e defina a entrega final.
-          O quadro em Edições usa estas colunas.
-        </p>
+        <p className="mt-1 text-sm text-ds-muted">{description}</p>
       </div>
 
       {!isAdmin ? (
@@ -333,11 +368,36 @@ export function SettingsKanbanSection({ stages, plan, isAdmin }: SettingsKanbanS
         </p>
       ) : null}
 
-      {plan === "free" && stages.length >= FREE_MAX_STAGES ? (
+      {albumLocked ? (
+        <Alert variant="warn">
+          Quadro de Álbuns está disponível no plano <strong>Pro</strong>. Faça upgrade em
+          Configurações → Plano para configurar as etapas.
+        </Alert>
+      ) : null}
+
+      {!isAlbumBoard && plan === "free" && stages.length >= FREE_MAX_STAGES ? (
         <Alert variant="warn">
           No plano Free o limite é {FREE_MAX_STAGES} etapas (Backup → Em Edição → Em Aprovação →
           Entregue). Faça upgrade para o <strong>Pro</strong> para adicionar mais colunas ao fluxo.
         </Alert>
+      ) : null}
+
+      {canInitializeAlbum ? (
+        <div className="flex flex-col gap-2 rounded-ds-lg border border-ds-border bg-ds-cream/30 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-ds-muted">
+            Nenhuma etapa de álbum criada ainda. Inicialize com as etapas padrão:
+            Diagramação → Aprovação → Gráfica → Produção → Transporte → Entregue.
+          </p>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            disabled={pending}
+            onClick={handleInitializeAlbum}
+          >
+            Inicializar etapas padrão
+          </Button>
+        </div>
       ) : null}
 
       {errorMessage ? (

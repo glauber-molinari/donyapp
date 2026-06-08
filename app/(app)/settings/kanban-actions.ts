@@ -2,17 +2,23 @@
 
 import { revalidatePath } from "next/cache";
 
+import { ensureAlbumStages } from "@/lib/auth/provision-album-stages";
 import {
   isValidKanbanStageColor,
   pickNextKanbanStageColor,
 } from "@/lib/kanban-stage-colors";
+import { canCreateAlbum } from "@/lib/plan-limits";
 import { createClient } from "@/lib/supabase/server";
-import type { Database } from "@/types/database";
+import type { BoardType, Database } from "@/types/database";
 
 type ActionResult = { ok: true } | { ok: false; error: string };
 
-/** Plano Free: no máximo 4 etapas (igual ao kanban padrão no provisionamento). Pro: ilimitado. */
+/** Plano Free: no máximo 4 etapas no quadro de Edições. Pro: ilimitado. Álbum é Pro-only. */
 const FREE_MAX_STAGES = 4;
+
+function normalizeBoardType(value: unknown): BoardType {
+  return value === "album" ? "album" : "edicao";
+}
 
 type AdminContext =
   | { error: string }
@@ -65,17 +71,22 @@ async function getSubscriptionPlan(
 }
 
 /** Reaplica `position` 1..n conforme a ordem dos ids (guia kanban). */
-export async function reorderKanbanStages(stageIdsOrdered: string[]): Promise<ActionResult> {
+export async function reorderKanbanStages(
+  stageIdsOrdered: string[],
+  boardType: BoardType = "edicao"
+): Promise<ActionResult> {
   const ctx = await getAdminContext();
   const admin = requireAdmin(ctx);
   if ("error" in admin) return { ok: false, error: admin.error };
 
+  const board = normalizeBoardType(boardType);
   const supabase = createClient();
 
   const { data: existing, error: fetchErr } = await supabase
     .from("kanban_stages")
     .select("id")
-    .eq("account_id", admin.accountId);
+    .eq("account_id", admin.accountId)
+    .eq("board_type", board);
 
   if (fetchErr) return { ok: false, error: fetchErr.message };
   const allowed = new Set((existing ?? []).map((r) => r.id));
@@ -135,7 +146,10 @@ export async function updateKanbanStageDetails(
   return { ok: true };
 }
 
-export async function addKanbanStage(name: string): Promise<ActionResult> {
+export async function addKanbanStage(
+  name: string,
+  boardType: BoardType = "edicao"
+): Promise<ActionResult> {
   const trimmed = name.trim();
   if (!trimmed) return { ok: false, error: "Nome da etapa é obrigatório." };
 
@@ -143,18 +157,27 @@ export async function addKanbanStage(name: string): Promise<ActionResult> {
   const admin = requireAdmin(ctx);
   if ("error" in admin) return { ok: false, error: admin.error };
 
+  const board = normalizeBoardType(boardType);
   const supabase = createClient();
   const plan = await getSubscriptionPlan(supabase, admin.accountId);
+
+  if (board === "album" && !canCreateAlbum(plan)) {
+    return {
+      ok: false,
+      error: "Etapas de álbum estão disponíveis no plano Pro.",
+    };
+  }
 
   const { count, error: countErr } = await supabase
     .from("kanban_stages")
     .select("*", { count: "exact", head: true })
-    .eq("account_id", admin.accountId);
+    .eq("account_id", admin.accountId)
+    .eq("board_type", board);
 
   if (countErr) return { ok: false, error: countErr.message };
   const n = count ?? 0;
 
-  if (plan === "free" && n >= FREE_MAX_STAGES) {
+  if (board === "edicao" && plan === "free" && n >= FREE_MAX_STAGES) {
     return {
       ok: false,
       error:
@@ -166,6 +189,7 @@ export async function addKanbanStage(name: string): Promise<ActionResult> {
     .from("kanban_stages")
     .select("position")
     .eq("account_id", admin.accountId)
+    .eq("board_type", board)
     .order("position", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -175,7 +199,8 @@ export async function addKanbanStage(name: string): Promise<ActionResult> {
   const { data: colorRows, error: colorFetchErr } = await supabase
     .from("kanban_stages")
     .select("color")
-    .eq("account_id", admin.accountId);
+    .eq("account_id", admin.accountId)
+    .eq("board_type", board);
 
   if (colorFetchErr) return { ok: false, error: colorFetchErr.message };
 
@@ -187,6 +212,7 @@ export async function addKanbanStage(name: string): Promise<ActionResult> {
     position: nextPosition,
     color,
     is_final: false,
+    board_type: board,
   });
 
   if (error) return { ok: false, error: error.message };
@@ -197,6 +223,58 @@ export async function addKanbanStage(name: string): Promise<ActionResult> {
   return { ok: true };
 }
 
+/** Provisiona as etapas padrão de álbum (Pro). Idempotente. */
+export async function initializeAlbumStages(): Promise<ActionResult> {
+  const ctx = await getAdminContext();
+  const admin = requireAdmin(ctx);
+  if ("error" in admin) return { ok: false, error: admin.error };
+
+  const supabase = createClient();
+  const plan = await getSubscriptionPlan(supabase, admin.accountId);
+  if (!canCreateAlbum(plan)) {
+    return { ok: false, error: "Inicializar etapas de álbum exige plano Pro." };
+  }
+
+  const res = await ensureAlbumStages(supabase, admin.accountId);
+  if (!res.ok) return res;
+
+  revalidatePath("/settings");
+  revalidatePath("/board");
+  return { ok: true };
+}
+
+/**
+ * Liga/desliga o quadro de Álbuns para a conta. Apenas admin Pro pode ativar.
+ * Ao ativar, provisiona as etapas padrão se ainda não existirem.
+ */
+export async function toggleAlbumBoard(enabled: boolean): Promise<ActionResult> {
+  const ctx = await getAdminContext();
+  const admin = requireAdmin(ctx);
+  if ("error" in admin) return { ok: false, error: admin.error };
+
+  const supabase = createClient();
+
+  if (enabled) {
+    const plan = await getSubscriptionPlan(supabase, admin.accountId);
+    if (!canCreateAlbum(plan)) {
+      return { ok: false, error: "Ativar o quadro de Álbuns exige plano Pro." };
+    }
+    const ensured = await ensureAlbumStages(supabase, admin.accountId);
+    if (!ensured.ok) return ensured;
+  }
+
+  const { error } = await supabase
+    .from("accounts")
+    .update({ album_board_enabled: enabled })
+    .eq("id", admin.accountId);
+
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/settings");
+  revalidatePath("/board");
+  return { ok: true };
+}
+
 export async function deleteKanbanStage(stageId: string): Promise<ActionResult> {
   const ctx = await getAdminContext();
   const admin = requireAdmin(ctx);
@@ -204,10 +282,21 @@ export async function deleteKanbanStage(stageId: string): Promise<ActionResult> 
 
   const supabase = createClient();
 
+  const { data: stageRow } = await supabase
+    .from("kanban_stages")
+    .select("is_final, board_type")
+    .eq("id", stageId)
+    .eq("account_id", admin.accountId)
+    .maybeSingle();
+
+  if (!stageRow) return { ok: false, error: "Etapa não encontrada." };
+  const board = (stageRow.board_type as BoardType) ?? "edicao";
+
   const { count: stageCount, error: scErr } = await supabase
     .from("kanban_stages")
     .select("*", { count: "exact", head: true })
-    .eq("account_id", admin.accountId);
+    .eq("account_id", admin.accountId)
+    .eq("board_type", board);
 
   if (scErr) return { ok: false, error: scErr.message };
   if ((stageCount ?? 0) <= 1) {
@@ -229,27 +318,23 @@ export async function deleteKanbanStage(stageId: string): Promise<ActionResult> 
     };
   }
 
-  const { data: stageRow } = await supabase
-    .from("kanban_stages")
-    .select("is_final")
-    .eq("id", stageId)
-    .eq("account_id", admin.accountId)
-    .maybeSingle();
-
-  if (!stageRow) return { ok: false, error: "Etapa não encontrada." };
-
   if (stageRow.is_final) {
     const { data: successor } = await supabase
       .from("kanban_stages")
       .select("id")
       .eq("account_id", admin.accountId)
+      .eq("board_type", board)
       .neq("id", stageId)
       .order("position", { ascending: true })
       .limit(1)
       .maybeSingle();
 
     if (successor) {
-      await supabase.from("kanban_stages").update({ is_final: false }).eq("account_id", admin.accountId);
+      await supabase
+        .from("kanban_stages")
+        .update({ is_final: false })
+        .eq("account_id", admin.accountId)
+        .eq("board_type", board);
 
       await supabase
         .from("kanban_stages")
@@ -273,7 +358,7 @@ export async function deleteKanbanStage(stageId: string): Promise<ActionResult> 
   return { ok: true };
 }
 
-/** Define uma única etapa como final (`is_final`). */
+/** Define uma única etapa como final (`is_final`) dentro do board_type da etapa. */
 export async function setFinalKanbanStage(stageId: string): Promise<ActionResult> {
   const ctx = await getAdminContext();
   const admin = requireAdmin(ctx);
@@ -283,17 +368,19 @@ export async function setFinalKanbanStage(stageId: string): Promise<ActionResult
 
   const { data: target } = await supabase
     .from("kanban_stages")
-    .select("id")
+    .select("id, board_type")
     .eq("id", stageId)
     .eq("account_id", admin.accountId)
     .maybeSingle();
 
   if (!target) return { ok: false, error: "Etapa não encontrada." };
+  const board = (target.board_type as BoardType) ?? "edicao";
 
   const { error: e1 } = await supabase
     .from("kanban_stages")
     .update({ is_final: false })
-    .eq("account_id", admin.accountId);
+    .eq("account_id", admin.accountId)
+    .eq("board_type", board);
 
   if (e1) return { ok: false, error: e1.message };
 
