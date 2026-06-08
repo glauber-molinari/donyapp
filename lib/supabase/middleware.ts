@@ -78,7 +78,8 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/termos-de-servico") ||
     path.startsWith("/por-que-usar") ||
     path.startsWith("/formulario/") ||
-    path.startsWith("/api/formularios/");
+    path.startsWith("/api/formularios/") ||
+    path.startsWith("/p/");
 
   if (!user && !isPublic) {
     const redirect = NextResponse.redirect(new URL("/login", request.url));
