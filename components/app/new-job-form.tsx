@@ -12,7 +12,6 @@ import type { JobAssigneePickerOption } from "@/lib/build-job-assignee-picker-op
 import { Input } from "@/components/ui/input";
 import { Select, type SelectOption } from "@/components/ui/select";
 import { PanelFieldCard } from "@/components/ui/side-panel";
-import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import type { Database } from "@/types/database";
@@ -93,9 +92,6 @@ export type NewJobFormProps = {
    */
   tab?: NewJobTab;
   onTabChange?: (tab: NewJobTab) => void;
-  /** Mostrar toggle "Ativar portal do cliente" (apenas no modo criação). */
-  enablePortalOnCreate?: boolean;
-  onPortalToggleChange?: (enabled: boolean) => void;
 };
 
 export function NewJobForm({
@@ -111,8 +107,6 @@ export function NewJobForm({
   onSubmit,
   tab: tabControlled,
   onTabChange,
-  enablePortalOnCreate = false,
-  onPortalToggleChange,
 }: NewJobFormProps) {
   const [tabInternal, setTabInternal] = useState<NewJobTab>("info");
   const tab = tabControlled ?? tabInternal;
@@ -351,18 +345,6 @@ export function NewJobForm({
               placeholder="https://… (opcional)"
               defaultValue={initialValues?.delivery_link ?? ""}
             />
-
-            {onPortalToggleChange !== undefined ? (
-              <div className="rounded-ds-lg border border-ds-border bg-ds-cream/60 px-4 py-3">
-                <Switch
-                  id={`${fieldIdPrefix}-portal-toggle`}
-                  checked={enablePortalOnCreate}
-                  onChange={onPortalToggleChange}
-                  label="Ativar portal do cliente"
-                  hint="Gera um link público para o cliente acompanhar o andamento do job."
-                />
-              </div>
-            ) : null}
 
             {deliveryType === "foto_video" ? (
               <div className="flex min-w-0 flex-col gap-5">
