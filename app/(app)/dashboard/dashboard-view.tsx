@@ -136,6 +136,23 @@ function deadlineProximity(deadlineIso: string) {
   return { label: `Em ${days}d`, tone: "muted" as const, days };
 }
 
+/**
+ * Badge da coluna "Trabalho / entrega": jobs do quadro de Álbuns mostram a tag
+ * "Álbum" (mesmo estilo do card no board); os demais mostram o tipo de entrega.
+ */
+function DeliveryBadge({
+  job,
+  allJobs,
+}: {
+  job: JobWithRelations;
+  allJobs: JobWithRelations[];
+}) {
+  if (job.board_type === "album") {
+    return <Badge kind="job-type" value="album" />;
+  }
+  return <Badge kind="job-type" value={jobTypeBadgeForList(job, allJobs)} />;
+}
+
 function ProximityPill({ deadline }: { deadline: string }) {
   const p = deadlineProximity(deadline);
   const base =
@@ -996,10 +1013,7 @@ export function DashboardView({
                                   <span className="text-xs text-ds-muted">
                                     {j.job_work_types?.name ?? "—"}
                                   </span>
-                                  <Badge
-                                    kind="job-type"
-                                    value={jobTypeBadgeForList(j, jobs)}
-                                  />
+                                  <DeliveryBadge job={j} allJobs={jobs} />
                                 </div>
                               </td>
                               <td className="px-4 py-3">
@@ -1084,10 +1098,7 @@ export function DashboardView({
                                 <span className="text-xs text-ds-muted-2">
                                   {j.job_work_types?.name ?? "—"}
                                 </span>
-                                <Badge
-                                  kind="job-type"
-                                  value={jobTypeBadgeForList(j, jobs)}
-                                />
+                                <DeliveryBadge job={j} allJobs={jobs} />
                               </div>
                               <div className="flex flex-wrap items-center gap-2">
                                 <ProximityPill deadline={j.deadline} />

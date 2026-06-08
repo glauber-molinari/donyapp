@@ -19,7 +19,7 @@ interface MobileBottomNavProps {
 const bottomNavItems = [
   { href: "/dashboard", label: "Início", icon: LayoutDashboard },
   { href: "/contacts", label: "Contatos", icon: Users },
-  { href: "/board", label: "Edições", icon: LaptopMinimal },
+  { href: "/board", label: "Pós-Produção", icon: LaptopMinimal },
   { href: "/agenda", label: "Agenda", icon: Calendar },
 ] as const;
 

@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 // ─── Tipos de job ────────────────────────────────────────────────────────────
 
-export type JobTypeBadgeValue = "foto" | "video" | "foto_video";
+export type JobTypeBadgeValue = "foto" | "video" | "foto_video" | "album";
 export type DeadlineBadgeValue = "upcoming" | "overdue";
 
 type BadgeJobTypeProps = {
@@ -24,12 +24,14 @@ const jobTypeClass: Record<JobTypeBadgeValue, string> = {
   foto:       "bg-ds-accent-soft text-ds-accent",
   video:      "bg-ds-info-soft   text-ds-info",
   foto_video: "bg-ds-warn-soft   text-ds-warn",
+  album:      "bg-ds-warn-soft   text-ds-warn",
 };
 
 const jobTypeLabel: Record<JobTypeBadgeValue, string> = {
   foto:       "Foto",
   video:      "Vídeo",
   foto_video: "Foto e Vídeo",
+  album:      "Álbum",
 };
 
 const deadlineClass: Record<DeadlineBadgeValue, string> = {

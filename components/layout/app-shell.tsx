@@ -51,7 +51,7 @@ const navItems = [
   },
   {
     href: "/board",
-    label: "Edições",
+    label: "Pós-Produção",
     id: "menu-edicoes",
     icon: LaptopMinimal,
     isPro: false,
