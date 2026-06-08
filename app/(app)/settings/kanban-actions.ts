@@ -223,26 +223,6 @@ export async function addKanbanStage(
   return { ok: true };
 }
 
-/** Provisiona as etapas padrão de álbum (Pro). Idempotente. */
-export async function initializeAlbumStages(): Promise<ActionResult> {
-  const ctx = await getAdminContext();
-  const admin = requireAdmin(ctx);
-  if ("error" in admin) return { ok: false, error: admin.error };
-
-  const supabase = createClient();
-  const plan = await getSubscriptionPlan(supabase, admin.accountId);
-  if (!canCreateAlbum(plan)) {
-    return { ok: false, error: "Inicializar etapas de álbum exige plano Pro." };
-  }
-
-  const res = await ensureAlbumStages(supabase, admin.accountId);
-  if (!res.ok) return res;
-
-  revalidatePath("/settings");
-  revalidatePath("/board");
-  return { ok: true };
-}
-
 /**
  * Liga/desliga o quadro de Álbuns para a conta. Apenas admin Pro pode ativar.
  * Ao ativar, provisiona as etapas padrão se ainda não existirem.

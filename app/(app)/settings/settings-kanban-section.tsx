@@ -24,7 +24,6 @@ import { useMemo, useState } from "react";
 import {
   addKanbanStage,
   deleteKanbanStage,
-  initializeAlbumStages,
   reorderKanbanStages,
   setFinalKanbanStage,
   updateKanbanStageDetails,
@@ -223,8 +222,6 @@ export function SettingsKanbanSection({
     !albumLocked &&
     (isProRequiredForBoard || plan !== "free" || stages.length < FREE_MAX_STAGES);
 
-  const canInitializeAlbum = isAlbumBoard && plan === "pro" && stages.length === 0;
-
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -268,22 +265,6 @@ export function SettingsKanbanSection({
       }
       setNewName("");
       toast.success("Etapa criada.");
-      router.refresh();
-    } finally {
-      setPending(false);
-    }
-  }
-
-  async function handleInitializeAlbum() {
-    setErrorMessage(null);
-    setPending(true);
-    try {
-      const res = await initializeAlbumStages();
-      if (!res.ok) {
-        setErrorMessage(res.error);
-        return;
-      }
-      toast.success("Etapas padrão de álbum criadas.");
       router.refresh();
     } finally {
       setPending(false);
@@ -380,24 +361,6 @@ export function SettingsKanbanSection({
           No plano Free o limite é {FREE_MAX_STAGES} etapas (Backup → Em Edição → Em Aprovação →
           Entregue). Faça upgrade para o <strong>Pro</strong> para adicionar mais colunas ao fluxo.
         </Alert>
-      ) : null}
-
-      {canInitializeAlbum ? (
-        <div className="flex flex-col gap-2 rounded-ds-lg border border-ds-border bg-ds-cream/30 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-ds-muted">
-            Nenhuma etapa de álbum criada ainda. Inicialize com as etapas padrão:
-            Diagramação → Aprovação → Gráfica → Produção → Transporte → Entregue.
-          </p>
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            disabled={pending}
-            onClick={handleInitializeAlbum}
-          >
-            Inicializar etapas padrão
-          </Button>
-        </div>
       ) : null}
 
       {errorMessage ? (
