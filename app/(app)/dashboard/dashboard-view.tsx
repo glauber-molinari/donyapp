@@ -51,7 +51,6 @@ import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import type { Database, Plan, UserRole } from "@/types/database";
 import { createJob, deleteJob, updateJob } from "../jobs/actions";
-import { enableClientPortal } from "@/lib/portal/actions";
 
 type JobRow = Database["public"]["Tables"]["jobs"]["Row"];
 type ContactPick = Pick<
@@ -237,7 +236,6 @@ export function DashboardView({
   const [query, setQuery] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
   const [createJobTab, setCreateJobTab] = useState<NewJobTab>("info");
-  const [createPortalEnabled, setCreatePortalEnabled] = useState(false);
   const [editJob, setEditJob] = useState<JobWithRelations | null>(null);
   /** Tipo de entrega escolhido no formulário (pode divergir do salvo até salvar). */
   const [editDeliveryType, setEditDeliveryType] = useState<JobRow["type"]>("foto");
@@ -444,9 +442,6 @@ export function DashboardView({
       if (!res.ok) {
         setErrorMessage(res.error);
         return;
-      }
-      if (createPortalEnabled) {
-        await enableClientPortal(res.jobId);
       }
       setCreateOpen(false);
       form.reset();
@@ -1254,8 +1249,6 @@ export function DashboardView({
             tab={createJobTab}
             onTabChange={setCreateJobTab}
             onSubmit={handleCreate}
-            enablePortalOnCreate={createPortalEnabled}
-            onPortalToggleChange={setCreatePortalEnabled}
           />
         </div>
       </Modal>
