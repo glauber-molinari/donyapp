@@ -41,7 +41,6 @@ import {
   updateJobClientRevision,
   type KanbanColumnSync,
 } from "../jobs/actions";
-import { enableClientPortal } from "@/lib/portal/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
@@ -908,7 +907,6 @@ export function BoardView({
 
   const [createOpen, setCreateOpen] = useState(false);
   const [createJobTab, setCreateJobTab] = useState<NewJobTab>("info");
-  const [createPortalEnabled, setCreatePortalEnabled] = useState(false);
   const [detailJob, setDetailJob] = useState<JobWithRelations | null>(null);
   const [isPending, setIsPending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -1023,9 +1021,6 @@ export function BoardView({
       if (!res.ok) {
         setErrorMessage(res.error);
         return;
-      }
-      if (createPortalEnabled && !isAlbumBoard) {
-        await enableClientPortal(res.jobId);
       }
       setCreateOpen(false);
       form.reset();
@@ -1352,8 +1347,6 @@ export function BoardView({
               tab={createJobTab}
               onTabChange={setCreateJobTab}
               onSubmit={handleCreate}
-              enablePortalOnCreate={createPortalEnabled}
-              onPortalToggleChange={setCreatePortalEnabled}
             />
           )}
         </div>
