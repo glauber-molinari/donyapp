@@ -181,6 +181,12 @@ export async function createGallery(
 
   if (error || !data) return { ok: false, error: error?.message ?? "Erro ao criar galeria." };
 
+  await supabase.from("gallery_folders").insert({
+    gallery_id: data.id,
+    name: "Destaques",
+    display_order: 0,
+  });
+
   revalidatePath("/galerias");
   return { ok: true, gallery: data as unknown as Gallery };
 }

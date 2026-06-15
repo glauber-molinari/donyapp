@@ -4,15 +4,15 @@ import { notFound, redirect } from "next/navigation";
 import { isFeatureEnabled } from "@/lib/feature-flags.server";
 import { listGalleriesForAccount } from "@/lib/gallery/actions";
 import { createClient } from "@/lib/supabase/server";
-import { GaleriasClient } from "./galerias-client";
+import { NovaGaleriaClient } from "./nova-galeria-client";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Galerias",
+  title: "Nova galeria",
 };
 
-export default async function GaleriasPage() {
+export default async function NovaGaleriaPage() {
   const supabase = createClient();
   const {
     data: { user },
@@ -34,10 +34,25 @@ export default async function GaleriasPage() {
 
   const isPro = sub?.plan === "pro";
   const flagOn = await isFeatureEnabled("galerias");
-
   if (!isPro || !flagOn) return notFound();
 
-  const galleries = await listGalleriesForAccount();
+  const [galleries, jobsRes] = await Promise.all([
+    listGalleriesForAccount(),
+    supabase
+      .from("jobs")
+      .select("id, name, job_date")
+      .eq("account_id", profile.account_id)
+      .order("created_at", { ascending: false }),
+  ]);
 
-  return <GaleriasClient galleries={galleries} />;
+  const galleryJobIds = new Set(galleries.map((g) => g.job_id).filter(Boolean));
+  const jobs = (jobsRes.data ?? [])
+    .filter((j) => !galleryJobIds.has(j.id))
+    .map((j) => ({
+      id: j.id,
+      name: j.name,
+      job_date: j.job_date,
+    }));
+
+  return <NovaGaleriaClient jobs={jobs} />;
 }

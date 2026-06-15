@@ -57,16 +57,18 @@ export default async function GalleryDetailPage({ params }: Props) {
     getGallerySelection(params.galleryId),
   ]);
 
-  // Job name
-  const jobName = gallery.job_id
-    ? (
-        await supabase
-          .from("jobs")
-          .select("name")
-          .eq("id", gallery.job_id)
-          .maybeSingle()
-      ).data?.name ?? null
-    : null;
+  // Job name + date
+  let jobName: string | null = null;
+  let jobDate: string | null = null;
+  if (gallery.job_id) {
+    const { data: job } = await supabase
+      .from("jobs")
+      .select("name, job_date")
+      .eq("id", gallery.job_id)
+      .maybeSingle();
+    jobName = job?.name ?? null;
+    jobDate = job?.job_date ?? null;
+  }
 
   return (
     <GalleryDetailClient
@@ -75,6 +77,7 @@ export default async function GalleryDetailPage({ params }: Props) {
       folders={(folders.data ?? []) as unknown as import("@/types/gallery").GalleryFolder[]}
       selection={selection}
       jobName={jobName}
+      jobDate={jobDate}
     />
   );
 }

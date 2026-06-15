@@ -4,20 +4,20 @@ import {
   ArrowLeft,
   Check,
   CheckCircle2,
-  Copy,
-  Eye,
-  FolderPlus,
+  ChevronDown,
+  ExternalLink,
+  GripVertical,
   Images,
   Loader2,
-  Pencil,
+  MoreHorizontal,
+  Plus,
+  Search,
   Settings,
   Trash2,
-  Upload,
-  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useState, useTransition } from "react";
+import { useCallback, useMemo, useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
 import { DestructiveDialog } from "@/components/ui/dialog";
@@ -27,7 +27,7 @@ import {
   deleteGallery,
   deletePhoto,
   publishGallery,
-  setGalleryMode,
+  setCoverPhoto,
 } from "@/lib/gallery/actions";
 import { cn } from "@/lib/utils";
 import type {
@@ -38,7 +38,7 @@ import type {
 } from "@/types/gallery";
 
 import { ClientSelectionView } from "./client-selection-view";
-import { GallerySettingsPanel } from "./gallery-settings-panel";
+import { GallerySettingsView } from "./gallery-settings-view";
 import { UploadDropzone } from "./upload-dropzone";
 
 interface Props {
@@ -47,10 +47,52 @@ interface Props {
   folders: GalleryFolder[];
   selection: GallerySelection | null;
   jobName: string | null;
+  jobDate: string | null;
 }
 
-const MODE_LABELS = { selection: "Seleção", delivery: "Entrega" };
-const STATUS_LABELS = { published: "Publicada", draft: "Rascunho" };
+type WorkspaceTab = "photos" | "settings";
+type SortOption =
+  | "uploaded_desc"
+  | "uploaded_asc"
+  | "name_asc"
+  | "name_desc";
+
+const SORT_LABELS: Record<SortOption, string> = {
+  uploaded_desc: "Envio: mais recente",
+  uploaded_asc: "Envio: mais antigo",
+  name_asc: "Nome: A–Z",
+  name_desc: "Nome: Z–A",
+};
+
+function formatDisplayDate(iso: string | null) {
+  if (!iso) return null;
+  const d = iso.includes("T") ? new Date(iso) : new Date(iso + "T12:00:00");
+  return d.toLocaleDateString("pt-BR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+function sortPhotos(photos: GalleryPhoto[], sort: SortOption) {
+  const copy = [...photos];
+  switch (sort) {
+    case "uploaded_desc":
+      return copy.sort(
+        (a, b) => new Date(b.uploaded_at).getTime() - new Date(a.uploaded_at).getTime()
+      );
+    case "uploaded_asc":
+      return copy.sort(
+        (a, b) => new Date(a.uploaded_at).getTime() - new Date(b.uploaded_at).getTime()
+      );
+    case "name_asc":
+      return copy.sort((a, b) => a.filename.localeCompare(b.filename, "pt-BR"));
+    case "name_desc":
+      return copy.sort((a, b) => b.filename.localeCompare(a.filename, "pt-BR"));
+    default:
+      return copy;
+  }
+}
 
 export function GalleryDetailClient({
   gallery: initialGallery,
@@ -58,54 +100,67 @@ export function GalleryDetailClient({
   folders: initialFolders,
   selection,
   jobName,
+  jobDate,
 }: Props) {
   const router = useRouter();
   const [gallery, setGallery] = useState(initialGallery);
   const [photos, setPhotos] = useState(initialPhotos);
   const [folders, setFolders] = useState(initialFolders);
-  const [activeFolder, setActiveFolder] = useState<string | null>(null);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [uploadOpen, setUploadOpen] = useState(false);
+  const [activeFolder, setActiveFolder] = useState<string | null>(
+    initialFolders[0]?.id ?? null
+  );
+  const [activeTab, setActiveTab] = useState<WorkspaceTab>("photos");
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<SortOption>("uploaded_desc");
+  const [sortOpen, setSortOpen] = useState(false);
+  const [statusOpen, setStatusOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [modeConfirmOpen, setModeConfirmOpen] = useState(false);
-  const [targetMode, setTargetMode] = useState<"selection" | "delivery">("delivery");
   const [newFolderName, setNewFolderName] = useState("");
   const [folderFormOpen, setFolderFormOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [isPending, startTransition] = useTransition();
   const [selectionTab, setSelectionTab] = useState(false);
+  const [showUploadPanel, setShowUploadPanel] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const appUrl = typeof window !== "undefined" ? window.location.origin : "";
   const publicUrl = `${appUrl}/g/${gallery.slug}`;
+  const displayDate = formatDisplayDate(jobDate) ?? formatDisplayDate(gallery.created_at);
 
-  function handleModeToggle() {
-    const next = gallery.mode === "selection" ? "delivery" : "selection";
-    setTargetMode(next);
-    setModeConfirmOpen(true);
-  }
+  const folderPhotos = useMemo(() => {
+    const inFolder = activeFolder
+      ? photos.filter((p) => p.folder_id === activeFolder)
+      : photos;
+    const q = search.trim().toLowerCase();
+    const filtered = q
+      ? inFolder.filter((p) => p.filename.toLowerCase().includes(q))
+      : inFolder;
+    return sortPhotos(filtered, sort);
+  }, [photos, activeFolder, search, sort]);
 
-  function confirmModeChange() {
-    setModeConfirmOpen(false);
-    startTransition(async () => {
-      const res = await setGalleryMode(gallery.id, targetMode);
-      if (res.ok) {
-        setGallery((g) => ({ ...g, mode: targetMode }));
-      }
-    });
-  }
+  const activeFolderName =
+    folders.find((f) => f.id === activeFolder)?.name ?? "Todas as fotos";
 
-  function handlePublishToggle() {
+  const coverPhoto = photos.find((p) => p.id === gallery.cover_photo_id) ?? photos[0];
+
+  const onUploadComplete = useCallback((newPhotos: GalleryPhoto[]) => {
+    setPhotos((p) => [...p, ...newPhotos]);
+    setShowUploadPanel(false);
+    if (!gallery.cover_photo_id && newPhotos[0]) {
+      void setCoverPhoto(gallery.id, newPhotos[0].id).then((res) => {
+        if (res.ok) setGallery((g) => ({ ...g, cover_photo_id: newPhotos[0].id }));
+      });
+    }
+  }, [gallery.cover_photo_id, gallery.id]);
+
+  function handlePublishToggle(nextStatus: "draft" | "published") {
+    setStatusOpen(false);
+    if (nextStatus === gallery.status) return;
     startTransition(async () => {
       const res =
-        gallery.status === "published"
-          ? await archiveGallery(gallery.id)
-          : await publishGallery(gallery.id);
-      if (res.ok) {
-        setGallery((g) => ({
-          ...g,
-          status: g.status === "published" ? "draft" : "published",
-        }));
-      }
+        nextStatus === "published"
+          ? await publishGallery(gallery.id)
+          : await archiveGallery(gallery.id);
+      if (res.ok) setGallery((g) => ({ ...g, status: nextStatus }));
     });
   }
 
@@ -117,18 +172,13 @@ export function GalleryDetailClient({
     });
   }
 
-  async function handleCopy() {
-    await navigator.clipboard.writeText(publicUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }
-
   async function handleCreateFolder(e: React.FormEvent) {
     e.preventDefault();
     if (!newFolderName.trim()) return;
     const res = await createFolder(gallery.id, newFolderName.trim());
     if (res.ok) {
       setFolders((f) => [...f, res.folder]);
+      setActiveFolder(res.folder.id);
       setNewFolderName("");
       setFolderFormOpen(false);
     }
@@ -136,150 +186,131 @@ export function GalleryDetailClient({
 
   async function handleDeletePhoto(photoId: string) {
     const res = await deletePhoto(photoId, gallery.id);
-    if (res.ok) setPhotos((p) => p.filter((ph) => ph.id !== photoId));
+    if (res.ok) {
+      setPhotos((p) => p.filter((ph) => ph.id !== photoId));
+      if (gallery.cover_photo_id === photoId) {
+        setGallery((g) => ({ ...g, cover_photo_id: null }));
+      }
+    }
   }
 
-  const onUploadComplete = useCallback(
-    (newPhotos: GalleryPhoto[]) => {
-      setPhotos((p) => [...p, ...newPhotos]);
-      setUploadOpen(false);
-    },
-    []
-  );
-
-  const visiblePhotos = activeFolder
-    ? photos.filter((p) => p.folder_id === activeFolder)
-    : photos;
+  async function handleSetCover(photoId: string) {
+    const res = await setCoverPhoto(gallery.id, photoId);
+    if (res.ok) setGallery((g) => ({ ...g, cover_photo_id: photoId }));
+  }
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Breadcrumb + Header */}
-      <div className="flex flex-col gap-3">
-        <Link
-          href="/galerias"
-          className="flex w-fit items-center gap-1 text-xs text-ds-muted hover:text-ds-ink"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Todas as galerias
-        </Link>
-
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-ds-ink">{gallery.title}</h1>
-              <span
-                className={cn(
-                  "rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
-                  gallery.status === "published"
-                    ? "bg-ds-success-soft text-ds-success"
-                    : "bg-ds-cream text-ds-muted"
-                )}
-              >
-                {STATUS_LABELS[gallery.status]}
-              </span>
-            </div>
-            {jobName && (
-              <p className="text-sm text-ds-muted">Job: {jobName}</p>
-            )}
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            <Button variant="ghost" size="sm" onClick={() => setSettingsOpen(true)}>
-              <Settings className="h-4 w-4" />
-              Configurações
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => setDeleteOpen(true)}>
-              <Trash2 className="h-4 w-4 text-ds-danger" />
-            </Button>
-            <Button
-              variant={gallery.status === "published" ? "secondary" : "primary"}
-              size="sm"
-              onClick={handlePublishToggle}
-              disabled={isPending}
-            >
-              {isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : gallery.status === "published" ? (
-                <>
-                  <X className="h-4 w-4" /> Despublicar
-                </>
-              ) : (
-                <>
-                  <Eye className="h-4 w-4" /> Publicar
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Barra de ações */}
-      <div className="flex flex-wrap items-center gap-3 rounded-ds-lg border border-ds-border bg-ds-cream/50 p-3">
-        {/* Modo */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-ds-muted">Modo:</span>
-          <button
-            type="button"
-            onClick={handleModeToggle}
-            disabled={isPending}
-            className={cn(
-              "flex items-center gap-1.5 rounded-ds-pill px-3 py-1 text-xs font-semibold transition-colors",
-              gallery.mode === "selection"
-                ? "bg-ds-info/10 text-ds-info"
-                : "bg-ds-accent/10 text-ds-accent"
-            )}
+    <div className="-mx-4 -mt-4 flex min-h-[calc(100dvh-3rem)] flex-col sm:-mx-6 sm:-mt-6 md:min-h-[calc(100dvh-3.5rem)]">
+      {/* Top bar */}
+      <header className="flex shrink-0 flex-wrap items-center gap-3 border-b border-ds-border bg-ds-surface px-4 py-3 md:px-5">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <Link
+            href="/galerias"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-ds-lg text-ds-muted transition-colors hover:bg-ds-cream hover:text-ds-ink"
+            aria-label="Voltar"
           >
-            {MODE_LABELS[gallery.mode]}
-            <Pencil className="h-3 w-3 opacity-60" />
-          </button>
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="truncate text-base font-semibold text-ds-ink">{gallery.title}</h1>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setStatusOpen((v) => !v)}
+                  className="flex items-center gap-1 rounded-ds-pill border border-ds-border bg-ds-cream/60 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-ds-muted hover:border-ds-border-strong"
+                >
+                  {gallery.status === "published" ? "Publicada" : "Rascunho"}
+                  <ChevronDown className="h-3 w-3" />
+                </button>
+                {statusOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setStatusOpen(false)} />
+                    <div className="absolute left-0 top-full z-50 mt-1 min-w-[140px] rounded-ds-xl border border-ds-border bg-ds-surface py-1 shadow-ds-md">
+                      <button
+                        type="button"
+                        onClick={() => handlePublishToggle("published")}
+                        className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-ds-cream"
+                      >
+                        Publicar
+                        {gallery.status === "published" && <Check className="h-4 w-4 text-ds-success" />}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handlePublishToggle("draft")}
+                        className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-ds-cream"
+                      >
+                        Rascunho
+                        {gallery.status === "draft" && <Check className="h-4 w-4 text-ds-success" />}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+            {displayDate && (
+              <p className="truncate text-xs text-ds-muted">{displayDate}</p>
+            )}
+            {jobName && (
+              <p className="truncate text-xs text-ds-muted-2">Job: {jobName}</p>
+            )}
+          </div>
         </div>
 
-        <div className="h-4 w-px bg-ds-border" />
+        <div className="hidden max-w-xs flex-1 md:block">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ds-muted" />
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Procurar"
+              className="w-full rounded-ds-lg border border-ds-border bg-ds-cream/50 py-2 pl-9 pr-3 text-sm text-ds-ink placeholder:text-ds-muted-2 focus:border-ds-accent/50 focus:outline-none focus:ring-2 focus:ring-ds-accent/20"
+            />
+          </div>
+        </div>
 
-        {/* Link público */}
-        {gallery.status === "published" && (
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
+          {gallery.status === "published" ? (
             <a
               href={publicUrl}
               target="_blank"
               rel="noreferrer"
-              className="max-w-[200px] truncate text-xs text-ds-accent underline-offset-2 hover:underline"
+              className="hidden items-center gap-1.5 rounded-ds-lg px-3 py-2 text-sm font-medium text-ds-muted transition-colors hover:bg-ds-cream hover:text-ds-ink sm:flex"
             >
-              {publicUrl}
+              Pré-visualização
+              <ExternalLink className="h-3.5 w-3.5" />
             </a>
-            <button
-              type="button"
-              onClick={handleCopy}
-              className="rounded p-1 hover:bg-ds-cream"
-              title="Copiar link"
+          ) : (
+            <span
+              className="hidden cursor-not-allowed items-center gap-1.5 rounded-ds-lg px-3 py-2 text-sm text-ds-muted-2 sm:flex"
+              title="Publique para pré-visualizar como cliente"
             >
-              {copied ? (
-                <Check className="h-3.5 w-3.5 text-ds-success" />
-              ) : (
-                <Copy className="h-3.5 w-3.5 text-ds-muted" />
-              )}
-            </button>
-          </div>
-        )}
-
-        <div className="ml-auto flex gap-2">
-          <Button variant="secondary" size="sm" onClick={() => setFolderFormOpen(true)}>
-            <FolderPlus className="h-4 w-4" />
-            Pasta
-          </Button>
-          <Button size="sm" onClick={() => setUploadOpen(true)}>
-            <Upload className="h-4 w-4" />
-            Subir fotos
+              Pré-visualização
+            </span>
+          )}
+          <Button
+            size="sm"
+            onClick={() => handlePublishToggle(gallery.status === "published" ? "draft" : "published")}
+            disabled={isPending}
+          >
+            {isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : gallery.status === "published" ? (
+              "Despublicar"
+            ) : (
+              "Publicar"
+            )}
           </Button>
         </div>
-      </div>
+      </header>
 
-      {/* Seleção recebida — aviso */}
+      {/* Seleção recebida */}
       {selection && (
         <button
           type="button"
           onClick={() => setSelectionTab((v) => !v)}
-          className="flex items-center gap-2 rounded-ds-lg border border-ds-success/30 bg-ds-success-soft px-4 py-3 text-sm text-ds-success transition-colors hover:bg-ds-success/10"
+          className="mx-4 mt-3 flex items-center gap-2 rounded-ds-lg border border-ds-success/30 bg-ds-success-soft px-4 py-2.5 text-sm text-ds-success sm:mx-5"
         >
           <CheckCircle2 className="h-4 w-4 shrink-0" />
           <span>
@@ -293,129 +324,255 @@ export function GalleryDetailClient({
         </button>
       )}
 
-      {/* Seleção expandida */}
       {selectionTab && selection && (
-        <ClientSelectionView
-          selection={selection}
-          photos={photos}
-          galleryId={gallery.id}
-        />
-      )}
-
-      {/* Formulário nova pasta */}
-      {folderFormOpen && (
-        <form
-          onSubmit={handleCreateFolder}
-          className="flex items-center gap-2 rounded-ds-lg border border-ds-border bg-ds-surface p-3"
-        >
-          <input
-            type="text"
-            autoFocus
-            value={newFolderName}
-            onChange={(e) => setNewFolderName(e.target.value)}
-            placeholder="Nome da pasta..."
-            className="flex-1 rounded-ds-md border border-ds-border bg-ds-cream px-3 py-1.5 text-sm focus:border-ds-accent/50 focus:outline-none focus:ring-2 focus:ring-ds-accent/20"
+        <div className="mx-4 mt-3 sm:mx-5">
+          <ClientSelectionView
+            selection={selection}
+            photos={photos}
+            galleryId={gallery.id}
           />
-          <Button type="submit" size="sm">Criar</Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => setFolderFormOpen(false)}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </form>
+        </div>
       )}
 
-      {/* Abas de pastas */}
-      {folders.length > 0 && (
-        <div className="flex gap-1 border-b border-ds-border">
-          <button
-            type="button"
-            onClick={() => setActiveFolder(null)}
-            className={cn(
-              "px-4 py-2 text-sm font-medium transition-colors",
-              activeFolder === null
-                ? "border-b-2 border-ds-accent text-ds-accent"
-                : "text-ds-muted hover:text-ds-ink"
-            )}
-          >
-            Todas ({photos.length})
-          </button>
-          {folders.map((f) => (
+      <div className="flex min-h-0 flex-1">
+        {/* Sidebar */}
+        <aside
+          className={cn(
+            "flex shrink-0 flex-col border-r border-ds-border bg-ds-elevated/60 transition-all duration-ds-fast",
+            sidebarCollapsed ? "w-0 overflow-hidden border-r-0" : "w-56 lg:w-60"
+          )}
+        >
+          <div className="p-4">
+            <div className="relative aspect-square overflow-hidden rounded-ds-lg bg-ds-cream">
+              {coverPhoto ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={`/api/gallery/image/${coverPhoto.id}?w=320`}
+                  alt="Capa da galeria"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center">
+                  <Images className="h-8 w-8 text-ds-muted/40" />
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex border-b border-ds-hairline px-2">
             <button
-              key={f.id}
               type="button"
-              onClick={() => setActiveFolder(f.id)}
+              onClick={() => setActiveTab("photos")}
               className={cn(
-                "px-4 py-2 text-sm font-medium transition-colors",
-                activeFolder === f.id
-                  ? "border-b-2 border-ds-accent text-ds-accent"
+                "flex flex-1 flex-col items-center gap-1 py-3 text-xs font-medium transition-colors",
+                activeTab === "photos"
+                  ? "border-b-2 border-ds-ink text-ds-ink"
                   : "text-ds-muted hover:text-ds-ink"
               )}
             >
-              {f.name} ({photos.filter((p) => p.folder_id === f.id).length})
+              <Images className="h-4 w-4" />
+              Fotos
             </button>
-          ))}
-        </div>
-      )}
+            <button
+              type="button"
+              onClick={() => setActiveTab("settings")}
+              className={cn(
+                "flex flex-1 flex-col items-center gap-1 py-3 text-xs font-medium transition-colors",
+                activeTab === "settings"
+                  ? "border-b-2 border-ds-ink text-ds-ink"
+                  : "text-ds-muted hover:text-ds-ink"
+              )}
+            >
+              <Settings className="h-4 w-4" />
+              Configurações
+            </button>
+          </div>
 
-      {/* Grid de fotos */}
-      {visiblePhotos.length === 0 ? (
-        <div className="flex flex-col items-center gap-4 rounded-ds-lg border-2 border-dashed border-ds-border py-16">
-          <Images className="h-10 w-10 text-ds-muted/40" />
-          <p className="text-sm text-ds-muted">Nenhuma foto ainda. Suba as primeiras fotos.</p>
-          <Button onClick={() => setUploadOpen(true)}>
-            <Upload className="h-4 w-4" />
-            Subir fotos
-          </Button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {visiblePhotos.map((photo) => (
-            <PhotoThumb
-              key={photo.id}
-              photo={photo}
-              isCover={photo.id === gallery.cover_photo_id}
-              onDelete={() => handleDeletePhoto(photo.id)}
+          {activeTab === "photos" && (
+            <div className="flex min-h-0 flex-1 flex-col p-3">
+              <div className="mb-2 flex items-center justify-between px-1">
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-ds-muted-2">
+                  Fotos
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setFolderFormOpen(true)}
+                  className="flex items-center gap-0.5 text-xs font-medium text-ds-ink hover:text-ds-accent"
+                >
+                  <Plus className="h-3 w-3" />
+                  Conjunto
+                </button>
+              </div>
+
+              {folderFormOpen && (
+                <form onSubmit={handleCreateFolder} className="mb-2 flex gap-1 px-1">
+                  <input
+                    type="text"
+                    autoFocus
+                    value={newFolderName}
+                    onChange={(e) => setNewFolderName(e.target.value)}
+                    placeholder="Nome do conjunto"
+                    className="min-w-0 flex-1 rounded-ds-md border border-ds-border bg-ds-surface px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-ds-accent/20"
+                  />
+                  <Button type="submit" size="sm" className="h-7 px-2 text-xs">
+                    Ok
+                  </Button>
+                </form>
+              )}
+
+              <div className="flex flex-col gap-0.5 overflow-y-auto">
+                {folders.length === 0 ? (
+                  <p className="px-2 py-2 text-xs text-ds-muted">Nenhum conjunto ainda.</p>
+                ) : (
+                  folders.map((folder) => {
+                    const count = photos.filter((p) => p.folder_id === folder.id).length;
+                    return (
+                      <button
+                        key={folder.id}
+                        type="button"
+                        onClick={() => setActiveFolder(folder.id)}
+                        className={cn(
+                          "group flex items-center gap-1 rounded-ds-lg px-2 py-2 text-left text-sm transition-colors",
+                          activeFolder === folder.id
+                            ? "bg-ds-surface font-medium text-ds-ink shadow-ds-sm"
+                            : "text-ds-muted hover:bg-ds-surface/70 hover:text-ds-ink"
+                        )}
+                      >
+                        <GripVertical className="h-3.5 w-3.5 shrink-0 opacity-30" />
+                        <span className="min-w-0 flex-1 truncate">{folder.name}</span>
+                        <span className="text-xs text-ds-muted-2">({count})</span>
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          )}
+        </aside>
+
+        {/* Main */}
+        <main className="flex min-w-0 flex-1 flex-col bg-ds-surface">
+          {activeTab === "settings" ? (
+            <GallerySettingsView
+              gallery={gallery}
+              onUpdate={(partial) => setGallery((g) => ({ ...g, ...partial }))}
             />
-          ))}
-        </div>
-      )}
+          ) : (
+            <>
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ds-hairline px-4 py-3 md:px-6">
+                <h2 className="text-lg font-semibold text-ds-ink">{activeFolderName}</h2>
+                <div className="flex items-center gap-2">
+                  <div className="relative md:hidden">
+                    <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ds-muted" />
+                    <input
+                      type="search"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      placeholder="Procurar"
+                      className="w-36 rounded-ds-lg border border-ds-border bg-ds-cream/50 py-1.5 pl-8 pr-2 text-xs"
+                    />
+                  </div>
 
-      {/* Upload */}
-      {uploadOpen && (
-        <UploadDropzone
-          galleryId={gallery.id}
-          folderId={activeFolder}
-          onComplete={onUploadComplete}
-          onClose={() => setUploadOpen(false)}
-        />
-      )}
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setSortOpen((v) => !v)}
+                      className="rounded-ds-lg border border-ds-border px-3 py-1.5 text-xs font-medium text-ds-muted hover:bg-ds-cream"
+                    >
+                      Ordenar
+                    </button>
+                    {sortOpen && (
+                      <>
+                        <div className="fixed inset-0 z-40" onClick={() => setSortOpen(false)} />
+                        <div className="absolute right-0 top-full z-50 mt-1 min-w-[180px] rounded-ds-xl border border-ds-border bg-ds-surface py-1 shadow-ds-md">
+                          {(Object.keys(SORT_LABELS) as SortOption[]).map((key) => (
+                            <button
+                              key={key}
+                              type="button"
+                              onClick={() => {
+                                setSort(key);
+                                setSortOpen(false);
+                              }}
+                              className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-ds-cream"
+                            >
+                              {SORT_LABELS[key]}
+                              {sort === key && <Check className="h-4 w-4 text-ds-success" />}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
 
-      {/* Confirmar troca de modo */}
-      <DestructiveDialog
-        open={modeConfirmOpen}
-        onClose={() => setModeConfirmOpen(false)}
-        title={`Trocar para modo ${MODE_LABELS[targetMode]}?`}
-        objectName={gallery.title}
-        consequence={
-          targetMode === "delivery"
-            ? "As fotos serão exibidas sem marca d'água e o download será liberado."
-            : "As fotos passarão a ser exibidas com marca d'água e o download será bloqueado."
-        }
-        footer={
-          <>
-            <Button variant="ghost" onClick={() => setModeConfirmOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={confirmModeChange}>Confirmar</Button>
-          </>
-        }
-      />
+                  <button
+                    type="button"
+                    onClick={() => setShowUploadPanel(true)}
+                    className="flex items-center gap-1 text-sm font-medium text-ds-ink hover:text-ds-accent"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Adicionar mídia
+                  </button>
+                </div>
+              </div>
 
-      {/* Excluir galeria */}
+              <div className="flex-1 overflow-y-auto p-4 md:p-6">
+                {folderPhotos.length === 0 && !showUploadPanel ? (
+                  <UploadDropzone
+                    galleryId={gallery.id}
+                    folderId={activeFolder}
+                    onComplete={onUploadComplete}
+                    variant="inline"
+                  />
+                ) : (
+                  <div className="flex flex-col gap-6">
+                    {(showUploadPanel || folderPhotos.length === 0) && (
+                      <UploadDropzone
+                        galleryId={gallery.id}
+                        folderId={activeFolder}
+                        onComplete={onUploadComplete}
+                        variant="inline"
+                      />
+                    )}
+                    {folderPhotos.length > 0 && (
+                      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+                        {folderPhotos.map((photo) => (
+                          <PhotoThumb
+                            key={photo.id}
+                            photo={photo}
+                            isCover={photo.id === gallery.cover_photo_id}
+                            onDelete={() => handleDeletePhoto(photo.id)}
+                            onSetCover={() => handleSetCover(photo.id)}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </main>
+      </div>
+
+      {/* Footer actions */}
+      <div className="flex items-center justify-between border-t border-ds-border bg-ds-surface px-4 py-2 md:px-5">
+        <button
+          type="button"
+          onClick={() => setSidebarCollapsed((v) => !v)}
+          className="text-xs text-ds-muted hover:text-ds-ink"
+        >
+          {sidebarCollapsed ? "Mostrar painel" : "Recolher painel"}
+        </button>
+        <button
+          type="button"
+          onClick={() => setDeleteOpen(true)}
+          className="flex items-center gap-1 text-xs text-ds-danger hover:underline"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+          Excluir galeria
+        </button>
+      </div>
+
       <DestructiveDialog
         open={deleteOpen}
         onClose={() => setDeleteOpen(false)}
@@ -434,14 +591,6 @@ export function GalleryDetailClient({
           </>
         }
       />
-
-      {/* Painel de configurações */}
-      <GallerySettingsPanel
-        open={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-        gallery={gallery}
-        onUpdate={(updated) => setGallery((g) => ({ ...g, ...updated }))}
-      />
     </div>
   );
 }
@@ -450,11 +599,14 @@ function PhotoThumb({
   photo,
   isCover,
   onDelete,
+  onSetCover,
 }: {
   photo: GalleryPhoto;
   isCover: boolean;
   onDelete: () => void;
+  onSetCover: () => void;
 }) {
+  const [menuOpen, setMenuOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   return (
@@ -463,25 +615,53 @@ function PhotoThumb({
       <img
         src={`/api/gallery/image/${photo.id}?w=480`}
         alt={photo.filename}
-        className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+        className="h-full w-full object-cover transition-transform duration-ds-fast group-hover:scale-[1.02]"
         loading="lazy"
       />
 
       {isCover && (
-        <span className="absolute left-1.5 top-1.5 rounded bg-ds-accent px-1.5 py-0.5 text-[10px] font-bold text-white">
+        <span className="absolute left-1.5 top-1.5 rounded-ds-sm bg-ds-ink px-1.5 py-0.5 text-[10px] font-semibold text-ds-on-dark">
           Capa
         </span>
       )}
 
-      <div className="absolute inset-0 flex items-end justify-end bg-gradient-to-t from-ds-ink/40 to-transparent opacity-0 transition-opacity group-hover:opacity-100">
+      <div className="absolute right-1.5 top-1.5 opacity-0 transition-opacity group-hover:opacity-100">
         <button
           type="button"
-          onClick={() => setConfirmDelete(true)}
-          className="m-1.5 rounded-full bg-white/90 p-1.5 text-ds-danger hover:bg-white"
-          title="Remover foto"
+          onClick={() => setMenuOpen((v) => !v)}
+          className="rounded-full bg-ds-surface/95 p-1 text-ds-muted shadow-ds-sm hover:text-ds-ink"
         >
-          <Trash2 className="h-3.5 w-3.5" />
+          <MoreHorizontal className="h-3.5 w-3.5" />
         </button>
+        {menuOpen && (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+            <div className="absolute right-0 top-full z-50 mt-1 min-w-[130px] rounded-ds-lg border border-ds-border bg-ds-surface py-1 shadow-ds-md">
+              {!isCover && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSetCover();
+                    setMenuOpen(false);
+                  }}
+                  className="w-full px-3 py-2 text-left text-xs hover:bg-ds-cream"
+                >
+                  Definir como capa
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  setConfirmDelete(true);
+                }}
+                className="w-full px-3 py-2 text-left text-xs text-ds-danger hover:bg-ds-danger-soft"
+              >
+                Remover
+              </button>
+            </div>
+          </>
+        )}
       </div>
 
       <DestructiveDialog

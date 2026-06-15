@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, Loader2, Upload, X, XCircle } from "lucide-react";
+import { CheckCircle2, ImagePlus, Loader2, Upload, X, XCircle } from "lucide-react";
 import { useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,8 @@ interface Props {
   galleryId: string;
   folderId: string | null;
   onComplete: (photos: GalleryPhoto[]) => void;
-  onClose: () => void;
+  variant?: "inline" | "compact";
+  onClose?: () => void;
 }
 
 interface FileItem {
@@ -27,7 +28,13 @@ interface FileItem {
 const ALLOWED_TYPES = ["image/jpeg", "image/png"];
 const MAX_BYTES = 50 * 1024 * 1024;
 
-export function UploadDropzone({ galleryId, folderId, onComplete, onClose }: Props) {
+export function UploadDropzone({
+  galleryId,
+  folderId,
+  onComplete,
+  variant = "inline",
+  onClose,
+}: Props) {
   const [items, setItems] = useState<FileItem[]>([]);
   const [dragging, setDragging] = useState(false);
   const [running, setRunning] = useState(false);
@@ -58,6 +65,10 @@ export function UploadDropzone({ galleryId, folderId, onComplete, onClose }: Pro
       })),
     ];
     setItems((prev) => [...prev, ...newItems]);
+    if (valid.length > 0 && variant === "inline") {
+      const toUpload = newItems.filter((i) => i.status === "pending");
+      void uploadAll(toUpload);
+    }
   }
 
   function handleDrop(e: React.DragEvent) {
@@ -68,6 +79,7 @@ export function UploadDropzone({ galleryId, folderId, onComplete, onClose }: Pro
 
   function handleFileInput(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files) addFiles(Array.from(e.target.files));
+    e.target.value = "";
   }
 
   function removeItem(id: string) {
@@ -75,9 +87,13 @@ export function UploadDropzone({ galleryId, folderId, onComplete, onClose }: Pro
   }
 
   async function uploadFile(item: FileItem): Promise<GalleryPhoto | null> {
-    setItems((prev) =>
-      prev.map((i) => (i.id === item.id ? { ...i, status: "uploading", progress: 0 } : i))
-    );
+    setItems((prev) => {
+      const exists = prev.some((i) => i.id === item.id);
+      const base = exists ? prev : [...prev, item];
+      return base.map((i) =>
+        i.id === item.id ? { ...i, status: "uploading", progress: 0 } : i
+      );
+    });
 
     const ticketRes = await requestUploadUrl(
       galleryId,
@@ -151,8 +167,8 @@ export function UploadDropzone({ galleryId, folderId, onComplete, onClose }: Pro
     return confirmRes.photo;
   }
 
-  async function handleUploadAll() {
-    const pending = items.filter((i) => i.status === "pending");
+  async function uploadAll(toUpload?: FileItem[]) {
+    const pending = toUpload ?? items.filter((i) => i.status === "pending");
     if (!pending.length) return;
     setRunning(true);
     const photos: GalleryPhoto[] = [];
@@ -163,43 +179,72 @@ export function UploadDropzone({ galleryId, folderId, onComplete, onClose }: Pro
     setRunning(false);
     if (photos.length > 0) {
       onComplete(photos);
+      if (variant === "compact") {
+        setItems((prev) => prev.filter((i) => i.status !== "done"));
+        onClose?.();
+      }
     }
   }
 
   const pendingCount = items.filter((i) => i.status === "pending").length;
-  const doneCount = items.filter((i) => i.status === "done").length;
-  const errorCount = items.filter((i) => i.status === "error").length;
+  const uploadingCount = items.filter((i) => i.status === "uploading").length;
+  const activeCount = pendingCount + uploadingCount;
+
+  const isInline = variant === "inline";
 
   return (
-    <div className="flex flex-col gap-4 rounded-ds-lg border border-ds-border bg-ds-surface p-5">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-ds-ink">Subir fotos</h3>
-        <Button variant="ghost" size="sm" onClick={onClose} disabled={running}>
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
+    <div className={cn("flex flex-col", !isInline && "gap-4 rounded-ds-lg border border-ds-border bg-ds-surface p-5")}>
+      {!isInline && onClose && (
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-ds-ink">Subir fotos</h3>
+          <Button variant="ghost" size="sm" onClick={onClose} disabled={running}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
 
-      {/* Drop zone */}
-      <button
-        type="button"
+      <div
         onDragEnter={() => setDragging(true)}
-        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragging(true);
+        }}
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
-        onClick={() => inputRef.current?.click()}
         className={cn(
-          "flex flex-col items-center justify-center gap-3 rounded-ds-lg border-2 border-dashed py-10 transition-colors",
-          dragging
-            ? "border-ds-accent bg-ds-accent/5"
-            : "border-ds-border bg-ds-cream/40 hover:border-ds-accent/50 hover:bg-ds-cream/60"
+          "flex flex-col items-center justify-center transition-colors",
+          isInline
+            ? cn(
+                "min-h-[280px] rounded-ds-card border-2 border-dashed px-6 py-16",
+                dragging
+                  ? "border-ds-accent/60 bg-ds-accent-soft/40"
+                  : "border-ds-border bg-ds-cream/30 hover:border-ds-border-strong hover:bg-ds-cream/50"
+              )
+            : cn(
+                "gap-3 rounded-ds-lg border-2 border-dashed py-10",
+                dragging
+                  ? "border-ds-accent bg-ds-accent/5"
+                  : "border-ds-border bg-ds-cream/40 hover:border-ds-accent/50 hover:bg-ds-cream/60"
+              )
         )}
       >
-        <Upload className="h-8 w-8 text-ds-muted" />
+        {isInline ? (
+          <ImagePlus className="mb-4 h-12 w-12 text-ds-muted/50" strokeWidth={1.25} />
+        ) : (
+          <Upload className="h-8 w-8 text-ds-muted" />
+        )}
         <div className="text-center">
-          <p className="text-sm font-medium text-ds-ink">
-            Arraste fotos aqui ou clique para selecionar
+          <p className="text-sm text-ds-ink">
+            Arraste fotos aqui para fazer o upload.{" "}
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              className="font-medium text-ds-ink underline underline-offset-2 hover:text-ds-accent"
+            >
+              Procurar arquivos
+            </button>
           </p>
-          <p className="text-xs text-ds-muted">JPEG ou PNG · máx 50 MB cada</p>
+          <p className="mt-1 text-xs text-ds-muted">JPEG ou PNG · máx 50 MB cada</p>
         </div>
         <input
           ref={inputRef}
@@ -209,17 +254,16 @@ export function UploadDropzone({ galleryId, folderId, onComplete, onClose }: Pro
           className="sr-only"
           onChange={handleFileInput}
         />
-      </button>
+      </div>
 
-      {/* Lista */}
       {items.length > 0 && (
-        <div className="flex max-h-60 flex-col gap-1.5 overflow-y-auto [scrollbar-width:thin]">
+        <div className="mt-4 flex max-h-48 flex-col gap-1.5 overflow-y-auto [scrollbar-width:thin]">
           {items.map((item) => (
             <div
               key={item.id}
-              className="flex items-center gap-3 rounded-ds-md border border-ds-border bg-ds-cream/40 px-3 py-2"
+              className="flex items-center gap-3 rounded-ds-md border border-ds-hairline bg-ds-surface px-3 py-2"
             >
-              <div className="flex-1 min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="truncate text-xs text-ds-ink">{item.file.name}</p>
                 {item.status === "uploading" && (
                   <div className="mt-1 h-1 overflow-hidden rounded-full bg-ds-border">
@@ -234,7 +278,7 @@ export function UploadDropzone({ galleryId, folderId, onComplete, onClose }: Pro
                 )}
               </div>
 
-              {item.status === "pending" && (
+              {item.status === "pending" && !isInline && (
                 <button
                   type="button"
                   onClick={() => removeItem(item.id)}
@@ -244,7 +288,7 @@ export function UploadDropzone({ galleryId, folderId, onComplete, onClose }: Pro
                 </button>
               )}
               {item.status === "uploading" && (
-                <Loader2 className="h-4 w-4 shrink-0 animate-spin text-ds-accent" />
+                <Loader2 className="h-4 w-4 shrink-0 animate-spin text-ds-muted" />
               )}
               {item.status === "done" && (
                 <CheckCircle2 className="h-4 w-4 shrink-0 text-ds-success" />
@@ -257,16 +301,11 @@ export function UploadDropzone({ galleryId, folderId, onComplete, onClose }: Pro
         </div>
       )}
 
-      {items.length > 0 && (
-        <div className="flex items-center justify-between">
-          <p className="text-xs text-ds-muted">
-            {doneCount > 0 && `${doneCount} enviada${doneCount > 1 ? "s" : ""} · `}
-            {errorCount > 0 && `${errorCount} com erro · `}
-            {pendingCount > 0 && `${pendingCount} aguardando`}
-          </p>
+      {!isInline && items.length > 0 && (
+        <div className="flex items-center justify-end">
           <Button
             size="sm"
-            onClick={handleUploadAll}
+            onClick={() => uploadAll()}
             disabled={pendingCount === 0 || running}
           >
             {running ? (
@@ -277,6 +316,12 @@ export function UploadDropzone({ galleryId, folderId, onComplete, onClose }: Pro
             Enviar {pendingCount > 0 ? `(${pendingCount})` : ""}
           </Button>
         </div>
+      )}
+
+      {isInline && activeCount > 0 && (
+        <p className="mt-2 text-center text-xs text-ds-muted">
+          Enviando {activeCount} {activeCount === 1 ? "arquivo" : "arquivos"}…
+        </p>
       )}
     </div>
   );
