@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { isGalleryOwner, imageContentTypeFromFilename } from "@/lib/gallery/gallery-access";
 import { applyWatermark } from "@/lib/gallery/watermark";
 import {
   gallerySessionCookieName,
@@ -43,25 +44,34 @@ export async function GET(
     .eq("id", photo.gallery_id)
     .maybeSingle();
 
-  if (!gallery || gallery.status !== "published") {
+  if (!gallery) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  // Password gate
-  if (gallery.password_hash) {
-    const cookieName = gallerySessionCookieName(photo.gallery_id);
-    const sessionCookie = request.cookies.get(cookieName);
-    if (!hasGallerySession(photo.gallery_id, sessionCookie?.value)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const isPublished = gallery.status === "published";
+  const ownerPreview = !isPublished && (await isGalleryOwner(gallery.account_id));
+
+  if (!isPublished && !ownerPreview) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  // Público publicado: senha e expiração
+  if (isPublished) {
+    if (gallery.password_hash) {
+      const cookieName = gallerySessionCookieName(photo.gallery_id);
+      const sessionCookie = request.cookies.get(cookieName);
+      if (!hasGallerySession(photo.gallery_id, sessionCookie?.value)) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+    }
+
+    if (gallery.expires_at && new Date(gallery.expires_at) < new Date()) {
+      return NextResponse.json({ error: "Gallery expired" }, { status: 410 });
     }
   }
 
-  // Expiry check
-  if (gallery.expires_at && new Date(gallery.expires_at) < new Date()) {
-    return NextResponse.json({ error: "Gallery expired" }, { status: 410 });
-  }
-
   const r2Key = photo.r2_key;
+  const originalContentType = imageContentTypeFromFilename(photo.filename);
 
   // DELIVERY mode: serve original
   if (gallery.mode === "delivery") {
@@ -69,7 +79,7 @@ export async function GET(
     if (!bytes) return NextResponse.json({ error: "Not in storage" }, { status: 404 });
     return new NextResponse(new Uint8Array(bytes), {
       headers: {
-        "Content-Type": "image/jpeg",
+        "Content-Type": originalContentType,
         "Cache-Control": "private, max-age=3600",
       },
     });
