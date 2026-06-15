@@ -11,6 +11,7 @@ export const marketingLandingNavItems: readonly MarketingNavItem[] = [
   { href: "#prova", label: "Resultados" },
   { href: "#planos", label: "Planos" },
   { href: "#faq", label: "FAQ" },
+  { href: "/blog", label: "Blog" },
 ] as const;
 
 /** Mesmas seções da home, com prefixo para uso fora da `/` (ex.: `/por-que-usar`). */
@@ -19,6 +20,7 @@ export const marketingHomeAnchoredNavItems: readonly MarketingNavItem[] = [
   { href: "/#prova", label: "Resultados" },
   { href: "/#planos", label: "Planos" },
   { href: "/#faq", label: "FAQ" },
+  { href: "/blog", label: "Blog" },
 ] as const;
 
 function MarketingFloatingNav({
@@ -36,15 +38,25 @@ function MarketingFloatingNav({
         className,
       )}
     >
-      {items.map(({ href, label }) => (
-        <Link
-          key={href}
-          href={href}
-          className="rounded-full px-3.5 py-2 text-[0.9rem] font-medium text-ds-ink transition duration-ds ease-out hover:bg-ds-cream sm:px-4"
-        >
-          {label}
-        </Link>
-      ))}
+      {items.map(({ href, label }) =>
+        href.startsWith("#") || href.startsWith("/#") ? (
+          <a
+            key={href}
+            href={href}
+            className="rounded-full px-3.5 py-2 text-[0.9rem] font-medium text-ds-ink transition duration-ds ease-out hover:bg-ds-cream sm:px-4"
+          >
+            {label}
+          </a>
+        ) : (
+          <Link
+            key={href}
+            href={href}
+            className="rounded-full px-3.5 py-2 text-[0.9rem] font-medium text-ds-ink transition duration-ds ease-out hover:bg-ds-cream sm:px-4"
+          >
+            {label}
+          </Link>
+        )
+      )}
     </nav>
   );
 }

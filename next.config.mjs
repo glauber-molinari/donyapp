@@ -2,7 +2,27 @@
 // CSP e CORS: middleware (nonces + origem por host, ex. www).
 
 const nextConfig = {
+  experimental: {
+    // Evita cache do Router em navegação client-side (ex.: voltar à Visão geral do admin).
+    staleTimes: {
+      dynamic: 0,
+    },
+  },
   transpilePackages: ["react-big-calendar"],
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "auth.donyapp.com",
+        pathname: "/storage/v1/object/public/**",
+      },
+      {
+        protocol: "https",
+        hostname: "lakjtqcqnqblglhlxluj.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
+  },
   async redirects() {
     return [
       { source: "/v2", destination: "/", permanent: true },

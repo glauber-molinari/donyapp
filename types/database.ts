@@ -279,6 +279,8 @@ export interface Database {
           zapi_sender_instance_id: string | null;
           zapi_sender_token: string | null;
           zapi_sender_connected: boolean;
+          watermark_config: Json | null;
+          watermark_logo_url: string | null;
         };
         Insert: {
           id?: string;
@@ -299,6 +301,8 @@ export interface Database {
           zapi_sender_instance_id?: string | null;
           zapi_sender_token?: string | null;
           zapi_sender_connected?: boolean;
+          watermark_config?: Json | null;
+          watermark_logo_url?: string | null;
         };
         Update: {
           id?: string;
@@ -319,8 +323,191 @@ export interface Database {
           zapi_sender_instance_id?: string | null;
           zapi_sender_token?: string | null;
           zapi_sender_connected?: boolean;
+          watermark_config?: Json | null;
+          watermark_logo_url?: string | null;
         };
         Relationships: [];
+      };
+      galleries: {
+        Row: {
+          id: string;
+          account_id: string;
+          job_id: string | null;
+          slug: string;
+          title: string;
+          mode: "selection" | "delivery";
+          status: "draft" | "published";
+          cover_photo_id: string | null;
+          password_hash: string | null;
+          expires_at: string | null;
+          watermark_config: Json | null;
+          download_enabled: boolean;
+          favorite_enabled: boolean;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          job_id?: string | null;
+          slug: string;
+          title: string;
+          mode?: "selection" | "delivery";
+          status?: "draft" | "published";
+          cover_photo_id?: string | null;
+          password_hash?: string | null;
+          expires_at?: string | null;
+          watermark_config?: Json | null;
+          download_enabled?: boolean;
+          favorite_enabled?: boolean;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          job_id?: string | null;
+          slug?: string;
+          title?: string;
+          mode?: "selection" | "delivery";
+          status?: "draft" | "published";
+          cover_photo_id?: string | null;
+          password_hash?: string | null;
+          expires_at?: string | null;
+          watermark_config?: Json | null;
+          download_enabled?: boolean;
+          favorite_enabled?: boolean;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "galleries_account_id_fkey";
+            columns: ["account_id"];
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "galleries_job_id_fkey";
+            columns: ["job_id"];
+            referencedRelation: "jobs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      gallery_folders: {
+        Row: {
+          id: string;
+          gallery_id: string;
+          name: string;
+          display_order: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          gallery_id: string;
+          name: string;
+          display_order?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          gallery_id?: string;
+          name?: string;
+          display_order?: number;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "gallery_folders_gallery_id_fkey";
+            columns: ["gallery_id"];
+            referencedRelation: "galleries";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      gallery_photos: {
+        Row: {
+          id: string;
+          gallery_id: string;
+          folder_id: string | null;
+          r2_key: string;
+          filename: string;
+          size_bytes: number;
+          display_order: number;
+          uploaded_at: string;
+        };
+        Insert: {
+          id?: string;
+          gallery_id: string;
+          folder_id?: string | null;
+          r2_key: string;
+          filename: string;
+          size_bytes?: number;
+          display_order?: number;
+          uploaded_at?: string;
+        };
+        Update: {
+          id?: string;
+          gallery_id?: string;
+          folder_id?: string | null;
+          r2_key?: string;
+          filename?: string;
+          size_bytes?: number;
+          display_order?: number;
+          uploaded_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "gallery_photos_gallery_id_fkey";
+            columns: ["gallery_id"];
+            referencedRelation: "galleries";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "gallery_photos_folder_id_fkey";
+            columns: ["folder_id"];
+            referencedRelation: "gallery_folders";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      gallery_selections: {
+        Row: {
+          id: string;
+          gallery_id: string;
+          selected_photo_ids: string[];
+          client_note: string | null;
+          ip_hash: string | null;
+          submitted_at: string;
+        };
+        Insert: {
+          id?: string;
+          gallery_id: string;
+          selected_photo_ids?: string[];
+          client_note?: string | null;
+          ip_hash?: string | null;
+          submitted_at?: string;
+        };
+        Update: {
+          id?: string;
+          gallery_id?: string;
+          selected_photo_ids?: string[];
+          client_note?: string | null;
+          ip_hash?: string | null;
+          submitted_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "gallery_selections_gallery_id_fkey";
+            columns: ["gallery_id"];
+            referencedRelation: "galleries";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       whatsapp_notification_logs: {
         Row: {
@@ -941,6 +1128,82 @@ export interface Database {
             foreignKeyName: "jobs_video_manual_assignee_id_fkey";
             columns: ["video_manual_assignee_id"];
             referencedRelation: "manual_job_assignees";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      blog_posts: {
+        Row: {
+          id: string;
+          slug: string;
+          title: string;
+          summary: string;
+          content: string;
+          cover_emoji: string | null;
+          category: string;
+          published: boolean;
+          notify_email: boolean;
+          notify_app: boolean;
+          email_sent_at: string | null;
+          published_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          slug: string;
+          title: string;
+          summary: string;
+          content: string;
+          cover_emoji?: string | null;
+          category?: string;
+          published?: boolean;
+          notify_email?: boolean;
+          notify_app?: boolean;
+          email_sent_at?: string | null;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          slug?: string;
+          title?: string;
+          summary?: string;
+          content?: string;
+          cover_emoji?: string | null;
+          category?: string;
+          published?: boolean;
+          notify_email?: boolean;
+          notify_app?: boolean;
+          email_sent_at?: string | null;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      blog_post_reads: {
+        Row: {
+          user_id: string;
+          post_id: string;
+          read_at: string;
+        };
+        Insert: {
+          user_id: string;
+          post_id: string;
+          read_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          post_id?: string;
+          read_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "blog_post_reads_post_id_fkey";
+            columns: ["post_id"];
+            referencedRelation: "blog_posts";
             referencedColumns: ["id"];
           },
         ];

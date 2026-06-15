@@ -3,6 +3,9 @@ import { formatBrlNumber, formatPercentRatio } from "@/lib/admin/format";
 import { fetchAdminDashboardMetrics } from "@/lib/admin/metrics";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 function intPt(n: number): string {
   return Math.round(n).toLocaleString("pt-BR");
 }

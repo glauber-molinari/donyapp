@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { unstable_noStore as noStore } from "next/cache";
 
 import { formatBrlNumber } from "@/lib/admin/format";
 import { PRO_PRICE_MONTHLY_CENTS, PRO_PRICE_YEARLY_CENTS } from "@/lib/plan-limits";
@@ -40,6 +41,8 @@ function isoDaysAgo(days: number): string {
 export async function fetchAdminDashboardMetrics(
   db: SupabaseClient<Database>
 ): Promise<AdminDashboardMetrics> {
+  noStore();
+
   const t30 = isoDaysAgo(30);
   const t7 = isoDaysAgo(7);
 

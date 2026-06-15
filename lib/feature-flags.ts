@@ -25,6 +25,10 @@ export const FEATURE_FLAGS = {
     /** Variável de ambiente que liga a flag (fallback quando não há linha no banco). */
     envVar: "NEXT_PUBLIC_FF_DEMO",
   },
+  galerias: {
+    description: "Módulo de Galerias: entrega e seleção de fotos para clientes (Pro).",
+    envVar: "NEXT_PUBLIC_FF_GALERIAS",
+  },
 } as const;
 
 export type FeatureFlagKey = keyof typeof FEATURE_FLAGS;
@@ -39,6 +43,7 @@ function truthy(value: string | undefined): boolean {
  */
 const CLIENT_ENV_FLAGS: Record<FeatureFlagKey, boolean> = {
   demo: truthy(process.env.NEXT_PUBLIC_FF_DEMO),
+  galerias: truthy(process.env.NEXT_PUBLIC_FF_GALERIAS),
 };
 
 /**

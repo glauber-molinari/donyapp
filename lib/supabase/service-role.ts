@@ -21,5 +21,12 @@ export function createServiceRoleClient(): ReturnType<
       persistSession: false,
       autoRefreshToken: false,
     },
+    global: {
+      fetch: (input, init) =>
+        fetch(input, {
+          ...init,
+          cache: "no-store",
+        }),
+    },
   });
 }

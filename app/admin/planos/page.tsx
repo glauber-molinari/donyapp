@@ -3,6 +3,9 @@ import { fetchAdminAccountsWithSubscriptions } from "@/lib/admin/accounts";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import { Input } from "@/components/ui/input";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function AdminPlanosPage({
   searchParams,
 }: {

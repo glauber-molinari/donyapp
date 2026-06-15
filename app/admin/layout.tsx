@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient();
   const {
@@ -28,10 +31,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const nav = [
     { href: "/admin", label: "Visão geral" },
     { href: "/admin/planos", label: "Planos e contas" },
+    { href: "/admin/blog", label: "Blog" },
     { href: "/admin/feedback", label: "Feedback" },
     { href: "/admin/support", label: "Suporte" },
     { href: "/admin/roadmap", label: "Roadmap" },
-    { href: "/admin/apresentacao", label: "Apresentação" },
   ] as const;
 
   return (
@@ -67,6 +70,7 @@ function AdminNavLink({ href, children }: { href: string; children: React.ReactN
   return (
     <Link
       href={href}
+      prefetch={false}
       className={cn(
         "rounded-ds-lg px-3 py-2 text-sm font-medium text-ds-muted hover:bg-ds-cream hover:text-ds-ink"
       )}

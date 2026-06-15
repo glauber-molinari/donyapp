@@ -79,7 +79,10 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/por-que-usar") ||
     path.startsWith("/formulario/") ||
     path.startsWith("/api/formularios/") ||
-    path.startsWith("/p/");
+    path.startsWith("/p/") ||
+    path.startsWith("/blog") ||
+    path.startsWith("/g/") ||
+    path.startsWith("/api/gallery/");
 
   if (!user && !isPublic) {
     const redirect = NextResponse.redirect(new URL("/login", request.url));
@@ -95,12 +98,6 @@ export async function updateSession(request: NextRequest) {
     if (next?.startsWith("/invite/")) {
       return response;
     }
-    const redirect = NextResponse.redirect(new URL("/dashboard", request.url));
-    copyCookies(response, redirect);
-    return redirect;
-  }
-
-  if (user && path === "/") {
     const redirect = NextResponse.redirect(new URL("/dashboard", request.url));
     copyCookies(response, redirect);
     return redirect;

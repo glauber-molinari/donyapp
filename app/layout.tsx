@@ -4,6 +4,8 @@ import { Inter } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";
 
+import { AppToaster } from "@/components/ui/app-toaster";
+
 export const dynamic = "force-dynamic";
 
 const inter = Inter({
@@ -97,6 +99,7 @@ export default async function RootLayout({
         nonce={nonce}
       >
         {children}
+        <AppToaster />
         <Analytics />
       </body>
     </html>

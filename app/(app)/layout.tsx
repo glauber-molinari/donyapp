@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { AppShell } from "@/components/layout/app-shell";
+import { BlogSidebarWidget } from "@/components/layout/blog-sidebar-widget";
 import { resolveDisplayAvatarUrl } from "@/lib/auth/resolve-display-avatar";
+import { isFeatureEnabled } from "@/lib/feature-flags.server";
 import { createClient } from "@/lib/supabase/server";
 
 /** Área logada: não indexar; título por rota (dashboard, contatos, etc.). */
@@ -39,6 +41,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const isPro = subscription?.plan === "pro";
 
+  const galeriasEnabled = isPro && (await isFeatureEnabled("galerias"));
+
   const { count: unreadSupportCount } = await supabase
     .from("support_tickets")
     .select("id", { count: "exact", head: true })
@@ -52,7 +56,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       avatarUrl={avatarUrl}
       tourCompleted={tourCompleted}
       isPro={isPro}
+      galeriasEnabled={galeriasEnabled}
       unreadSupportCount={unreadSupportCount ?? 0}
+      sidebarWidget={<BlogSidebarWidget />}
     >
       {children}
     </AppShell>

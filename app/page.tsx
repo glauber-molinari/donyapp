@@ -42,8 +42,8 @@ function homeJsonLd() {
 }
 
 /**
- * Landing pública em /. Visitantes veem a página; usuários logados são
- * redirecionados ao dashboard pelo middleware.
+ * Landing pública em /. Acessível a todos — visitantes e usuários logados.
+ * Links de âncora (/#sobre, /#planos, etc.) funcionam sem redirecionamentos.
  */
 export default function Home() {
   const jsonLd = homeJsonLd();

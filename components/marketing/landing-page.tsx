@@ -1,8 +1,9 @@
-import { ArrowRight, Camera, Check, ChevronRight, Columns3, UsersRound } from "lucide-react";
+import { ArrowRight, BarChart2, Calendar, Camera, Check, ChevronRight, ClipboardList, Columns3, UsersRound } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 import { cn } from "@/lib/utils";
+import { BlogLandingSection } from "@/components/marketing/blog-landing-section";
 import { LegalLinks } from "@/components/legal/legal-links";
 import { MarketingSiteHeader, marketingLandingNavItems } from "@/components/marketing/marketing-site-header";
 import {
@@ -166,33 +167,59 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                 "mx-auto max-w-3xl text-center text-balance text-3xl font-extrabold tracking-tight text-ds-ink sm:text-4xl lg:text-[2.75rem]",
               )}
             >
-              Kanban, clientes e prazo no mesmo lugar
+              Tudo que o estúdio precisa no mesmo lugar
             </h2>
             <p className="mx-auto mt-5 max-w-xl text-center text-lg text-ds-muted">
               Pensado para quem vive de prazo, revisão e cliente no WhatsApp.
             </p>
-            <ul className="mt-14 grid gap-5 sm:grid-cols-3">
+            <ul className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {[
                 {
                   icon: Columns3,
                   title: "Kanban de edição",
-                  text: "Colunas que acompanham o fluxo real: aguardando, edição, revisão e entrega.",
+                  text: "Colunas que acompanham o fluxo real: backup, edição, revisão e entrega. Arraste os cards e veja o estado de cada job em tempo real.",
+                  pro: false,
                 },
                 {
                   icon: UsersRound,
                   title: "Contatos centralizados",
-                  text: "Clientes vinculados aos jobs, com busca rápida e histórico organizado.",
+                  text: "Clientes vinculados aos jobs, com busca rápida e histórico organizado de todas as entregas.",
+                  pro: false,
+                },
+                {
+                  icon: ClipboardList,
+                  title: "Formulários para clientes",
+                  text: "Crie modelos de formulário e receba respostas dos clientes diretamente no app, sem ferramentas externas.",
+                  pro: false,
+                },
+                {
+                  icon: Calendar,
+                  title: "Agenda integrada",
+                  text: "Sincronize com o Google Calendar e visualize os eventos da equipe no mesmo lugar que os jobs.",
+                  pro: false,
+                },
+                {
+                  icon: BarChart2,
+                  title: "Relatórios e tarefas",
+                  text: "Métricas de desempenho de entregas, prazos cumpridos e kanban de tarefas da equipe para nada se perder.",
+                  pro: true,
                 },
                 {
                   icon: Camera,
                   title: "Feito para criativos",
-                  text: "Visual calmo, tons pastéis e foco no que importa: entregar no tempo.",
+                  text: "Visual calmo, tons pastéis e foco no que importa: entregar com qualidade e no prazo.",
+                  pro: false,
                 },
-              ].map(({ icon: Icon, title, text }) => (
+              ].map(({ icon: Icon, title, text, pro }) => (
                 <li
                   key={title}
-                  className="rounded-ds-card border border-ds-border-strong bg-ds-surface p-6 shadow-ds-sm transition duration-ds ease-out hover:shadow-ds-sm"
+                  className="relative rounded-ds-card border border-ds-border-strong bg-ds-surface p-6 shadow-ds-sm transition duration-ds ease-out hover:shadow-ds-sm"
                 >
+                  {pro && (
+                    <span className="absolute right-4 top-4 rounded-full bg-ds-accent/10 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-ds-accent">
+                      Pro
+                    </span>
+                  )}
                   <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-ds-2xl border border-ds-border bg-ds-cream text-ds-ink">
                     <Icon className="h-5 w-5" strokeWidth={1.75} />
                   </div>
@@ -291,7 +318,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
               Planos para o seu ritmo de entrega
             </h2>
             <p className="mx-auto mt-5 max-w-[70ch] text-pretty text-base leading-relaxed text-ds-muted sm:text-lg">
-              O Free cobre o básico. No Pro entram equipe, e-mail automático na entrega e limites maiores.
+              O Free cobre o essencial. No Pro entram equipe, e-mail automático, tarefas, relatórios avançados e muito mais.
             </p>
 
             <p className="mt-8 text-sm text-ds-muted-2">
@@ -325,7 +352,8 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                     `Até ${FREE_MAX_ACTIVE_JOBS} jobs ativos no Kanban`,
                     `Até ${FREE_MAX_CONTACTS} contatos`,
                     "Kanban com até 4 etapas (Backup → Em Edição → Em Aprovação → Entregue)",
-                    "Tarefas, Anotações e Agenda",
+                    "Anotações e Agenda (Google Calendar)",
+                    "Formulários para clientes",
                     "Relatórios básicos",
                     "1 usuário por conta",
                   ].map((item) => (
@@ -394,6 +422,9 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                     "Envio de material por WhatsApp direto do app",
                     "Modelos de e-mail de entrega personalizáveis",
                     "Histórico de alterações dos jobs",
+                    "Tarefas: kanban de atividades da equipe",
+                    "Relatórios avançados de desempenho e entregas",
+                    "Board de álbum (workflow de entrega física)",
                   ].map((item) => (
                     <li key={item} className="flex gap-3">
                       <span
@@ -561,6 +592,8 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
           <p className="text-xs text-white/40">Sem cartão. Sem compromisso.</p>
         </div>
       </section>
+
+      <BlogLandingSection />
 
       <footer className="border-t border-ds-border bg-ds-cream py-8">
         <div className="mx-auto flex max-w-[1200px] flex-col items-center gap-5 px-4 text-center text-xs text-ds-muted-2 sm:flex-row sm:justify-between sm:gap-4 sm:text-left sm:px-6 lg:px-8">

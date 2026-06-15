@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { unstable_noStore as noStore } from "next/cache";
 
 import type { Database } from "@/types/database";
 
@@ -24,6 +25,8 @@ export async function fetchAdminAccountsWithSubscriptions(
   db: SupabaseClient<Database>,
   opts?: { search?: string; limit?: number }
 ): Promise<AdminAccountRow[]> {
+  noStore();
+
   const limit = opts?.limit ?? 400;
   const search = opts?.search?.trim();
 
