@@ -185,7 +185,7 @@ export function AgendaCalendar({ isAdmin }: { isAdmin: boolean }) {
             {error}
           </p>
         ) : null}
-        <div className="agenda-rbc relative min-h-[420px] md:min-h-[560px]">
+        <div className="agenda-rbc relative min-h-[480px] md:min-h-[640px]">
           {loading ? (
             <div
               className="absolute inset-0 z-10 flex items-center justify-center rounded-ds-xl bg-ds-surface/70"
@@ -203,7 +203,7 @@ export function AgendaCalendar({ isAdmin }: { isAdmin: boolean }) {
             events={events}
             startAccessor="start"
             endAccessor="end"
-            style={{ minHeight: 420 }}
+            style={{ minHeight: 480 }}
             view={calView}
             views={["month", "week", "day", "agenda"]}
             messages={MESSAGES}

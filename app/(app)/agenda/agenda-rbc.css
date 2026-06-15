@@ -35,7 +35,7 @@
 
 .agenda-rbc .rbc-date-cell {
   text-align: right;
-  padding: 0.35rem 0.4rem 0;
+  padding: 0.25rem 0.35rem 0;
 }
 
 .agenda-rbc .rbc-date-cell .rbc-button-link {
@@ -60,6 +60,43 @@
   font-size: 0.7rem;
   font-weight: 600;
   box-shadow: none;
+}
+
+/* Visão mês: altura fixa e compacta — evita 2º evento cortado por overflow da linha */
+.agenda-rbc .rbc-month-view .rbc-event {
+  display: flex;
+  align-items: center;
+  height: 18px;
+  min-height: 0;
+  padding: 1px 4px;
+  font-size: 0.65rem;
+  line-height: 1.1;
+}
+
+.agenda-rbc .rbc-month-view .rbc-event-content {
+  line-height: 1.1;
+}
+
+.agenda-rbc .rbc-month-view .rbc-row-segment {
+  padding: 0 1px;
+}
+
+/* Espaço entre 2º, 3º… evento do mesmo dia (a 1ª linha é o número do dia) */
+.agenda-rbc .rbc-month-view .rbc-row-content > .rbc-row:nth-child(n + 3) {
+  margin-top: 3px;
+}
+
+.agenda-rbc .rbc-month-view .rbc-show-more {
+  display: flex;
+  align-items: center;
+  height: 18px;
+  min-height: 0;
+  padding: 1px 4px;
+  line-height: 1.1;
+}
+
+.agenda-rbc .rbc-time-view .rbc-event,
+.agenda-rbc .rbc-day-slot .rbc-event {
   min-height: 1.35rem;
 }
 
