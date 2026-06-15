@@ -72,6 +72,20 @@ function collectSupabaseCspOrigins(): { httpsOrigins: string[]; wssOrigins: stri
 const SUPABASE_PLATFORM_HTTPS = "https://*.supabase.co";
 const SUPABASE_PLATFORM_WSS = "wss://*.supabase.co";
 
+/** Upload direto (presigned PUT) das galerias: browser → R2. */
+const R2_STORAGE_HTTPS = "https://*.r2.cloudflarestorage.com";
+
+function collectR2CspOrigin(): string | null {
+  const endpoint = process.env.CLOUDFLARE_R2_ENDPOINT?.trim();
+  if (!endpoint) return null;
+  try {
+    const u = new URL(endpoint);
+    return u.protocol === "https:" ? u.origin : null;
+  } catch {
+    return null;
+  }
+}
+
 export function buildContentSecurityPolicy(nonce: string, isDev: boolean): string {
   const { httpsOrigins, wssOrigins } = collectSupabaseCspOrigins();
 
@@ -82,7 +96,10 @@ export function buildContentSecurityPolicy(nonce: string, isDev: boolean): strin
     "https://vitals.vercel-insights.com",
     SUPABASE_PLATFORM_HTTPS,
     SUPABASE_PLATFORM_WSS,
+    R2_STORAGE_HTTPS,
   ];
+  const r2Origin = collectR2CspOrigin();
+  if (r2Origin) connectParts.push(r2Origin);
   for (const o of httpsOrigins) {
     connectParts.push(o);
   }

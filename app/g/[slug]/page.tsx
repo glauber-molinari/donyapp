@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
+import {
+  gallerySessionCookieName,
+  hasGallerySession,
+} from "@/lib/gallery/gallery-session";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import type { PublicGalleryData } from "@/types/gallery";
 
@@ -52,9 +56,9 @@ export default async function GalleryPublicPage({ params }: Props) {
 
   // Password check
   if (gallery.password_hash) {
-    const cookieName = `gallery-session-${gallery.id}`;
+    const cookieName = gallerySessionCookieName(gallery.id);
     const sessionCookie = cookies().get(cookieName);
-    if (!sessionCookie?.value) {
+    if (!hasGallerySession(gallery.id, sessionCookie?.value)) {
       return <PasswordGate slug={params.slug} title={gallery.title} />;
     }
   }

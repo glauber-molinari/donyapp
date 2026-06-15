@@ -2,6 +2,10 @@ import archiver from "archiver";
 import { NextRequest, NextResponse } from "next/server";
 import { PassThrough, Readable } from "stream";
 
+import {
+  gallerySessionCookieName,
+  hasGallerySession,
+} from "@/lib/gallery/gallery-session";
 import { getObjectBytes } from "@/lib/r2/operations";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 
@@ -28,8 +32,8 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   if (gallery.password_hash) {
-    const sessionCookie = request.cookies.get(`gallery-session-${gallery.id}`);
-    if (!sessionCookie?.value) {
+    const sessionCookie = request.cookies.get(gallerySessionCookieName(gallery.id));
+    if (!hasGallerySession(gallery.id, sessionCookie?.value)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
   }

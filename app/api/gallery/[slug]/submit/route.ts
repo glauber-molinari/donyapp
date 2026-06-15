@@ -4,6 +4,10 @@ import { Resend } from "resend";
 
 import { buildGallerySelectionHtml } from "@/lib/email/gallery-selection-html";
 import { getResendFrom } from "@/lib/email/resend-from";
+import {
+  gallerySessionCookieName,
+  hasGallerySession,
+} from "@/lib/gallery/gallery-session";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 
 export const runtime = "nodejs";
@@ -45,8 +49,8 @@ export async function POST(
 
   // Password gate
   if (gallery.password_hash) {
-    const sessionCookie = request.cookies.get(`gallery-session-${gallery.id}`);
-    if (!sessionCookie?.value) {
+    const sessionCookie = request.cookies.get(gallerySessionCookieName(gallery.id));
+    if (!hasGallerySession(gallery.id, sessionCookie?.value)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
   }

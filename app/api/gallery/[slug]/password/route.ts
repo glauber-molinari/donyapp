@@ -1,6 +1,10 @@
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
+import {
+  gallerySessionCookieName,
+  signGallerySession,
+} from "@/lib/gallery/gallery-session";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 
 export const runtime = "nodejs";
@@ -40,8 +44,12 @@ export async function POST(
   const valid = verifyPassword(password, gallery.password_hash);
   if (!valid) return NextResponse.json({ error: "Senha incorreta" }, { status: 401 });
 
-  const token = crypto.randomBytes(24).toString("hex");
-  const cookieName = `gallery-session-${gallery.id}`;
+  const token = signGallerySession(gallery.id);
+  if (!token) {
+    return NextResponse.json({ error: "Sessão indisponível" }, { status: 500 });
+  }
+
+  const cookieName = gallerySessionCookieName(gallery.id);
 
   const res = NextResponse.json({ ok: true });
   res.cookies.set(cookieName, token, {

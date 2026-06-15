@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { applyWatermark } from "@/lib/gallery/watermark";
+import {
+  gallerySessionCookieName,
+  hasGallerySession,
+} from "@/lib/gallery/gallery-session";
 import { getObjectBytes, headObject, putObjectBytes } from "@/lib/r2/operations";
 import { watermarkedKeyFromOriginal } from "@/lib/r2/keys";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
@@ -45,9 +49,9 @@ export async function GET(
 
   // Password gate
   if (gallery.password_hash) {
-    const cookieName = `gallery-session-${photo.gallery_id}`;
+    const cookieName = gallerySessionCookieName(photo.gallery_id);
     const sessionCookie = request.cookies.get(cookieName);
-    if (!sessionCookie?.value) {
+    if (!hasGallerySession(photo.gallery_id, sessionCookie?.value)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
   }

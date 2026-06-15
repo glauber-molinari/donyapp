@@ -97,32 +97,38 @@ export function UploadDropzone({ galleryId, folderId, onComplete, onClose }: Pro
 
     const ticket: UploadTicket = ticketRes.ticket;
 
-    await new Promise<void>((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.upload.addEventListener("progress", (e) => {
-        if (e.lengthComputable) {
-          const pct = Math.round((e.loaded / e.total) * 95);
-          setItems((prev) =>
-            prev.map((i) => (i.id === item.id ? { ...i, progress: pct } : i))
-          );
-        }
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.upload.addEventListener("progress", (e) => {
+          if (e.lengthComputable) {
+            const pct = Math.round((e.loaded / e.total) * 95);
+            setItems((prev) =>
+              prev.map((i) => (i.id === item.id ? { ...i, progress: pct } : i))
+            );
+          }
+        });
+        xhr.addEventListener("load", () => {
+          if (xhr.status >= 200 && xhr.status < 300) resolve();
+          else reject(new Error(`HTTP ${xhr.status}`));
+        });
+        xhr.addEventListener("error", () =>
+          reject(new Error("Falha no envio ao storage (rede ou CORS)"))
+        );
+        xhr.open("PUT", ticket.presignedUrl);
+        xhr.setRequestHeader("Content-Type", item.file.type);
+        xhr.send(item.file);
       });
-      xhr.addEventListener("load", () => {
-        if (xhr.status >= 200 && xhr.status < 300) resolve();
-        else reject(new Error(`HTTP ${xhr.status}`));
-      });
-      xhr.addEventListener("error", () => reject(new Error("Erro de rede")));
-      xhr.open("PUT", ticket.presignedUrl);
-      xhr.setRequestHeader("Content-Type", item.file.type);
-      xhr.send(item.file);
-    }).catch((err) => {
+    } catch (err) {
       setItems((prev) =>
         prev.map((i) =>
-          i.id === item.id ? { ...i, status: "error", error: String(err) } : i
+          i.id === item.id
+            ? { ...i, status: "error", error: err instanceof Error ? err.message : "Erro de rede" }
+            : i
         )
       );
       return null;
-    });
+    }
 
     const confirmRes = await confirmUpload(galleryId, ticket, item.file.name, folderId);
 
