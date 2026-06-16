@@ -12,6 +12,18 @@ import {
 import { useEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
+import {
+  COVER_DEFAULT_WIDTH,
+  COVER_IMAGE_SIZES,
+  COVER_WIDTHS,
+  GRID_DEFAULT_WIDTH,
+  GRID_IMAGE_SIZES,
+  GRID_WIDTHS,
+  LIGHTBOX_WIDTH,
+  SELECTION_THUMB_WIDTH,
+  galleryImageSrcSet,
+  galleryImageUrl,
+} from "@/lib/gallery/image-variants";
 import type { PublicGalleryData } from "@/types/gallery";
 
 interface Props {
@@ -32,6 +44,7 @@ export function GalleryPublicClient({ gallery }: Props) {
 
   const isSelection = gallery.mode === "selection";
   const isDelivery = gallery.mode === "delivery";
+  const useWatermark = isSelection;
 
   const visiblePhotos = activeFolderId
     ? gallery.photos.filter((p) => p.folder_id === activeFolderId)
@@ -111,7 +124,9 @@ export function GalleryPublicClient({ gallery }: Props) {
           <div className="absolute inset-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={`/api/gallery/image/${coverPhoto.id}?w=1600&cover=1`}
+              src={galleryImageUrl(coverPhoto.id, { w: COVER_DEFAULT_WIDTH, cover: true })}
+              srcSet={galleryImageSrcSet(coverPhoto.id, COVER_WIDTHS, { cover: true })}
+              sizes={COVER_IMAGE_SIZES}
               alt={gallery.title}
               fetchPriority="high"
               className="h-full w-full object-cover"
@@ -206,9 +221,12 @@ export function GalleryPublicClient({ gallery }: Props) {
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={`/api/gallery/image/${photo.id}?w=500&wm=1`}
+                    src={galleryImageUrl(photo.id, { w: GRID_DEFAULT_WIDTH, wm: useWatermark })}
+                    srcSet={galleryImageSrcSet(photo.id, GRID_WIDTHS, { wm: useWatermark })}
+                    sizes={GRID_IMAGE_SIZES}
                     alt={photo.filename}
                     loading="lazy"
+                    decoding="async"
                     className={cn(
                       "w-full bg-stone-100 transition-opacity duration-300 group-hover:opacity-95",
                       isSelection && isFav && "ring-2 ring-stone-900 ring-offset-0"
@@ -404,8 +422,13 @@ export function GalleryPublicClient({ gallery }: Props) {
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={`/api/gallery/image/${lightboxId}?w=1400&wm=1&display=lightbox`}
+                src={galleryImageUrl(lightboxId, {
+                  w: LIGHTBOX_WIDTH,
+                  wm: useWatermark,
+                  display: "lightbox",
+                })}
                 alt=""
+                decoding="async"
                 className="max-h-[78vh] max-w-[88vw] object-contain shadow-[0_8px_40px_rgba(0,0,0,0.12)]"
               />
               <p className="mt-3 text-xs text-stone-400">
@@ -473,8 +496,13 @@ export function GalleryPublicClient({ gallery }: Props) {
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={`/api/gallery/image/${photo.id}?w=240&wm=1`}
+                          src={galleryImageUrl(photo.id, {
+                            w: SELECTION_THUMB_WIDTH,
+                            wm: useWatermark,
+                          })}
                           alt={photo.filename}
+                          loading="lazy"
+                          decoding="async"
                           className="h-full w-full object-cover"
                         />
                         <button

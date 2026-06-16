@@ -35,6 +35,12 @@ import {
   renameFolder,
   setCoverPhoto,
 } from "@/lib/gallery/actions";
+import {
+  MANAGE_COVER_WIDTH,
+  MANAGE_THUMB_WIDTH,
+  triggerGalleryPregenerate,
+  galleryImageUrl,
+} from "@/lib/gallery/image-variants";
 import { cn } from "@/lib/utils";
 import type {
   Gallery,
@@ -173,7 +179,12 @@ export function GalleryDetailClient({
         nextStatus === "published"
           ? await publishGallery(gallery.id)
           : await archiveGallery(gallery.id);
-      if (res.ok) setGallery((g) => ({ ...g, status: nextStatus }));
+      if (res.ok) {
+        setGallery((g) => ({ ...g, status: nextStatus }));
+        if (nextStatus === "published") {
+          triggerGalleryPregenerate(gallery.id);
+        }
+      }
     });
   }
 
@@ -428,7 +439,7 @@ export function GalleryDetailClient({
               {coverPhoto ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={`/api/gallery/image/${coverPhoto.id}?w=240&ctx=manage`}
+                  src={galleryImageUrl(coverPhoto.id, { w: MANAGE_COVER_WIDTH, ctx: "manage" })}
                   alt="Capa da galeria"
                   className="h-full w-full object-cover"
                 />
@@ -897,7 +908,7 @@ function PhotoThumb({
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={`/api/gallery/image/${photo.id}?w=400&ctx=manage`}
+          src={galleryImageUrl(photo.id, { w: MANAGE_THUMB_WIDTH, ctx: "manage" })}
           alt={photo.filename}
           className="h-full w-full object-cover"
           loading="lazy"
@@ -920,7 +931,7 @@ function PhotoThumb({
     <div className="group relative aspect-square overflow-hidden rounded-ds-md bg-ds-cream">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={`/api/gallery/image/${photo.id}?w=400&ctx=manage`}
+        src={galleryImageUrl(photo.id, { w: MANAGE_THUMB_WIDTH, ctx: "manage" })}
         alt={photo.filename}
         className="h-full w-full object-cover transition-transform duration-ds-fast group-hover:scale-[1.02]"
         loading="lazy"

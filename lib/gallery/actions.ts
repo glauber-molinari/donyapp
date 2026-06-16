@@ -5,9 +5,8 @@ import { revalidatePath } from "next/cache";
 
 import { isFeatureEnabled } from "@/lib/feature-flags.server";
 import { createClient } from "@/lib/supabase/server";
-import { headObject, presignUpload } from "@/lib/r2/operations";
-import { deleteObjects } from "@/lib/r2/operations";
-import { extFromFilename, originalKey } from "@/lib/r2/keys";
+import { headObject, presignUpload, listObjectKeys, deleteObjects } from "@/lib/r2/operations";
+import { extFromFilename, originalKey, photoVariantPrefixes } from "@/lib/r2/keys";
 import { galleryPublicUrl } from "@/lib/gallery/gallery-url";
 import type { Gallery, GalleryFolder, GalleryPhoto, GallerySelection, GalleryWithCounts, UploadTicket } from "@/types/gallery";
 
@@ -634,8 +633,14 @@ export async function deletePhoto(photoId: string, galleryId: string): Promise<A
   if (error) return { ok: false, error: error.message };
 
   if (photo?.r2_key) {
-    const watermarked = photo.r2_key.replace("/original/", "/watermarked/").replace(/\.[^.]+$/, ".jpg");
-    await deleteObjects([photo.r2_key, watermarked]);
+    const [resizedPrefix, watermarkedPrefix] = photoVariantPrefixes(photo.r2_key, photoId);
+    const variantKeys = (
+      await Promise.all([
+        listObjectKeys(`${resizedPrefix}_`),
+        listObjectKeys(`${watermarkedPrefix}`),
+      ])
+    ).flat();
+    await deleteObjects([photo.r2_key, ...variantKeys]);
   }
 
   revalidatePath(`/galerias/${galleryId}`);

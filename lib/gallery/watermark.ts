@@ -7,7 +7,8 @@ const MAX_DIMENSION = 2000;
 export async function applyWatermark(
   originalBuffer: Buffer,
   config: WatermarkConfig,
-  logoBuffer: Buffer | null
+  logoBuffer: Buffer | null,
+  jpegQuality = 82
 ): Promise<Buffer> {
   let img = sharp(originalBuffer).rotate(); // auto-orient via EXIF
 
@@ -81,7 +82,7 @@ export async function applyWatermark(
         blend: "over",
       },
     ])
-    .jpeg({ quality: 82 })
+    .jpeg({ quality: jpegQuality, progressive: true, mozjpeg: true })
     .toBuffer();
 
   return result;

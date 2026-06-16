@@ -5,6 +5,10 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { cn } from "@/lib/utils";
+import {
+  MANAGE_LIST_WIDTH,
+  galleryImageUrl,
+} from "@/lib/gallery/image-variants";
 import type { GalleryWithCounts } from "@/types/gallery";
 
 interface Props {
@@ -186,7 +190,7 @@ function PreviewImg({ id, className }: { id: string; className?: string }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={`/api/gallery/image/${id}?w=300&ctx=manage`}
+      src={galleryImageUrl(id, { w: MANAGE_LIST_WIDTH, ctx: "manage" })}
       alt=""
       loading="lazy"
       className={cn(

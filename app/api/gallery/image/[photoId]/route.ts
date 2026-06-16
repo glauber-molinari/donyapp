@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { isGalleryOwner, imageContentTypeFromFilename } from "@/lib/gallery/gallery-access";
+import { resizeToJpeg } from "@/lib/gallery/generate-variants";
+import { JPEG_QUALITY_CLEAN, JPEG_QUALITY_WATERMARK } from "@/lib/gallery/image-variants";
 import { watermarkConfigCacheKey } from "@/lib/gallery/watermark-cache-key";
 import { fetchWatermarkLogoBuffer, resolveWatermarkConfig } from "@/lib/gallery/watermark-resolve";
 import { applyWatermark } from "@/lib/gallery/watermark";
@@ -64,12 +66,7 @@ async function serveCleanImage(
   const original = await getObjectBytes(r2Key);
   if (!original) return NextResponse.json({ error: "Not in storage" }, { status: 404 });
 
-  const sharp = (await import("sharp")).default;
-  const thumb = await sharp(original)
-    .rotate()
-    .resize(width, undefined, { fit: "inside", withoutEnlargement: true })
-    .jpeg({ quality: 78 })
-    .toBuffer();
+  const thumb = await resizeToJpeg(original, width, JPEG_QUALITY_CLEAN);
 
   void putObjectBytes(thumbKey, thumb, "image/jpeg").catch(() => {});
 
@@ -205,16 +202,17 @@ export async function GET(
 
   const logoBuffer = await fetchWatermarkLogoBuffer(account?.watermark_logo_url);
 
-  // Downscale for thumbnails before watermarking
-  let srcBuffer = original;
-  if (width) {
-    const sharp = (await import("sharp")).default;
-    srcBuffer = await sharp(original)
-      .resize(width, undefined, { fit: "inside" })
-      .toBuffer();
-  }
+  const srcBuffer =
+    width && width > 0
+      ? await resizeToJpeg(original, width, JPEG_QUALITY_CLEAN)
+      : original;
 
-  const watermarked = await applyWatermark(srcBuffer, wmConfig, logoBuffer);
+  const watermarked = await applyWatermark(
+    srcBuffer,
+    wmConfig,
+    logoBuffer,
+    JPEG_QUALITY_WATERMARK
+  );
 
   // Cache to R2 em background — não bloqueia a resposta.
   void putObjectBytes(wmKey, watermarked, "image/jpeg").catch(() => {});

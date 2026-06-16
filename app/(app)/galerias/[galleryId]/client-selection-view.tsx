@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog } from "@/components/ui/dialog";
 import { allowNewSelection } from "@/lib/gallery/actions";
+import { MANAGE_COVER_WIDTH, galleryImageUrl } from "@/lib/gallery/image-variants";
 import type { GalleryPhoto, GallerySelection } from "@/types/gallery";
 
 interface Props {
@@ -75,7 +76,7 @@ export function ClientSelectionView({ selection, photos, galleryId }: Props) {
               <div className="aspect-square overflow-hidden rounded-ds-md border border-ds-border bg-ds-cream">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={`/api/gallery/image/${photo.id}?w=240&ctx=manage`}
+                  src={galleryImageUrl(photo.id, { w: MANAGE_COVER_WIDTH, ctx: "manage" })}
                   alt={photo.filename}
                   className="h-full w-full object-cover"
                   loading="lazy"

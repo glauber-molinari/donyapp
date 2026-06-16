@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { confirmUpload, requestUploadUrl } from "@/lib/gallery/actions";
+import { triggerPhotoPregenerate } from "@/lib/gallery/image-variants";
 import { cn } from "@/lib/utils";
 import type { GalleryPhoto, UploadTicket } from "@/types/gallery";
 
@@ -164,6 +165,7 @@ export function UploadDropzone({
           : i
       )
     );
+    triggerPhotoPregenerate(confirmRes.photo.id);
     return confirmRes.photo;
   }
 

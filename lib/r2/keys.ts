@@ -56,3 +56,14 @@ export function resizedKeyFromOriginal(r2Key: string, photoId: string, width: nu
     .replace(`/original/${photoId}`, `/resized/${photoId}_w${width}`)
     .replace(/\.[^.]+$/, ".jpg");
 }
+
+/** Prefixos R2 para listar variantes derivadas de uma foto. */
+export function photoVariantPrefixes(r2Key: string, photoId: string): [string, string] {
+  const resizedPrefix = r2Key
+    .replace(`/original/${photoId}`, `/resized/${photoId}_`)
+    .replace(/\.[^.]+$/, "");
+  const watermarkedPrefix = r2Key
+    .replace(`/original/${photoId}`, `/watermarked/${photoId}`)
+    .replace(/\.[^.]+$/, "");
+  return [resizedPrefix, watermarkedPrefix];
+}

@@ -5,6 +5,13 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { cn } from "@/lib/utils";
+import {
+  COVER_DEFAULT_WIDTH,
+  COVER_IMAGE_SIZES,
+  COVER_WIDTHS,
+  galleryImageSrcSet,
+  galleryImageUrl,
+} from "@/lib/gallery/image-variants";
 
 interface Props {
   slug: string;
@@ -51,7 +58,9 @@ export function PasswordGate({ slug, title, coverPhotoId }: Props) {
         <div className="absolute inset-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={`/api/gallery/image/${coverPhotoId}?w=1600&cover=1`}
+            src={galleryImageUrl(coverPhotoId!, { w: COVER_DEFAULT_WIDTH, cover: true })}
+            srcSet={galleryImageSrcSet(coverPhotoId!, COVER_WIDTHS, { cover: true })}
+            sizes={COVER_IMAGE_SIZES}
             alt=""
             fetchPriority="high"
             className="h-full w-full object-cover"
