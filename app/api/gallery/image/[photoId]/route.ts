@@ -8,7 +8,7 @@ import {
   gallerySessionCookieName,
   hasGallerySession,
 } from "@/lib/gallery/gallery-session";
-import { getObjectBytes, headObject, putObjectBytes } from "@/lib/r2/operations";
+import { getObjectBytes, putObjectBytes } from "@/lib/r2/operations";
 import { resizedKeyFromOriginal, watermarkedKeyFromOriginal } from "@/lib/r2/keys";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import type { WatermarkConfig } from "@/types/gallery";
@@ -18,8 +18,10 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const maxDuration = 60;
 
+// Cache no navegador do visitante (rápido em revisitas), mas nunca na CDN/edge —
+// evita servir a um cliente a marca d'água/config cacheada para outro.
 const PUBLIC_WM_CACHE_HEADERS = {
-  "Cache-Control": "private, no-cache, no-store, must-revalidate",
+  "Cache-Control": "private, max-age=86400, immutable",
   "CDN-Cache-Control": "no-store",
   "Vercel-CDN-Cache-Control": "no-store",
 } as const;
@@ -49,17 +51,14 @@ async function serveCleanImage(
   }
 
   const thumbKey = resizedKeyFromOriginal(r2Key, photoId, width);
-  const cachedThumb = await headObject(thumbKey);
-  if (cachedThumb) {
-    const bytes = await getObjectBytes(thumbKey);
-    if (bytes) {
-      return new NextResponse(new Uint8Array(bytes), {
-        headers: {
-          "Content-Type": "image/jpeg",
-          "Cache-Control": "private, immutable, max-age=86400",
-        },
-      });
-    }
+  const cachedBytes = await getObjectBytes(thumbKey);
+  if (cachedBytes) {
+    return new NextResponse(new Uint8Array(cachedBytes), {
+      headers: {
+        "Content-Type": "image/jpeg",
+        "Cache-Control": "private, immutable, max-age=86400",
+      },
+    });
   }
 
   const original = await getObjectBytes(r2Key);
@@ -95,23 +94,17 @@ export async function GET(
     return NextResponse.json({ error: "Service role not configured" }, { status: 500 });
   }
 
-  // Fetch photo
+  // Fetch foto + galeria numa única query (embed via FK) — evita round trip sequencial.
   const { data: photo } = await svc
     .from("gallery_photos")
-    .select("gallery_id, r2_key, filename")
+    .select(
+      "gallery_id, r2_key, filename, galleries!gallery_photos_gallery_id_fkey(mode, status, expires_at, account_id, password_hash, cover_photo_id)"
+    )
     .eq("id", photoId)
     .maybeSingle();
 
-  if (!photo) return NextResponse.json({ error: "Not found" }, { status: 404 });
-
-  // Fetch gallery
-  const { data: gallery } = await svc
-    .from("galleries")
-    .select("mode, status, expires_at, account_id, password_hash, cover_photo_id")
-    .eq("id", photo.gallery_id)
-    .maybeSingle();
-
-  if (!gallery) {
+  const gallery = photo?.galleries;
+  if (!photo || !gallery) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
@@ -196,17 +189,14 @@ export async function GET(
     configKey,
   });
 
-  const cached = await headObject(wmKey);
-  if (cached) {
-    const bytes = await getObjectBytes(wmKey);
-    if (bytes) {
-      return new NextResponse(new Uint8Array(bytes), {
-        headers: {
-          "Content-Type": "image/jpeg",
-          ...wmResponseHeaders,
-        },
-      });
-    }
+  const cachedBytes = await getObjectBytes(wmKey);
+  if (cachedBytes) {
+    return new NextResponse(new Uint8Array(cachedBytes), {
+      headers: {
+        "Content-Type": "image/jpeg",
+        ...wmResponseHeaders,
+      },
+    });
   }
 
   // Cache miss: generate

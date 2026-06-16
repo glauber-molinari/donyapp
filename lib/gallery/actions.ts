@@ -679,15 +679,48 @@ export async function movePhotoToFolder(
 // Seleção do cliente (visão do fotógrafo)
 // ---------------------------------------------------------------------------
 
+export async function allowNewSelection(galleryId: string): Promise<ActionResult> {
+  const guard = await assertGaleriasEnabled();
+  if (!guard.ok) return guard;
+
+  const ctx = await getAccountContext();
+  if ("error" in ctx) return { ok: false, error: ctx.error };
+
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("galleries")
+    .update({ selection_reset_at: new Date().toISOString() })
+    .eq("id", galleryId)
+    .eq("account_id", ctx.accountId);
+
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath(`/galerias/${galleryId}`);
+  return { ok: true };
+}
+
 export async function getGallerySelection(galleryId: string): Promise<GallerySelection | null> {
   const ctx = await getAccountContext();
   if ("error" in ctx) return null;
 
   const supabase = createClient();
-  const { data } = await supabase
+
+  const { data: gallery } = await supabase
+    .from("galleries")
+    .select("selection_reset_at")
+    .eq("id", galleryId)
+    .maybeSingle();
+
+  let query = supabase
     .from("gallery_selections")
     .select("*")
-    .eq("gallery_id", galleryId)
+    .eq("gallery_id", galleryId);
+
+  if (gallery?.selection_reset_at) {
+    query = query.gt("submitted_at", gallery.selection_reset_at);
+  }
+
+  const { data } = await query
     .order("submitted_at", { ascending: false })
     .limit(1)
     .maybeSingle();

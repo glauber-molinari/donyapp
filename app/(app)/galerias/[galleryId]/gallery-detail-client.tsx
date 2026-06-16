@@ -23,6 +23,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useRef, useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { DestructiveDialog } from "@/components/ui/dialog";
 import {
   archiveGallery,
@@ -377,25 +378,44 @@ export function GalleryDetailClient({
 
       {/* Seleção recebida */}
       {selection && (
-        <button
-          type="button"
-          onClick={() => setSelectionTab((v) => !v)}
-          className="mx-4 mt-3 flex items-center gap-2 rounded-ds-lg border border-ds-success/30 bg-ds-success-soft px-4 py-2.5 text-sm text-ds-success sm:mx-5"
+        <div
+          className={cn(
+            "px-4 pt-4 sm:px-5",
+            !selectionTab && "pb-4 sm:pb-5"
+          )}
         >
-          <CheckCircle2 className="h-4 w-4 shrink-0" />
-          <span>
-            O cliente enviou uma seleção de{" "}
-            <strong>{selection.selected_photo_ids.length}</strong> foto
-            {selection.selected_photo_ids.length !== 1 ? "s" : ""}.
-          </span>
-          <span className="ml-auto text-xs underline">
-            {selectionTab ? "Fechar" : "Ver seleção"}
-          </span>
-        </button>
+          <Card className="flex items-center justify-between gap-3 p-3 sm:p-4">
+            <div className="flex items-center gap-3">
+              <div className="flex shrink-0 items-center justify-center rounded-ds-xl bg-ds-success-soft p-2 text-ds-success">
+                <CheckCircle2 className="h-4 w-4" aria-hidden />
+              </div>
+              <p className="text-sm text-ds-ink">
+                O cliente enviou uma seleção de{" "}
+                <strong className="font-semibold">
+                  {selection.selected_photo_ids.length}
+                </strong>{" "}
+                foto{selection.selected_photo_ids.length !== 1 ? "s" : ""}.
+              </p>
+            </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setSelectionTab((v) => !v)}
+            >
+              {selectionTab ? "Fechar" : "Ver seleção"}
+              <ChevronDown
+                className={cn(
+                  "h-3.5 w-3.5 transition-transform",
+                  selectionTab && "rotate-180"
+                )}
+              />
+            </Button>
+          </Card>
+        </div>
       )}
 
       {selectionTab && selection && (
-        <div className="mx-4 mt-3 sm:mx-5">
+        <div className="px-4 pb-4 pt-3 sm:px-5 sm:pb-5">
           <ClientSelectionView selection={selection} photos={photos} galleryId={gallery.id} />
         </div>
       )}

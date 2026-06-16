@@ -36,7 +36,7 @@ export default async function GalleryPublicPage({ params }: Props) {
 
   const { data: gallery } = await svc
     .from("galleries")
-    .select("id, slug, title, mode, status, expires_at, password_hash, download_enabled, favorite_enabled, cover_photo_id, account_id, job_id")
+    .select("id, slug, title, mode, status, expires_at, password_hash, download_enabled, favorite_enabled, cover_photo_id, account_id, job_id, selection_reset_at")
     .eq("slug", params.slug)
     .maybeSingle();
 
@@ -91,8 +91,18 @@ export default async function GalleryPublicPage({ params }: Props) {
       ).data?.job_date ?? null
     : null;
 
-  // Fetch folders + photos
-  const [foldersRes, photosRes] = await Promise.all([
+  // Fetch folders + photos + última seleção já enviada (trava o estado no link).
+  // Seleções anteriores a selection_reset_at são ignoradas (fotógrafo liberou nova escolha).
+  let selectionQuery = svc
+    .from("gallery_selections")
+    .select("selected_photo_ids, client_note")
+    .eq("gallery_id", gallery.id);
+
+  if (gallery.selection_reset_at) {
+    selectionQuery = selectionQuery.gt("submitted_at", gallery.selection_reset_at);
+  }
+
+  const [foldersRes, photosRes, selectionRes] = await Promise.all([
     svc
       .from("gallery_folders")
       .select("id, name, display_order")
@@ -103,6 +113,7 @@ export default async function GalleryPublicPage({ params }: Props) {
       .select("id, folder_id, filename, display_order")
       .eq("gallery_id", gallery.id)
       .order("display_order"),
+    selectionQuery.order("submitted_at", { ascending: false }).limit(1).maybeSingle(),
   ]);
 
   const publicData: PublicGalleryData = {
@@ -120,6 +131,12 @@ export default async function GalleryPublicPage({ params }: Props) {
     cover_photo_id: gallery.cover_photo_id,
     folders: (foldersRes.data ?? []) as PublicGalleryData["folders"],
     photos: (photosRes.data ?? []) as PublicGalleryData["photos"],
+    existing_selection: selectionRes.data
+      ? {
+          selected_photo_ids: selectionRes.data.selected_photo_ids,
+          client_note: selectionRes.data.client_note,
+        }
+      : null,
   };
 
   return <GalleryPublicClient gallery={publicData} />;

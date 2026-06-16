@@ -2,8 +2,14 @@
 
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { MessageCircle } from "lucide-react";
+import { Loader2, MessageCircle, RotateCcw } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Dialog } from "@/components/ui/dialog";
+import { allowNewSelection } from "@/lib/gallery/actions";
 import type { GalleryPhoto, GallerySelection } from "@/types/gallery";
 
 interface Props {
@@ -12,14 +18,26 @@ interface Props {
   galleryId: string;
 }
 
-export function ClientSelectionView({ selection, photos }: Props) {
+export function ClientSelectionView({ selection, photos, galleryId }: Props) {
+  const router = useRouter();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
   const selected = photos.filter((p) =>
     selection.selected_photo_ids.includes(p.id)
   );
 
+  function handleAllowNewSelection() {
+    startTransition(async () => {
+      const res = await allowNewSelection(galleryId);
+      setConfirmOpen(false);
+      if (res.ok) router.refresh();
+    });
+  }
+
   return (
-    <div className="flex flex-col gap-4 rounded-ds-lg border border-ds-success/30 bg-ds-success-soft/30 p-4">
-      <div className="flex items-start justify-between gap-4">
+    <Card className="flex flex-col gap-4 p-4 sm:p-5">
+      <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-ds-ink">
             Seleção do cliente — {selected.length}{" "}
@@ -33,29 +51,42 @@ export function ClientSelectionView({ selection, photos }: Props) {
             })}
           </p>
         </div>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => setConfirmOpen(true)}
+        >
+          <RotateCcw className="h-3.5 w-3.5" />
+          Permitir nova seleção
+        </Button>
       </div>
 
       {selection.client_note && (
-        <div className="flex gap-2 rounded-ds-md bg-white/60 px-3 py-2">
+        <div className="flex gap-2 rounded-ds-md bg-ds-cream px-3 py-2">
           <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-ds-muted" />
           <p className="text-sm text-ds-ink">{selection.client_note}</p>
         </div>
       )}
 
       {selected.length > 0 ? (
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
           {selected.map((photo) => (
-            <div
-              key={photo.id}
-              className="aspect-square overflow-hidden rounded-ds-md bg-ds-cream"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={`/api/gallery/image/${photo.id}?w=240&ctx=manage`}
-                alt={photo.filename}
-                className="h-full w-full object-cover"
-                loading="lazy"
-              />
+            <div key={photo.id} className="flex flex-col gap-1">
+              <div className="aspect-square overflow-hidden rounded-ds-md border border-ds-border bg-ds-cream">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/api/gallery/image/${photo.id}?w=240&ctx=manage`}
+                  alt={photo.filename}
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+              <p
+                className="truncate text-[11px] text-ds-muted"
+                title={photo.filename}
+              >
+                {photo.filename}
+              </p>
             </div>
           ))}
         </div>
@@ -64,6 +95,24 @@ export function ClientSelectionView({ selection, photos }: Props) {
           IDs de fotos na seleção não encontrados na galeria atual.
         </p>
       )}
-    </div>
+
+      <Dialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        title="Permitir nova seleção?"
+        description="O cliente vai poder escolher fotos de novo ao abrir o link da galeria. Esta seleção deixa de aparecer aqui até ele enviar uma nova."
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setConfirmOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleAllowNewSelection} disabled={isPending}>
+              {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              Permitir
+            </Button>
+          </>
+        }
+      />
+    </Card>
   );
 }

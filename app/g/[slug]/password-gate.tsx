@@ -53,6 +53,7 @@ export function PasswordGate({ slug, title, coverPhotoId }: Props) {
           <img
             src={`/api/gallery/image/${coverPhotoId}?w=1600&cover=1`}
             alt=""
+            fetchPriority="high"
             className="h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-black/50" />

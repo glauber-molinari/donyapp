@@ -50,6 +50,8 @@ export interface Gallery {
   expires_at: string | null;
   download_enabled: boolean;
   favorite_enabled: boolean;
+  /** Seleções enviadas antes desse timestamp são ignoradas (fotógrafo "destravou" para o cliente escolher de novo). */
+  selection_reset_at: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
@@ -84,6 +86,11 @@ export interface PublicGalleryData {
     filename: string;
     display_order: number;
   }>;
+  /** Última seleção já enviada por esse cliente, se houver — usada para travar o estado no link. */
+  existing_selection: {
+    selected_photo_ids: string[];
+    client_note: string | null;
+  } | null;
 }
 
 export interface UploadTicket {

@@ -20,11 +20,13 @@ interface Props {
 
 export function GalleryPublicClient({ gallery }: Props) {
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [favorites, setFavorites] = useState<Set<string>>(
+    () => new Set(gallery.existing_selection?.selected_photo_ids ?? [])
+  );
   const [lightboxId, setLightboxId] = useState<string | null>(null);
-  const [submitted, setSubmitted] = useState(false);
+  const [submitted, setSubmitted] = useState(Boolean(gallery.existing_selection));
   const [submitting, setSubmitting] = useState(false);
-  const [note, setNote] = useState("");
+  const [note, setNote] = useState(gallery.existing_selection?.client_note ?? "");
   const [showSelectionPanel, setShowSelectionPanel] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
 
@@ -111,6 +113,7 @@ export function GalleryPublicClient({ gallery }: Props) {
             <img
               src={`/api/gallery/image/${coverPhoto.id}?w=1600&cover=1`}
               alt={gallery.title}
+              fetchPriority="high"
               className="h-full w-full object-cover"
             />
             <div className="absolute inset-0 bg-black/25" />
@@ -396,15 +399,18 @@ export function GalleryPublicClient({ gallery }: Props) {
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.18 }}
-              className="flex max-h-[82vh] max-w-[88vw] flex-col items-center"
+              className="flex max-h-[85vh] max-w-[88vw] flex-col items-center"
               onClick={(e) => e.stopPropagation()}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={`/api/gallery/image/${lightboxId}?w=1400&wm=1&display=lightbox`}
                 alt=""
-                className="max-h-[82vh] max-w-[88vw] object-contain shadow-[0_8px_40px_rgba(0,0,0,0.12)]"
+                className="max-h-[78vh] max-w-[88vw] object-contain shadow-[0_8px_40px_rgba(0,0,0,0.12)]"
               />
+              <p className="mt-3 text-xs text-stone-400">
+                {visiblePhotos[lightboxIdx]?.filename}
+              </p>
             </motion.div>
 
             {/* Next */}
