@@ -8,16 +8,10 @@ type GallerySessionPayload = {
 };
 
 function sessionSecret(): string | null {
-  const candidates = [
-    process.env.GALLERY_SESSION_SECRET,
-    process.env.GOOGLE_CALENDAR_OAUTH_STATE_SECRET,
-    process.env.CRON_SECRET,
-  ];
-  for (const raw of candidates) {
-    const s = raw?.trim();
-    if (s && s.length >= 16) return s;
-  }
-  return null;
+  // Segredo dedicado: não reusar segredos de outros contextos (cron, OAuth state),
+  // cujo vazamento permitiria forjar sessões de galeria.
+  const s = process.env.GALLERY_SESSION_SECRET?.trim();
+  return s && s.length >= 32 ? s : null;
 }
 
 export function gallerySessionCookieName(galleryId: string): string {

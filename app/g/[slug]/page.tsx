@@ -36,7 +36,7 @@ export default async function GalleryPublicPage({ params }: Props) {
 
   const { data: gallery } = await svc
     .from("galleries")
-    .select("id, slug, title, mode, status, expires_at, password_hash, download_enabled, favorite_enabled, watermark_config, cover_photo_id, account_id, job_id")
+    .select("id, slug, title, mode, status, expires_at, password_hash, download_enabled, favorite_enabled, cover_photo_id, account_id, job_id")
     .eq("slug", params.slug)
     .maybeSingle();
 
@@ -44,10 +44,12 @@ export default async function GalleryPublicPage({ params }: Props) {
 
   if (gallery.expires_at && new Date(gallery.expires_at) < new Date()) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-[#0c0a09] p-8 text-center">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-white p-8 text-center">
         <p className="text-3xl">📷</p>
-        <h1 className="mt-4 text-xl font-semibold text-white">Galeria expirada</h1>
-        <p className="mt-2 text-sm text-white/60">
+        <h1 className="mt-4 font-serif text-2xl font-light tracking-wide text-stone-800">
+          Galeria expirada
+        </h1>
+        <p className="mt-2 text-sm text-stone-400">
           Esta galeria não está mais disponível.
         </p>
       </div>
@@ -59,7 +61,13 @@ export default async function GalleryPublicPage({ params }: Props) {
     const cookieName = gallerySessionCookieName(gallery.id);
     const sessionCookie = cookies().get(cookieName);
     if (!hasGallerySession(gallery.id, sessionCookie?.value)) {
-      return <PasswordGate slug={params.slug} title={gallery.title} />;
+      return (
+        <PasswordGate
+          slug={params.slug}
+          title={gallery.title}
+          coverPhotoId={gallery.cover_photo_id}
+        />
+      );
     }
   }
 
@@ -105,7 +113,6 @@ export default async function GalleryPublicPage({ params }: Props) {
     expires_at: gallery.expires_at,
     download_enabled: gallery.download_enabled,
     favorite_enabled: gallery.favorite_enabled,
-    watermark_config: gallery.watermark_config as PublicGalleryData["watermark_config"],
     job_name: jobName,
     job_date: jobDate,
     studio_name: account?.name ?? "Estúdio",

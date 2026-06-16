@@ -8,13 +8,15 @@ import { createClient } from "@/lib/supabase/server";
 import { headObject, presignUpload } from "@/lib/r2/operations";
 import { deleteObjects } from "@/lib/r2/operations";
 import { extFromFilename, originalKey } from "@/lib/r2/keys";
-import type { Gallery, GalleryFolder, GalleryPhoto, GallerySelection, GalleryWithCounts, UploadTicket, WatermarkConfig } from "@/types/gallery";
+import { galleryPublicUrl } from "@/lib/gallery/gallery-url";
+import type { Gallery, GalleryFolder, GalleryPhoto, GallerySelection, GalleryWithCounts, UploadTicket } from "@/types/gallery";
 
 type ActionResult = { ok: true } | { ok: false; error: string };
 
 const ALLOWED_MIME = new Set(["image/jpeg", "image/png"]);
 const MAX_BYTES = 50 * 1024 * 1024; // 50 MB
 const SLUG_REGEX = /^[a-z0-9-]+$/;
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // ---------------------------------------------------------------------------
 // Helpers de contexto
@@ -101,8 +103,9 @@ export async function listGalleriesForAccount(): Promise<GalleryWithCounts[]> {
   const [photosRes, foldersRes, selectionsRes] = await Promise.all([
     supabase
       .from("gallery_photos")
-      .select("gallery_id")
-      .in("gallery_id", ids),
+      .select("id, gallery_id, display_order")
+      .in("gallery_id", ids)
+      .order("display_order", { ascending: true }),
     supabase
       .from("gallery_folders")
       .select("gallery_id")
@@ -113,16 +116,32 @@ export async function listGalleriesForAccount(): Promise<GalleryWithCounts[]> {
       .in("gallery_id", ids),
   ]);
 
-  const photoCounts = countBy(photosRes.data ?? [], "gallery_id");
+  const photoRows = photosRes.data ?? [];
+  const photoCounts = countBy(photoRows, "gallery_id");
   const folderCounts = countBy(foldersRes.data ?? [], "gallery_id");
   const selectionSet = new Set((selectionsRes.data ?? []).map((s) => s.gallery_id));
 
-  return galleries.map((g) => ({
-    ...(g as unknown as Gallery),
-    photo_count: photoCounts[g.id] ?? 0,
-    folder_count: folderCounts[g.id] ?? 0,
-    has_selection: selectionSet.has(g.id),
-  }));
+  // Mosaico do card: até 4 fotos por galeria (capa primeiro, depois ordem de exibição).
+  const previews: Record<string, string[]> = {};
+  for (const row of photoRows) {
+    const list = (previews[row.gallery_id] ??= []);
+    if (list.length < 4) list.push(row.id);
+  }
+
+  return galleries.map((g) => {
+    const all = previews[g.id] ?? [];
+    const cover = g.cover_photo_id;
+    const ordered = cover
+      ? [cover, ...all.filter((id) => id !== cover)].slice(0, 4)
+      : all.slice(0, 4);
+    return {
+      ...(g as unknown as Gallery),
+      photo_count: photoCounts[g.id] ?? 0,
+      folder_count: folderCounts[g.id] ?? 0,
+      has_selection: selectionSet.has(g.id),
+      preview_photo_ids: ordered,
+    };
+  });
 }
 
 function countBy<T extends Record<string, unknown>>(arr: T[], key: string): Record<string, number> {
@@ -215,7 +234,6 @@ export async function updateGallerySettings(
     expires_at?: string | null;
     download_enabled?: boolean;
     favorite_enabled?: boolean;
-    watermark_config?: WatermarkConfig | null;
   }
 ): Promise<ActionResult> {
   const guard = await assertGaleriasEnabled();
@@ -248,7 +266,6 @@ export async function updateGallerySettings(
   if ("expires_at" in settings) updateData.expires_at = settings.expires_at;
   if (settings.download_enabled !== undefined) updateData.download_enabled = settings.download_enabled;
   if (settings.favorite_enabled !== undefined) updateData.favorite_enabled = settings.favorite_enabled;
-  if ("watermark_config" in settings) updateData.watermark_config = settings.watermark_config ?? null;
 
   const { error } = await supabase
     .from("galleries")
@@ -295,6 +312,16 @@ export async function publishGallery(galleryId: string): Promise<ActionResult> {
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
   const supabase = createClient();
+
+  const { data: gallery } = await supabase
+    .from("galleries")
+    .select("job_id, mode, slug")
+    .eq("id", galleryId)
+    .eq("account_id", ctx.accountId)
+    .maybeSingle();
+
+  if (!gallery) return { ok: false, error: "Galeria não encontrada." };
+
   const { error } = await supabase
     .from("galleries")
     .update({ status: "published" })
@@ -302,6 +329,19 @@ export async function publishGallery(galleryId: string): Promise<ActionResult> {
     .eq("account_id", ctx.accountId);
 
   if (error) return { ok: false, error: error.message };
+
+  if (gallery.mode === "delivery" && gallery.job_id) {
+    const { error: jobError } = await supabase
+      .from("jobs")
+      .update({ delivery_link: galleryPublicUrl(gallery.slug) })
+      .eq("id", gallery.job_id)
+      .eq("account_id", ctx.accountId);
+
+    if (jobError) return { ok: false, error: jobError.message };
+
+    revalidatePath("/dashboard");
+    revalidatePath("/board");
+  }
 
   revalidatePath("/galerias");
   revalidatePath(`/galerias/${galleryId}`);
@@ -515,11 +555,38 @@ export async function confirmUpload(
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  // Confirmar que o objeto realmente existe no R2
-  const meta = await headObject(ticket.r2Key);
-  if (!meta) return { ok: false, error: "Upload não encontrado no storage." };
+  if (!UUID_REGEX.test(ticket.photoId)) {
+    return { ok: false, error: "Ticket de upload inválido." };
+  }
 
   const supabase = createClient();
+
+  // Reconfirmar que a galeria é da conta e obter job_id para reconstruir a key.
+  const { data: gallery } = await supabase
+    .from("galleries")
+    .select("id, job_id")
+    .eq("id", galleryId)
+    .eq("account_id", ctx.accountId)
+    .maybeSingle();
+  if (!gallery) return { ok: false, error: "Galeria não encontrada." };
+
+  // Não confiar na r2Key do cliente: reconstruir a partir do contexto autenticado.
+  // Impede registrar, na própria galeria, uma key apontando para o storage de outra conta.
+  const expectedKey = originalKey(
+    ctx.accountId,
+    gallery.job_id ?? "no-job",
+    galleryId,
+    ticket.photoId,
+    extFromFilename(filename)
+  );
+  if (ticket.r2Key !== expectedKey) {
+    return { ok: false, error: "Ticket de upload inválido." };
+  }
+
+  // Confirmar que o objeto realmente existe no R2
+  const meta = await headObject(expectedKey);
+  if (!meta) return { ok: false, error: "Upload não encontrado no storage." };
+
   const { data: maxOrder } = await supabase
     .from("gallery_photos")
     .select("display_order")
@@ -534,7 +601,7 @@ export async function confirmUpload(
       id: ticket.photoId,
       gallery_id: galleryId,
       folder_id: folderId ?? null,
-      r2_key: ticket.r2Key,
+      r2_key: expectedKey,
       filename,
       size_bytes: meta.size,
       display_order: (maxOrder?.display_order ?? -1) + 1,

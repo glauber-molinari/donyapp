@@ -79,8 +79,6 @@ export function WatermarkSettingsClient({ accountId, initialLogoUrl, initialConf
     setConfig((prev) => ({ ...prev, ...partial }));
   }
 
-  const previewOpacity = (config.opacity ?? 40) / 100;
-
   return (
     <div className="flex flex-col gap-8">
       {/* Logo section */}
@@ -147,7 +145,7 @@ export function WatermarkSettingsClient({ accountId, initialLogoUrl, initialConf
         <div>
           <p className="text-sm font-medium text-ds-ink">Configurações</p>
           <p className="mt-0.5 text-xs text-ds-muted">
-            Aplicadas a todas as galerias desta conta. Cada galeria pode sobrescrever.
+            Aplicadas a todas as galerias em modo Seleção desta conta.
           </p>
         </div>
 
@@ -202,42 +200,21 @@ export function WatermarkSettingsClient({ accountId, initialLogoUrl, initialConf
         </div>
       </div>
 
-      {/* Live preview */}
+      {/* Pré-visualização gerada no servidor — mesmo algoritmo da galeria */}
       <div>
         <p className="mb-2 text-sm font-medium text-ds-ink">Pré-visualização</p>
-        <div className="relative h-40 w-full overflow-hidden rounded-xl bg-ds-surface">
-          <div className="h-full w-full bg-gradient-to-br from-ds-cream to-ds-border" />
-          {(logoUrl || !logoUrl) && (
-            <div
-              className="pointer-events-none absolute inset-0 flex items-center justify-center"
-              style={{ opacity: previewOpacity }}
-            >
-              {logoUrl ? (
-                // Simplified tiled preview: single centered logo
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={logoUrl}
-                  alt="preview"
-                  style={{
-                    width: `${config.scale ?? 20}%`,
-                    transform: `rotate(${config.rotation ?? -30}deg)`,
-                  }}
-                  className="object-contain"
-                />
-              ) : (
-                <span
-                  className="font-semibold text-ds-muted"
-                  style={{
-                    fontSize: `${(config.scale ?? 20) / 2}px`,
-                    transform: `rotate(${config.rotation ?? -30}deg)`,
-                    display: "block",
-                  }}
-                >
-                  © Seu Estúdio
-                </span>
-              )}
-            </div>
-          )}
+        <p className="mb-2 text-xs text-ds-muted">
+          Foto de exemplo com a marca d&apos;água aplicada em grade, como o cliente verá no modo
+          Seleção.
+        </p>
+        <div className="relative aspect-[3/2] w-full overflow-hidden rounded-xl bg-stone-200">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            key={`${config.opacity}-${config.scale}-${config.rotation}-${logoUrl ?? "none"}`}
+            src={`/api/watermark/preview?opacity=${config.opacity ?? 40}&scale=${config.scale ?? 20}&rotation=${config.rotation ?? -30}`}
+            alt="Pré-visualização da marca d'água"
+            className="h-full w-full object-cover"
+          />
         </div>
       </div>
 

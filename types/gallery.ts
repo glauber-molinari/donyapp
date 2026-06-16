@@ -48,7 +48,6 @@ export interface Gallery {
   cover_photo_id: string | null;
   password_hash: string | null;
   expires_at: string | null;
-  watermark_config: WatermarkConfig | null;
   download_enabled: boolean;
   favorite_enabled: boolean;
   created_by: string | null;
@@ -60,6 +59,8 @@ export interface GalleryWithCounts extends Gallery {
   photo_count: number;
   folder_count: number;
   has_selection: boolean;
+  /** Até 4 ids de fotos para o mosaico do card (capa primeiro). */
+  preview_photo_ids: string[];
 }
 
 /** Dados enviados ao cliente público (nunca inclui password_hash ou r2_key) */
@@ -71,7 +72,6 @@ export interface PublicGalleryData {
   expires_at: string | null;
   download_enabled: boolean;
   favorite_enabled: boolean;
-  watermark_config: WatermarkConfig | null;
   job_name: string | null;
   job_date: string | null;
   studio_name: string;

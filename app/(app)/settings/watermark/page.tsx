@@ -50,7 +50,7 @@ export default async function WatermarkSettingsPage() {
         <h2 className="text-lg font-semibold text-ds-ink">Marca d&apos;água</h2>
         <p className="mt-1 text-sm text-ds-muted">
           Configure o logo e o estilo aplicados automaticamente às fotos nas galerias em modo
-          Seleção. Galerias individuais podem sobrescrever estas configurações.
+          Seleção.
         </p>
       </div>
 

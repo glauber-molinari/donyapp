@@ -51,7 +51,7 @@ export function ClientSelectionView({ selection, photos }: Props) {
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={`/api/gallery/image/${photo.id}?w=240`}
+                src={`/api/gallery/image/${photo.id}?w=240&ctx=manage`}
                 alt={photo.filename}
                 className="h-full w-full object-cover"
                 loading="lazy"

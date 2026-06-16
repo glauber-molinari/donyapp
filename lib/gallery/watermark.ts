@@ -39,9 +39,8 @@ export async function applyWatermark(
     const fontSize = Math.max(12, Math.round(rw * scaleRatio * 0.55));
     const textW = Math.round(fontSize * text.length * 0.6);
     const textH = Math.round(fontSize * 1.4);
-    const alpha = (opacityPercent / 100).toFixed(2);
     const svgText = `<svg xmlns="http://www.w3.org/2000/svg" width="${textW}" height="${textH}">
-      <text x="0" y="${fontSize}" font-family="sans-serif" font-size="${fontSize}" fill="white" opacity="${alpha}">${text}</text>
+      <text x="0" y="${fontSize}" font-family="sans-serif" font-size="${fontSize}" fill="white">${text}</text>
     </svg>`;
     rawOverlay = await sharp(Buffer.from(svgText)).ensureAlpha().toBuffer();
   }
@@ -65,13 +64,21 @@ export async function applyWatermark(
     .png()
     .toBuffer();
 
+  // Sharp não suporta rotação no composite — gira o tile antes de repetir em grade.
+  let tiledOverlay = overlayWithOpacity;
+  if (rotation !== 0) {
+    tiledOverlay = await sharp(overlayWithOpacity)
+      .rotate(rotation, { background: { r: 0, g: 0, b: 0, alpha: 0 } })
+      .png()
+      .toBuffer();
+  }
+
   const result = await sharp(resized.data)
     .composite([
       {
-        input: overlayWithOpacity,
+        input: tiledOverlay,
         tile: true,
         blend: "over",
-        ...(rotation !== 0 ? { angle: rotation } : {}),
       },
     ])
     .jpeg({ quality: 82 })

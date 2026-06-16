@@ -1,19 +1,75 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { isGalleryOwner, imageContentTypeFromFilename } from "@/lib/gallery/gallery-access";
+import { watermarkConfigCacheKey } from "@/lib/gallery/watermark-cache-key";
+import { fetchWatermarkLogoBuffer, resolveWatermarkConfig } from "@/lib/gallery/watermark-resolve";
 import { applyWatermark } from "@/lib/gallery/watermark";
 import {
   gallerySessionCookieName,
   hasGallerySession,
 } from "@/lib/gallery/gallery-session";
 import { getObjectBytes, headObject, putObjectBytes } from "@/lib/r2/operations";
-import { watermarkedKeyFromOriginal } from "@/lib/r2/keys";
+import { resizedKeyFromOriginal, watermarkedKeyFromOriginal } from "@/lib/r2/keys";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import type { WatermarkConfig } from "@/types/gallery";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
+
+/** Original ou miniatura redimensionada, sem marca d'água. */
+async function serveCleanImage(
+  r2Key: string,
+  photoId: string,
+  filename: string,
+  width?: number
+): Promise<NextResponse> {
+  const originalContentType = imageContentTypeFromFilename(filename);
+
+  if (!width) {
+    const bytes = await getObjectBytes(r2Key);
+    if (!bytes) return NextResponse.json({ error: "Not in storage" }, { status: 404 });
+    return new NextResponse(new Uint8Array(bytes), {
+      headers: {
+        "Content-Type": originalContentType,
+        "Cache-Control": "private, max-age=3600",
+      },
+    });
+  }
+
+  const thumbKey = resizedKeyFromOriginal(r2Key, photoId, width);
+  const cachedThumb = await headObject(thumbKey);
+  if (cachedThumb) {
+    const bytes = await getObjectBytes(thumbKey);
+    if (bytes) {
+      return new NextResponse(new Uint8Array(bytes), {
+        headers: {
+          "Content-Type": "image/jpeg",
+          "Cache-Control": "private, immutable, max-age=86400",
+        },
+      });
+    }
+  }
+
+  const original = await getObjectBytes(r2Key);
+  if (!original) return NextResponse.json({ error: "Not in storage" }, { status: 404 });
+
+  const sharp = (await import("sharp")).default;
+  const thumb = await sharp(original)
+    .rotate()
+    .resize(width, undefined, { fit: "inside", withoutEnlargement: true })
+    .jpeg({ quality: 78 })
+    .toBuffer();
+
+  void putObjectBytes(thumbKey, thumb, "image/jpeg").catch(() => {});
+
+  return new NextResponse(new Uint8Array(thumb), {
+    headers: {
+      "Content-Type": "image/jpeg",
+      "Cache-Control": "private, immutable, max-age=86400",
+    },
+  });
+}
 
 export async function GET(
   request: NextRequest,
@@ -40,7 +96,7 @@ export async function GET(
   // Fetch gallery
   const { data: gallery } = await svc
     .from("galleries")
-    .select("mode, status, expires_at, watermark_config, account_id, password_hash")
+    .select("mode, status, expires_at, account_id, password_hash, cover_photo_id")
     .eq("id", photo.gallery_id)
     .maybeSingle();
 
@@ -49,44 +105,81 @@ export async function GET(
   }
 
   const isPublished = gallery.status === "published";
-  const ownerPreview = !isPublished && (await isGalleryOwner(gallery.account_id));
 
-  if (!isPublished && !ownerPreview) {
+  // Identifica a foto de capa (acesso antes da senha no hero).
+  let isCoverPhoto = gallery.cover_photo_id === photoId;
+  if (!isCoverPhoto && !gallery.cover_photo_id) {
+    const { data: firstPhoto } = await svc
+      .from("gallery_photos")
+      .select("id")
+      .eq("gallery_id", photo.gallery_id)
+      .order("display_order")
+      .limit(1)
+      .maybeSingle();
+    isCoverPhoto = firstPhoto?.id === photoId;
+  }
+
+  const hasValidSession =
+    !gallery.password_hash ||
+    isCoverPhoto ||
+    hasGallerySession(
+      photo.gallery_id,
+      request.cookies.get(gallerySessionCookieName(photo.gallery_id))?.value
+    );
+  const isExpired = gallery.expires_at
+    ? new Date(gallery.expires_at) < new Date()
+    : false;
+
+  // Caminho rápido do visitante público: publicada, com senha válida (se houver) e não expirada.
+  const publicAllowed = isPublished && hasValidSession && !isExpired;
+
+  const isOwner = await isGalleryOwner(gallery.account_id);
+
+  if (!publicAllowed && !isOwner) {
+    if (isPublished && !hasValidSession) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (isExpired) {
+      return NextResponse.json({ error: "Gallery expired" }, { status: 410 });
+    }
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  // Público publicado: senha e expiração
-  if (isPublished) {
-    if (gallery.password_hash) {
-      const cookieName = gallerySessionCookieName(photo.gallery_id);
-      const sessionCookie = request.cookies.get(cookieName);
-      if (!hasGallerySession(photo.gallery_id, sessionCookie?.value)) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
-    }
-
-    if (gallery.expires_at && new Date(gallery.expires_at) < new Date()) {
-      return NextResponse.json({ error: "Gallery expired" }, { status: 410 });
-    }
-  }
-
   const r2Key = photo.r2_key;
-  const originalContentType = imageContentTypeFromFilename(photo.filename);
 
-  // DELIVERY mode: serve original
+  // Modo entrega: sempre sem marca d'água.
   if (gallery.mode === "delivery") {
-    const bytes = await getObjectBytes(r2Key);
-    if (!bytes) return NextResponse.json({ error: "Not in storage" }, { status: 404 });
-    return new NextResponse(new Uint8Array(bytes), {
-      headers: {
-        "Content-Type": originalContentType,
-        "Cache-Control": "private, max-age=3600",
-      },
-    });
+    return serveCleanImage(r2Key, photoId, photo.filename, width);
   }
 
-  // SELECTION mode: watermarked
-  const wmKey = watermarkedKeyFromOriginal(r2Key, photoId, width);
+  // Modo seleção: sem marca só no hero da capa (cover=1) ou no painel do fotógrafo (ctx=manage).
+  const isCoverDisplay =
+    request.nextUrl.searchParams.get("cover") === "1" && isCoverPhoto;
+  const isManageContext = request.nextUrl.searchParams.get("ctx") === "manage";
+  const isPublicView = request.nextUrl.searchParams.get("wm") === "1";
+  const skipWatermark =
+    isCoverDisplay ||
+    (!isPublicView && isOwner && (isManageContext || !isPublished));
+  if (skipWatermark) {
+    return serveCleanImage(r2Key, photoId, photo.filename, width);
+  }
+
+  const { data: account } = await svc
+    .from("accounts")
+    .select("watermark_config, watermark_logo_url, name")
+    .eq("id", gallery.account_id)
+    .maybeSingle();
+
+  const wmConfig = resolveWatermarkConfig(
+    (account?.watermark_config ?? null) as WatermarkConfig | null,
+    account?.name
+  );
+  const configKey = watermarkConfigCacheKey(wmConfig, account?.watermark_logo_url);
+
+  const wmKey = watermarkedKeyFromOriginal(r2Key, photoId, width, {
+    variant: isPublicView ? "view" : undefined,
+    configKey,
+  });
 
   // Cache hit
   const cached = await headObject(wmKey);
@@ -106,46 +199,7 @@ export async function GET(
   const original = await getObjectBytes(r2Key);
   if (!original) return NextResponse.json({ error: "Original not found" }, { status: 404 });
 
-  // Fetch account watermark config
-  const { data: account } = await svc
-    .from("accounts")
-    .select("watermark_config, watermark_logo_url, name")
-    .eq("id", gallery.account_id)
-    .maybeSingle();
-
-  const galleryWm = gallery.watermark_config as WatermarkConfig | null;
-  const accountWm = (account?.watermark_config ?? null) as WatermarkConfig | null;
-  const wmConfig: WatermarkConfig = galleryWm ?? accountWm ?? {
-    type: "text",
-    text: `© ${account?.name ?? "Studio"}`,
-    opacity: 40,
-    scale: 20,
-    rotation: -30,
-  };
-  if (!wmConfig.text) {
-    wmConfig.text = `© ${account?.name ?? "Studio"}`;
-  }
-
-  // Logo buffer — only fetch from trusted Supabase storage domain to prevent SSRF
-  let logoBuffer: Buffer | null = null;
-  if (account?.watermark_logo_url) {
-    try {
-      const logoUrl = new URL(account.watermark_logo_url);
-      const isTrustedStorage =
-        (logoUrl.protocol === "https:" &&
-          (logoUrl.hostname.endsWith(".supabase.co") ||
-            logoUrl.hostname.endsWith(".supabase.in"))) ||
-        (process.env.NEXT_PUBLIC_SUPABASE_URL
-          ? logoUrl.hostname === new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
-          : false);
-      if (isTrustedStorage) {
-        const res = await fetch(account.watermark_logo_url, { redirect: "error" });
-        if (res.ok) logoBuffer = Buffer.from(await res.arrayBuffer());
-      }
-    } catch {
-      // fallback to text watermark
-    }
-  }
+  const logoBuffer = await fetchWatermarkLogoBuffer(account?.watermark_logo_url);
 
   // Downscale for thumbnails before watermarking
   let srcBuffer = original;
@@ -158,8 +212,8 @@ export async function GET(
 
   const watermarked = await applyWatermark(srcBuffer, wmConfig, logoBuffer);
 
-  // Cache to R2 (best-effort, don't fail if R2 unavailable)
-  await putObjectBytes(wmKey, watermarked, "image/jpeg").catch(() => {});
+  // Cache to R2 em background — não bloqueia a resposta.
+  void putObjectBytes(wmKey, watermarked, "image/jpeg").catch(() => {});
 
   return new NextResponse(new Uint8Array(watermarked), {
     headers: {

@@ -28,7 +28,26 @@ export function extFromFilename(filename: string): string {
 }
 
 /** Deriva a chave watermarked a partir da chave original. */
-export function watermarkedKeyFromOriginal(r2Key: string, photoId: string, width?: number): string {
+export function watermarkedKeyFromOriginal(
+  r2Key: string,
+  photoId: string,
+  width?: number,
+  options?: { variant?: "view"; configKey?: string }
+): string {
   const suffix = width ? `_w${width}` : "";
-  return r2Key.replace(`/original/${photoId}`, `/watermarked/${photoId}${suffix}`).replace(/\.[^.]+$/, ".jpg");
+  const variantSuffix = options?.variant === "view" ? "_view" : "";
+  const configSuffix = options?.configKey ? `_${options.configKey}` : "";
+  return r2Key
+    .replace(
+      `/original/${photoId}`,
+      `/watermarked/${photoId}${suffix}${variantSuffix}${configSuffix}`
+    )
+    .replace(/\.[^.]+$/, ".jpg");
+}
+
+/** Deriva a chave de miniatura redimensionada (modo entrega) a partir da chave original. */
+export function resizedKeyFromOriginal(r2Key: string, photoId: string, width: number): string {
+  return r2Key
+    .replace(`/original/${photoId}`, `/resized/${photoId}_w${width}`)
+    .replace(/\.[^.]+$/, ".jpg");
 }
