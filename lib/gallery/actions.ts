@@ -647,6 +647,64 @@ export async function deletePhoto(photoId: string, galleryId: string): Promise<A
   return { ok: true };
 }
 
+export async function deletePhotos(photoIds: string[], galleryId: string): Promise<ActionResult> {
+  const ctx = await getAccountContext();
+  if ("error" in ctx) return { ok: false, error: ctx.error };
+
+  const uniqueIds = [...new Set(photoIds.filter(Boolean))];
+  if (uniqueIds.length === 0) {
+    return { ok: false, error: "Nenhuma foto selecionada." };
+  }
+
+  const supabase = createClient();
+
+  const { data: gallery } = await supabase
+    .from("galleries")
+    .select("id, cover_photo_id")
+    .eq("id", galleryId)
+    .eq("account_id", ctx.accountId)
+    .maybeSingle();
+
+  if (!gallery) return { ok: false, error: "Galeria não encontrada." };
+
+  const { data: photos } = await supabase
+    .from("gallery_photos")
+    .select("id, r2_key")
+    .eq("gallery_id", galleryId)
+    .in("id", uniqueIds);
+
+  if (!photos?.length) return { ok: false, error: "Fotos não encontradas." };
+
+  const r2KeysToDelete: string[] = [];
+  for (const photo of photos) {
+    if (!photo.r2_key) continue;
+    const [resizedPrefix, watermarkedPrefix] = photoVariantPrefixes(photo.r2_key, photo.id);
+    const variantKeys = (
+      await Promise.all([
+        listObjectKeys(`${resizedPrefix}_`),
+        listObjectKeys(`${watermarkedPrefix}`),
+      ])
+    ).flat();
+    r2KeysToDelete.push(photo.r2_key, ...variantKeys);
+  }
+
+  const deletedIds = photos.map((p) => p.id);
+  const { error } = await supabase.from("gallery_photos").delete().in("id", deletedIds);
+
+  if (error) return { ok: false, error: error.message };
+
+  if (gallery.cover_photo_id && deletedIds.includes(gallery.cover_photo_id)) {
+    await supabase.from("galleries").update({ cover_photo_id: null }).eq("id", galleryId);
+  }
+
+  if (r2KeysToDelete.length) {
+    await deleteObjects(r2KeysToDelete);
+  }
+
+  revalidatePath(`/galerias/${galleryId}`);
+  return { ok: true };
+}
+
 export async function reorderPhotos(galleryId: string, orderedIds: string[]): Promise<ActionResult> {
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };

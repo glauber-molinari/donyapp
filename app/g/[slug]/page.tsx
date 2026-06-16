@@ -2,10 +2,8 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
-import {
-  gallerySessionCookieName,
-  hasGallerySession,
-} from "@/lib/gallery/gallery-session";
+import { gallerySessionCookieName, hasGallerySession } from "@/lib/gallery/gallery-session";
+import { sortByFilename } from "@/lib/gallery/sort-photos";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import type { PublicGalleryData } from "@/types/gallery";
 
@@ -111,8 +109,7 @@ export default async function GalleryPublicPage({ params }: Props) {
     svc
       .from("gallery_photos")
       .select("id, folder_id, filename, display_order")
-      .eq("gallery_id", gallery.id)
-      .order("display_order"),
+      .eq("gallery_id", gallery.id),
     selectionQuery.order("submitted_at", { ascending: false }).limit(1).maybeSingle(),
   ]);
 
@@ -130,7 +127,7 @@ export default async function GalleryPublicPage({ params }: Props) {
     studio_logo_url: account?.watermark_logo_url ?? null,
     cover_photo_id: gallery.cover_photo_id,
     folders: (foldersRes.data ?? []) as PublicGalleryData["folders"],
-    photos: (photosRes.data ?? []) as PublicGalleryData["photos"],
+    photos: sortByFilename((photosRes.data ?? []) as PublicGalleryData["photos"]),
     existing_selection: selectionRes.data
       ? {
           selected_photo_ids: selectionRes.data.selected_photo_ids,

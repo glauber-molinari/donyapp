@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -31,6 +31,7 @@ import {
   deleteFolder,
   deleteGallery,
   deletePhoto,
+  deletePhotos,
   publishGallery,
   renameFolder,
   setCoverPhoto,
@@ -41,6 +42,12 @@ import {
   triggerGalleryPregenerate,
   galleryImageUrl,
 } from "@/lib/gallery/image-variants";
+import { compareFilenames } from "@/lib/gallery/sort-photos";
+import {
+  loadGalleryPhotoSort,
+  saveGalleryPhotoSort,
+  type GalleryPhotoSort,
+} from "@/lib/gallery/gallery-sort-preference";
 import { cn } from "@/lib/utils";
 import type {
   Gallery,
@@ -67,7 +74,7 @@ interface Props {
 }
 
 type WorkspaceTab = "photos" | "settings";
-type SortOption = "uploaded_desc" | "uploaded_asc" | "name_asc" | "name_desc";
+type SortOption = GalleryPhotoSort;
 
 const SORT_LABELS: Record<SortOption, string> = {
   uploaded_desc: "Envio: mais recente",
@@ -98,9 +105,9 @@ function sortPhotos(photos: GalleryPhoto[], sort: SortOption) {
         (a, b) => new Date(a.uploaded_at).getTime() - new Date(b.uploaded_at).getTime()
       );
     case "name_asc":
-      return copy.sort((a, b) => a.filename.localeCompare(b.filename, "pt-BR"));
+      return copy.sort((a, b) => compareFilenames(a.filename, b.filename, "asc"));
     case "name_desc":
-      return copy.sort((a, b) => b.filename.localeCompare(a.filename, "pt-BR"));
+      return copy.sort((a, b) => compareFilenames(a.filename, b.filename, "desc"));
     default:
       return copy;
   }
@@ -136,11 +143,25 @@ export function GalleryDetailClient({
   const [selectionTab, setSelectionTab] = useState(false);
   const [showUploadPanel, setShowUploadPanel] = useState(false);
   const [coverSelectMode, setCoverSelectMode] = useState(false);
+  const [bulkSelectMode, setBulkSelectMode] = useState(false);
+  const [selectedPhotoIds, setSelectedPhotoIds] = useState<Set<string>>(() => new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const appUrl = typeof window !== "undefined" ? window.location.origin : "";
   const publicUrl = `${appUrl}/g/${gallery.slug}`;
   const displayDate = formatDisplayDate(jobDate) ?? formatDisplayDate(gallery.created_at);
+
+  useEffect(() => {
+    setSort(loadGalleryPhotoSort(gallery.id));
+  }, [gallery.id]);
+
+  function handleSortChange(next: SortOption) {
+    setSort(next);
+    saveGalleryPhotoSort(gallery.id, next);
+    setSortOpen(false);
+  }
 
   const folderPhotos = useMemo(() => {
     const inFolder = activeFolder
@@ -157,6 +178,10 @@ export function GalleryDetailClient({
     folders.find((f) => f.id === activeFolder)?.name ?? "Todas as fotos";
 
   const coverPhoto = photos.find((p) => p.id === gallery.cover_photo_id) ?? photos[0];
+
+  useEffect(() => {
+    setSelectedPhotoIds(new Set());
+  }, [activeFolder]);
 
   const onUploadComplete = useCallback(
     (newPhotos: GalleryPhoto[]) => {
@@ -241,6 +266,55 @@ export function GalleryDetailClient({
     }
   }
 
+  function exitBulkSelectMode() {
+    setBulkSelectMode(false);
+    setSelectedPhotoIds(new Set());
+    setBulkDeleteOpen(false);
+  }
+
+  function enterBulkSelectMode() {
+    setCoverSelectMode(false);
+    setBulkSelectMode(true);
+    setSelectedPhotoIds(new Set());
+  }
+
+  function togglePhotoSelection(photoId: string) {
+    setSelectedPhotoIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(photoId)) next.delete(photoId);
+      else next.add(photoId);
+      return next;
+    });
+  }
+
+  function toggleSelectAllVisible() {
+    setSelectedPhotoIds((prev) => {
+      if (prev.size === folderPhotos.length) return new Set();
+      return new Set(folderPhotos.map((p) => p.id));
+    });
+  }
+
+  async function handleBulkDelete() {
+    const ids = [...selectedPhotoIds];
+    if (ids.length === 0) return;
+
+    setBulkDeleteOpen(false);
+    setBulkDeleting(true);
+    try {
+      const res = await deletePhotos(ids, gallery.id);
+      if (res.ok) {
+        const removed = new Set(ids);
+        setPhotos((p) => p.filter((ph) => !removed.has(ph.id)));
+        if (gallery.cover_photo_id && removed.has(gallery.cover_photo_id)) {
+          setGallery((g) => ({ ...g, cover_photo_id: null }));
+        }
+        exitBulkSelectMode();
+      }
+    } finally {
+      setBulkDeleting(false);
+    }
+  }
+
   async function handleSetCover(photoId: string) {
     setCoverSelectMode(false);
     setGallery((g) => ({ ...g, cover_photo_id: photoId }));
@@ -260,7 +334,7 @@ export function GalleryDetailClient({
           >
             <ArrowLeft className="h-4 w-4" />
           </Link>
-          <div className="min-w-0">
+          <div className="min-w-0 space-y-1.5">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="truncate text-base font-semibold text-ds-ink">{gallery.title}</h1>
               <div className="relative">
@@ -453,6 +527,7 @@ export function GalleryDetailClient({
                   type="button"
                   onClick={() => {
                     setActiveTab("photos");
+                    exitBulkSelectMode();
                     setCoverSelectMode(true);
                   }}
                   className="absolute inset-0 flex items-center justify-center gap-1.5 bg-black/45 text-sm font-medium text-white opacity-0 transition-opacity group-hover:opacity-100"
@@ -613,6 +688,40 @@ export function GalleryDetailClient({
                     Cancelar
                   </Button>
                 </div>
+              ) : bulkSelectMode ? (
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ds-border bg-ds-cream/60 px-4 py-3 md:px-6">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <p className="text-sm font-medium text-ds-ink">
+                      {selectedPhotoIds.size} selecionada{selectedPhotoIds.size !== 1 ? "s" : ""}
+                    </p>
+                    {folderPhotos.length > 0 ? (
+                      <button
+                        type="button"
+                        onClick={toggleSelectAllVisible}
+                        className="text-sm font-medium text-ds-accent hover:underline"
+                      >
+                        {selectedPhotoIds.size === folderPhotos.length
+                          ? "Desmarcar todas"
+                          : "Selecionar todas"}
+                      </button>
+                    ) : null}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="sm" onClick={exitBulkSelectMode} disabled={bulkDeleting}>
+                      Cancelar
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      disabled={selectedPhotoIds.size === 0 || bulkDeleting}
+                      onClick={() => setBulkDeleteOpen(true)}
+                    >
+                      {bulkDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                      Excluir
+                      {selectedPhotoIds.size > 0 ? ` (${selectedPhotoIds.size})` : ""}
+                    </Button>
+                  </div>
+                </div>
               ) : (
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ds-hairline px-4 py-3 md:px-6">
                   <h2 className="text-lg font-semibold text-ds-ink">{activeFolderName}</h2>
@@ -645,10 +754,7 @@ export function GalleryDetailClient({
                               <button
                                 key={key}
                                 type="button"
-                                onClick={() => {
-                                  setSort(key);
-                                  setSortOpen(false);
-                                }}
+                                onClick={() => handleSortChange(key)}
                                 className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-ds-cream"
                               >
                                 {SORT_LABELS[key]}
@@ -662,6 +768,16 @@ export function GalleryDetailClient({
 
                     <button
                       type="button"
+                      onClick={enterBulkSelectMode}
+                      disabled={folderPhotos.length === 0}
+                      className="flex items-center gap-1.5 rounded-ds-lg border border-ds-border px-3 py-1.5 text-xs font-medium text-ds-muted hover:bg-ds-cream disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <Check className="h-3.5 w-3.5" />
+                      Selecionar
+                    </button>
+
+                    <button
+                      type="button"
                       onClick={() => setShowUploadPanel(true)}
                       className="flex items-center gap-1 text-sm font-medium text-ds-ink hover:text-ds-accent"
                     >
@@ -672,7 +788,7 @@ export function GalleryDetailClient({
                 </div>
               )}
 
-              <div className="flex-1 overflow-y-auto p-4 md:p-6">
+              <div className="flex-1 overflow-y-auto p-3 md:p-4">
                 {folderPhotos.length === 0 && !showUploadPanel ? (
                   <UploadDropzone
                     galleryId={gallery.id}
@@ -691,13 +807,16 @@ export function GalleryDetailClient({
                       />
                     )}
                     {folderPhotos.length > 0 && (
-                      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+                      <div className="grid grid-cols-2 gap-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
                         {folderPhotos.map((photo) => (
                           <PhotoThumb
                             key={photo.id}
                             photo={photo}
                             isCover={photo.id === gallery.cover_photo_id}
                             coverSelectMode={coverSelectMode}
+                            bulkSelectMode={bulkSelectMode}
+                            isSelected={selectedPhotoIds.has(photo.id)}
+                            onToggleSelect={() => togglePhotoSelection(photo.id)}
                             onDelete={() => handleDeletePhoto(photo.id)}
                             onSetCover={() => handleSetCover(photo.id)}
                           />
@@ -711,6 +830,25 @@ export function GalleryDetailClient({
           )}
         </main>
       </div>
+
+      <DestructiveDialog
+        open={bulkDeleteOpen}
+        onClose={() => setBulkDeleteOpen(false)}
+        title={`Excluir ${selectedPhotoIds.size} foto${selectedPhotoIds.size !== 1 ? "s" : ""}?`}
+        objectName={activeFolderName}
+        consequence="As fotos selecionadas serão removidas da galeria e do storage. Esta ação não pode ser desfeita."
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setBulkDeleteOpen(false)} disabled={bulkDeleting}>
+              Cancelar
+            </Button>
+            <Button variant="danger" onClick={handleBulkDelete} disabled={bulkDeleting}>
+              {bulkDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              Excluir {selectedPhotoIds.size} foto{selectedPhotoIds.size !== 1 ? "s" : ""}
+            </Button>
+          </>
+        }
+      />
 
       <DestructiveDialog
         open={deleteOpen}
@@ -884,17 +1022,59 @@ function PhotoThumb({
   photo,
   isCover,
   coverSelectMode,
+  bulkSelectMode,
+  isSelected,
+  onToggleSelect,
   onDelete,
   onSetCover,
 }: {
   photo: GalleryPhoto;
   isCover: boolean;
   coverSelectMode: boolean;
+  bulkSelectMode: boolean;
+  isSelected: boolean;
+  onToggleSelect: () => void;
   onDelete: () => void;
   onSetCover: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+
+  if (bulkSelectMode) {
+    return (
+      <button
+        type="button"
+        onClick={onToggleSelect}
+        className={cn(
+          "group relative aspect-square overflow-hidden rounded-none bg-ds-cream ring-2 transition-all",
+          isSelected ? "ring-ds-accent" : "ring-transparent hover:ring-ds-accent/50"
+        )}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={galleryImageUrl(photo.id, { w: MANAGE_THUMB_WIDTH, ctx: "manage" })}
+          alt={photo.filename}
+          className="h-full w-full object-cover"
+          loading="lazy"
+        />
+        <div
+          className={cn(
+            "absolute left-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-sm border-2 transition-colors",
+            isSelected
+              ? "border-ds-accent bg-ds-accent text-white"
+              : "border-white/90 bg-black/35 text-transparent group-hover:border-white"
+          )}
+        >
+          <Check className="h-3.5 w-3.5" strokeWidth={3} />
+        </div>
+        {isCover && (
+          <span className="absolute right-1.5 top-1.5 rounded-ds-sm bg-ds-ink px-1.5 py-0.5 text-[10px] font-semibold text-ds-on-dark">
+            Capa
+          </span>
+        )}
+      </button>
+    );
+  }
 
   if (coverSelectMode) {
     return (
@@ -902,7 +1082,7 @@ function PhotoThumb({
         type="button"
         onClick={onSetCover}
         className={cn(
-          "group relative aspect-square overflow-hidden rounded-ds-md bg-ds-cream ring-2 transition-all",
+          "group relative aspect-square overflow-hidden rounded-none bg-ds-cream ring-2 transition-all",
           isCover ? "ring-ds-accent" : "ring-transparent hover:ring-ds-accent/60"
         )}
       >
@@ -928,7 +1108,7 @@ function PhotoThumb({
   }
 
   return (
-    <div className="group relative aspect-square overflow-hidden rounded-ds-md bg-ds-cream">
+    <div className="group relative aspect-square overflow-hidden rounded-none bg-ds-cream">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={galleryImageUrl(photo.id, { w: MANAGE_THUMB_WIDTH, ctx: "manage" })}

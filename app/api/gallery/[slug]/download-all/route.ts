@@ -6,6 +6,7 @@ import {
   gallerySessionCookieName,
   hasGallerySession,
 } from "@/lib/gallery/gallery-session";
+import { sortByFilename } from "@/lib/gallery/sort-photos";
 import { getObjectBytes } from "@/lib/r2/operations";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 
@@ -44,12 +45,13 @@ export async function GET(
     return NextResponse.json({ error: "Expirada" }, { status: 410 });
   }
 
-  const { data: photos } = await svc
+  const { data: photosRaw } = await svc
     .from("gallery_photos")
     .select("r2_key, filename")
     .eq("gallery_id", gallery.id)
-    .order("display_order", { ascending: true })
     .limit(MAX_PHOTOS_ZIP);
+
+  const photos = sortByFilename(photosRaw ?? []);
 
   if (!photos?.length) {
     return NextResponse.json({ error: "Nenhuma foto" }, { status: 404 });

@@ -16,15 +16,14 @@ import {
   COVER_DEFAULT_WIDTH,
   COVER_IMAGE_SIZES,
   COVER_WIDTHS,
-  GRID_DEFAULT_WIDTH,
-  GRID_IMAGE_SIZES,
-  GRID_WIDTHS,
   LIGHTBOX_WIDTH,
   SELECTION_THUMB_WIDTH,
   galleryImageSrcSet,
   galleryImageUrl,
 } from "@/lib/gallery/image-variants";
 import type { PublicGalleryData } from "@/types/gallery";
+
+import { JustifiedGalleryGrid } from "./justified-gallery-grid";
 
 interface Props {
   gallery: PublicGalleryData;
@@ -204,71 +203,21 @@ export function GalleryPublicClient({ gallery }: Props) {
         )}
       </div>
 
-      {/* ---------- MASONRY GRID ---------- */}
+      {/* ---------- GRID (justificado — estilo Pixieset) ---------- */}
       <div className="mx-auto max-w-[1600px] px-1.5 py-2 sm:px-3 sm:py-4">
-        <div className="columns-2 gap-1.5 sm:columns-3 sm:gap-2 lg:columns-4 xl:columns-5">
-          {visiblePhotos.map((photo) => {
-            const isFav = favorites.has(photo.id);
-            return (
-              <div
-                key={photo.id}
-                className="group relative mb-1.5 break-inside-avoid overflow-hidden sm:mb-2"
-              >
-                <button
-                  type="button"
-                  onClick={() => setLightboxId(photo.id)}
-                  className="block w-full"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={galleryImageUrl(photo.id, { w: GRID_DEFAULT_WIDTH, wm: useWatermark })}
-                    srcSet={galleryImageSrcSet(photo.id, GRID_WIDTHS, { wm: useWatermark })}
-                    sizes={GRID_IMAGE_SIZES}
-                    alt={photo.filename}
-                    loading="lazy"
-                    decoding="async"
-                    className={cn(
-                      "w-full bg-stone-100 transition-opacity duration-300 group-hover:opacity-95",
-                      isSelection && isFav && "ring-2 ring-stone-900 ring-offset-0"
-                    )}
-                  />
-                </button>
-
-                {/* gradient on hover for icon legibility */}
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/25 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-
-                {/* Favorite (selection mode) */}
-                {isSelection && gallery.favorite_enabled && !submitted && (
-                  <button
-                    type="button"
-                    onClick={() => toggleFavorite(photo.id)}
-                    className={cn(
-                      "absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full transition-all",
-                      isFav
-                        ? "bg-white text-rose-500 shadow-md"
-                        : "bg-black/30 text-white opacity-0 backdrop-blur-sm hover:bg-black/50 group-hover:opacity-100"
-                    )}
-                    aria-label={isFav ? "Remover dos favoritos" : "Favoritar"}
-                  >
-                    <Heart className={cn("h-4 w-4", isFav && "fill-rose-500")} />
-                  </button>
-                )}
-
-                {/* Download (delivery mode) */}
-                {isDelivery && gallery.download_enabled && (
-                  <a
-                    href={`/api/gallery/${gallery.slug}/download/${photo.id}`}
-                    onClick={(e) => e.stopPropagation()}
-                    className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/30 text-white opacity-0 backdrop-blur-sm transition-all hover:bg-black/50 group-hover:opacity-100"
-                    title="Baixar foto"
-                  >
-                    <Download className="h-4 w-4" />
-                  </a>
-                )}
-              </div>
-            );
-          })}
-        </div>
+        <JustifiedGalleryGrid
+          photos={visiblePhotos}
+          slug={gallery.slug}
+          useWatermark={useWatermark}
+          isSelection={isSelection}
+          isDelivery={isDelivery}
+          downloadEnabled={gallery.download_enabled}
+          favoriteEnabled={gallery.favorite_enabled}
+          submitted={submitted}
+          favorites={favorites}
+          onOpenLightbox={setLightboxId}
+          onToggleFavorite={toggleFavorite}
+        />
       </div>
 
       {/* ---------- FOOTER ---------- */}
