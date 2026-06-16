@@ -8,6 +8,10 @@ import { removeWatermarkLogo, uploadWatermarkLogo } from "@/lib/gallery/watermar
 import type { Json } from "@/types/database";
 import type { WatermarkConfig } from "@/types/gallery";
 
+/** Fundo escuro xadrez — marcas d'água costumam ser brancas; transparência continua visível. */
+const LOGO_PREVIEW_BG =
+  "bg-stone-500 bg-[linear-gradient(45deg,#3f3f46_25%,transparent_25%),linear-gradient(-45deg,#3f3f46_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#3f3f46_75%),linear-gradient(-45deg,transparent_75%,#3f3f46_75%)] bg-[length:12px_12px] bg-[position:0_0,0_6px,6px_-6px,-6px_0px]";
+
 interface Props {
   accountId: string;
   initialLogoUrl: string | null;
@@ -86,19 +90,21 @@ export function WatermarkSettingsClient({ accountId, initialLogoUrl, initialConf
         <div>
           <p className="text-sm font-medium text-ds-ink">Logo da marca d&apos;água</p>
           <p className="mt-0.5 text-xs text-ds-muted">
-            PNG transparente ou SVG recomendado. Máx. 2 MB. Aparece em grade sobre as fotos no modo
-            Seleção.
+            PNG transparente ou SVG recomendado (em geral branco). Máx. 2 MB. Aparece em grade sobre
+            as fotos no modo Seleção.
           </p>
         </div>
         <div className="flex items-center gap-3">
           {logoUrl ? (
-            <div className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl border border-ds-border bg-ds-surface">
+            <div
+              className={`relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl border border-stone-600 ${LOGO_PREVIEW_BG}`}
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={logoUrl} alt="Logo" className="h-full w-full object-contain p-2" />
               <button
                 type="button"
                 onClick={handleRemoveLogo}
-                className="absolute right-1 top-1 rounded-full bg-white/80 p-0.5 text-ds-ink hover:bg-white"
+                className="absolute right-1 top-1 rounded-full bg-stone-700/90 p-0.5 text-white hover:bg-stone-600"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -108,7 +114,7 @@ export function WatermarkSettingsClient({ accountId, initialLogoUrl, initialConf
               type="button"
               onClick={() => fileRef.current?.click()}
               disabled={uploading}
-              className="flex h-20 w-20 flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-ds-border bg-ds-surface text-ds-muted hover:border-ds-accent hover:text-ds-accent"
+              className={`flex h-20 w-20 flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-stone-600 text-stone-300 hover:border-ds-accent hover:text-white ${LOGO_PREVIEW_BG}`}
             >
               {uploading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
@@ -207,13 +213,13 @@ export function WatermarkSettingsClient({ accountId, initialLogoUrl, initialConf
           Foto de exemplo com a marca d&apos;água aplicada em grade, como o cliente verá no modo
           Seleção.
         </p>
-        <div className="relative aspect-[3/2] w-full overflow-hidden rounded-xl bg-stone-200">
+        <div className="relative mx-auto h-36 w-full max-w-md overflow-hidden rounded-xl bg-stone-200 sm:h-40">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             key={`${config.opacity}-${config.scale}-${config.rotation}-${logoUrl ?? "none"}`}
             src={`/api/watermark/preview?opacity=${config.opacity ?? 40}&scale=${config.scale ?? 20}&rotation=${config.rotation ?? -30}`}
             alt="Pré-visualização da marca d'água"
-            className="h-full w-full object-cover"
+            className="h-full w-full object-cover object-center"
           />
         </div>
       </div>
