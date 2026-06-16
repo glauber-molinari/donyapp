@@ -9,7 +9,7 @@ function shortHash(str: string): string {
 }
 
 /** Versão do algoritmo — incrementar ao corrigir geração (ex.: rotação). */
-const WATERMARK_ALGO_VERSION = "v3";
+const WATERMARK_ALGO_VERSION = "v4";
 
 /** Sufixo estável para chaves R2 — muda quando opacidade, tamanho, rotação ou logo mudam. */
 export function watermarkConfigCacheKey(
