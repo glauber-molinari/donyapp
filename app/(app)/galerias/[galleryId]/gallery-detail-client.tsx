@@ -211,7 +211,7 @@ export function GalleryDetailClient({
       p.map((ph) => (ph.folder_id === folderId ? { ...ph, folder_id: null } : ph))
     );
     if (activeFolder === folderId) {
-      setActiveFolder((prev) => {
+      setActiveFolder(() => {
         const remaining = folders.filter((f) => f.id !== folderId);
         return remaining[0]?.id ?? null;
       });

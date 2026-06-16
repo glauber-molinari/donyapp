@@ -402,6 +402,7 @@ export function GalleryPublicClient({ gallery }: Props) {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={`/api/gallery/image/${lightboxId}?w=1600&wm=1`}
+                alt=""
                 className="max-h-[82vh] max-w-[88vw] object-contain shadow-[0_8px_40px_rgba(0,0,0,0.12)]"
               />
             </motion.div>
