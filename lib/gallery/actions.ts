@@ -651,7 +651,7 @@ export async function deletePhotos(photoIds: string[], galleryId: string): Promi
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const uniqueIds = [...new Set(photoIds.filter(Boolean))];
+  const uniqueIds = Array.from(new Set(photoIds.filter(Boolean)));
   if (uniqueIds.length === 0) {
     return { ok: false, error: "Nenhuma foto selecionada." };
   }

@@ -295,7 +295,7 @@ export function GalleryDetailClient({
   }
 
   async function handleBulkDelete() {
-    const ids = [...selectedPhotoIds];
+    const ids = Array.from(selectedPhotoIds);
     if (ids.length === 0) return;
 
     setBulkDeleteOpen(false);
