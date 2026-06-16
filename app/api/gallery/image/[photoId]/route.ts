@@ -15,7 +15,18 @@ import type { WatermarkConfig } from "@/types/gallery";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 export const maxDuration = 60;
+
+const PUBLIC_WM_CACHE_HEADERS = {
+  "Cache-Control": "private, no-cache, no-store, must-revalidate",
+  "CDN-Cache-Control": "no-store",
+  "Vercel-CDN-Cache-Control": "no-store",
+} as const;
+
+const WATERMARK_CACHE_HEADERS = {
+  "Cache-Control": "private, immutable, max-age=86400",
+} as const;
 
 /** Original ou miniatura redimensionada, sem marca d'água. */
 async function serveCleanImage(
@@ -157,12 +168,16 @@ export async function GET(
     request.nextUrl.searchParams.get("cover") === "1" && isCoverPhoto;
   const isManageContext = request.nextUrl.searchParams.get("ctx") === "manage";
   const isPublicView = request.nextUrl.searchParams.get("wm") === "1";
+  const isLightboxView =
+    isPublicView && request.nextUrl.searchParams.get("display") === "lightbox";
   const skipWatermark =
     isCoverDisplay ||
     (!isPublicView && isOwner && (isManageContext || !isPublished));
   if (skipWatermark) {
     return serveCleanImage(r2Key, photoId, photo.filename, width);
   }
+
+  const wmResponseHeaders = isPublicView ? PUBLIC_WM_CACHE_HEADERS : WATERMARK_CACHE_HEADERS;
 
   const { data: account } = await svc
     .from("accounts")
@@ -177,11 +192,10 @@ export async function GET(
   const configKey = watermarkConfigCacheKey(wmConfig, account?.watermark_logo_url);
 
   const wmKey = watermarkedKeyFromOriginal(r2Key, photoId, width, {
-    variant: isPublicView ? "view" : undefined,
+    variant: isLightboxView ? "lightbox" : isPublicView ? "view" : undefined,
     configKey,
   });
 
-  // Cache hit
   const cached = await headObject(wmKey);
   if (cached) {
     const bytes = await getObjectBytes(wmKey);
@@ -189,7 +203,7 @@ export async function GET(
       return new NextResponse(new Uint8Array(bytes), {
         headers: {
           "Content-Type": "image/jpeg",
-          "Cache-Control": "private, immutable, max-age=86400",
+          ...wmResponseHeaders,
         },
       });
     }
@@ -218,7 +232,7 @@ export async function GET(
   return new NextResponse(new Uint8Array(watermarked), {
     headers: {
       "Content-Type": "image/jpeg",
-      "Cache-Control": "private, immutable, max-age=86400",
+      ...wmResponseHeaders,
     },
   });
 }

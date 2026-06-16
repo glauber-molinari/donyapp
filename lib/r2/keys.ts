@@ -32,10 +32,15 @@ export function watermarkedKeyFromOriginal(
   r2Key: string,
   photoId: string,
   width?: number,
-  options?: { variant?: "view"; configKey?: string }
+  options?: { variant?: "view" | "lightbox"; configKey?: string }
 ): string {
   const suffix = width ? `_w${width}` : "";
-  const variantSuffix = options?.variant === "view" ? "_view" : "";
+  const variantSuffix =
+    options?.variant === "lightbox"
+      ? "_lightbox"
+      : options?.variant === "view"
+        ? "_view"
+        : "";
   const configSuffix = options?.configKey ? `_${options.configKey}` : "";
   return r2Key
     .replace(
