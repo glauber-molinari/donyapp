@@ -1,6 +1,10 @@
+import { AdminAdoptionList } from "@/components/admin/admin-adoption-list";
+import { AdminJobMix } from "@/components/admin/admin-job-mix";
 import { AdminMetricCard } from "@/components/admin/admin-metric-card";
+import { AdminUsageLeaderboard } from "@/components/admin/admin-usage-leaderboard";
 import { formatBrlNumber, formatPercentRatio } from "@/lib/admin/format";
 import { fetchAdminDashboardMetrics } from "@/lib/admin/metrics";
+import { fetchAdminUsageSnapshot } from "@/lib/admin/usage";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 
 export const dynamic = "force-dynamic";
@@ -28,15 +32,18 @@ export default async function AdminDashboardPage() {
     );
   }
 
-  const m = await fetchAdminDashboardMetrics(svc);
+  const [m, u] = await Promise.all([
+    fetchAdminDashboardMetrics(svc),
+    fetchAdminUsageSnapshot(svc),
+  ]);
 
   return (
     <div className="flex flex-col gap-8">
       <div>
         <h2 className="text-xl font-semibold text-ds-ink">Dashboard</h2>
         <p className="mt-1 text-sm text-ds-muted">
-          Indicadores operacionais e de receita recorrente estimada. Dados em tempo real do
-          Supabase (sem histórico financeiro completo).
+          Receita e contas primeiro. Depois, o que o pessoal está fazendo no app — sem e-mail,
+          cliente ou título de job.
         </p>
       </div>
 
@@ -80,7 +87,7 @@ export default async function AdminDashboardPage() {
           <AdminMetricCard
             label="Contas com job (30 dias)"
             value={intPt(m.accountsWithJobs30d)}
-            hint="Engajamento no Kanban"
+            hint="Contas que cadastraram job no período"
           />
         </div>
       </section>
@@ -132,27 +139,106 @@ export default async function AdminDashboardPage() {
       </section>
 
       <section>
-        <h3 className="mb-3 text-sm font-semibold text-ds-ink">Produto e convites</h3>
+        <h3 className="mb-3 text-sm font-semibold text-ds-ink">Uso no dia a dia</h3>
+        <p className="mb-3 text-sm text-ds-muted">
+          Só volume. Nenhum nome de cliente, e-mail, telefone, título de job ou resposta de
+          formulário.
+        </p>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <AdminMetricCard label="Contatos totais" value={intPt(m.contactsTotal)} />
-          <AdminMetricCard label="Jobs totais" value={intPt(m.jobsTotal)} />
+          <AdminMetricCard
+            label="Jobs totais"
+            value={intPt(u.jobsTotal)}
+            hint={`${intPt(u.jobsInProgress)} em aberto · ${intPt(u.jobsFinished)} na coluna final`}
+          />
+          <AdminMetricCard
+            label="Jobs criados (7 dias)"
+            value={intPt(u.jobsCreated7d)}
+            hint="Cadastros novos no Kanban"
+          />
           <AdminMetricCard
             label="Jobs criados (30 dias)"
-            value={intPt(m.jobsCreated30d)}
-            hint="Volume recente de jobs criados"
+            value={intPt(u.jobsCreated30d)}
+            hint={`${intPt(u.jobsTouched30d)} jobs tiveram alguma alteração no mesmo período`}
+          />
+          <AdminMetricCard
+            label="Média de jobs / conta"
+            value={decPt(u.avgJobsPerActiveAccount, 1)}
+            hint="Só entre quem já cadastrou pelo menos um job"
+          />
+          <AdminMetricCard
+            label="Nunca criaram job"
+            value={intPt(u.accountsNeverJob)}
+            hint="Contas com usuário que pararam no cadastro"
+          />
+          <AdminMetricCard
+            label="Parados (30 dias)"
+            value={intPt(u.dormant30d)}
+            hint="Têm usuário, mas não criaram nem mexeram em job no mês"
+          />
+          <AdminMetricCard
+            label="Contas ativas (7 dias)"
+            value={intPt(u.active7d)}
+            hint="Mexeram em job, criaram tarefa/galeria ou receberam formulário"
+          />
+          <AdminMetricCard
+            label="Voltaram na semana"
+            value={u.stickiness != null ? formatPercentRatio(u.stickiness) : "—"}
+            hint="Contas ativas nos últimos 7 dias, entre as ativas nos últimos 30. Mais alto = uso mais constante."
+          />
+          <AdminMetricCard label="Contatos" value={intPt(u.contactsTotal)} />
+          <AdminMetricCard
+            label="Tarefas"
+            value={intPt(u.tasksTotal)}
+            hint={`${intPt(u.tasksDone)} feitas · ${intPt(u.tasksCreated30d)} nos últimos 30 dias`}
+          />
+          <AdminMetricCard
+            label="Formulários"
+            value={intPt(u.formsActive)}
+            hint={`${intPt(u.formSubmissions)} respostas · ${intPt(u.formSubmissions30d)} no mês`}
           />
           <AdminMetricCard
             label="Convites pendentes"
-            value={intPt(m.pendingInvitations)}
+            value={intPt(u.pendingInvitations)}
             hint="Ainda não aceitos e não expirados"
           />
         </div>
       </section>
 
+      <div className="grid gap-4 lg:grid-cols-2">
+        <AdminUsageLeaderboard
+          title="Top 5 por jobs"
+          description="Estúdios com mais jobs no Kanban. A barra é o total; o texto abaixo mostra se isso é uso recente."
+          rows={u.topByJobs}
+          sortKey="jobsTotal"
+          empty="Ainda não há jobs cadastrados."
+        />
+        <AdminUsageLeaderboard
+          title="Top 5 no último mês"
+          description="Quem mais mexeu em job nos últimos 30 dias: cadastro novo, etapa ou prazo. Acúmulo antigo não entra."
+          rows={u.topByJobs30d}
+          sortKey="jobsTouched30d"
+          empty="Ninguém mexeu em job nos últimos 30 dias."
+        />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <AdminJobMix
+          byType={u.jobsByType}
+          inProgress={u.jobsInProgress}
+          finished={u.jobsFinished}
+          withContact={u.jobsWithContact}
+          albumBoard={u.jobsAlbumBoard}
+          editBoard={u.jobsEditBoard}
+          total={u.jobsTotal}
+        />
+        <AdminAdoptionList rows={u.adoption} total={u.accountsWithMembers} />
+      </div>
+
       <p className="text-xs leading-relaxed text-ds-muted">
-        Para evoluir: eventos de produto (MAU/WAU), NRR, CAC e cohort de receita exigem
-        instrumentação ou exportação (ex.: Stripe/Asaas + armazenamento de eventos). O MRR aqui
-        assume preço mensal para cada assinatura vinculada ao Asaas.
+        O ranking usa o nome do estúdio da conta, não a pessoa da equipe. Jobs pertencem à
+        conta. Para evoluir: eventos de produto (MAU/WAU real), NRR, CAC e cohort de receita
+        exigem instrumentação ou exportação (ex.: Stripe/Asaas + armazenamento de eventos). O
+        MRR aqui assume preço mensal para cada assinatura vinculada ao Asaas.
       </p>
     </div>
   );
