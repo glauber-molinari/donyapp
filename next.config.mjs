@@ -28,6 +28,10 @@ const nextConfig = {
       { source: "/v2", destination: "/", permanent: true },
       { source: "/v3", destination: "/", permanent: true },
       { source: "/v4", destination: "/", permanent: true },
+      // Galerias retiradas do ar: quem tinha o menu/bookmark cai no dashboard.
+      { source: "/galerias", destination: "/dashboard", permanent: false },
+      { source: "/galerias/:path*", destination: "/dashboard", permanent: false },
+      { source: "/settings/watermark", destination: "/settings", permanent: false },
     ];
   },
   async headers() {

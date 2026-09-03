@@ -51,8 +51,8 @@ export default async function SettingsProfilePage() {
         <p className="mt-1 text-sm text-ds-muted">
           Nome e e-mail vêm da sua conta Google. O e-mail entra como resposta (reply-to) nos envios ao
           cliente no plano Pro. A foto você pode trocar aqui; se enviar uma imagem, ela passa a valer no
-          app em vez da foto do Google (até você voltar atrás). O nome da empresa é o que o cliente vê na
-          galeria.
+          app em vez da foto do Google (até você voltar atrás). O nome da empresa aparece no rodapé dos
+          e-mails ao cliente.
         </p>
       </div>
 

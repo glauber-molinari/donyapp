@@ -13,6 +13,11 @@ export async function updateSession(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const oauthCode = request.nextUrl.searchParams.get("code");
 
+  // Galerias fora do ar: APIs públicas não servem mais fotos nem aceitam senha/seleção.
+  if (path.startsWith("/api/gallery")) {
+    return NextResponse.json({ error: "Não encontrado" }, { status: 404 });
+  }
+
   /**
    * OAuth PKCE: se o redirect permitido no Supabase não incluir `/auth/callback`,
    * o retorno pode cair na Site URL (`/`) ou em `/login` com `?code=…` sem trocar sessão.

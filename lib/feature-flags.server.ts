@@ -18,6 +18,8 @@ import { FEATURE_FLAGS, type FeatureFlagKey } from "@/lib/feature-flags";
  * flag global.
  */
 export async function isFeatureEnabled(key: FeatureFlagKey): Promise<boolean> {
+  if (key === "galerias") return false;
+
   try {
     const supabase = createClient();
     const { data } = await supabase

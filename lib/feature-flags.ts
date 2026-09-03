@@ -26,7 +26,7 @@ export const FEATURE_FLAGS = {
     envVar: "NEXT_PUBLIC_FF_DEMO",
   },
   galerias: {
-    description: "Módulo de Galerias: entrega e seleção de fotos para clientes (Pro).",
+    description: "Retirado do ar. Superfície desligada; dados de galeria preservados.",
     envVar: "NEXT_PUBLIC_FF_GALERIAS",
   },
 } as const;
@@ -43,7 +43,7 @@ function truthy(value: string | undefined): boolean {
  */
 const CLIENT_ENV_FLAGS: Record<FeatureFlagKey, boolean> = {
   demo: truthy(process.env.NEXT_PUBLIC_FF_DEMO),
-  galerias: truthy(process.env.NEXT_PUBLIC_FF_GALERIAS),
+  galerias: false,
 };
 
 /**

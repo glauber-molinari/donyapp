@@ -7,7 +7,6 @@ import {
   ChevronRight,
   ClipboardList,
   HelpCircle,
-  Images,
   LaptopMinimal,
   LayoutDashboard,
   Lightbulb,
@@ -22,7 +21,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState, type ReactNode } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useState, type ReactNode } from "react";
 
 import { OnboardingTourProvider } from "@/components/app/onboarding-tour";
 import { SidebarCollapsedContext } from "@/components/layout/sidebar-collapsed-context";
@@ -94,37 +93,15 @@ export interface AppShellProps {
   avatarUrl: string | null;
   tourCompleted: boolean;
   isPro: boolean;
-  galeriasEnabled?: boolean;
   unreadSupportCount?: number;
   sidebarWidget?: ReactNode;
 }
 
-export function AppShell({ children, userName, userEmail, avatarUrl, tourCompleted, isPro, galeriasEnabled = false, unreadSupportCount = 0, sidebarWidget }: AppShellProps) {
+export function AppShell({ children, userName, userEmail, avatarUrl, tourCompleted, isPro, unreadSupportCount = 0, sidebarWidget }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
-  const activeNavItems = useMemo(() => {
-    const items = [...navItems] as Array<{
-      href: string;
-      label: string;
-      id: string;
-      icon: React.ElementType;
-      isPro: boolean;
-    }>;
-    if (galeriasEnabled) {
-      const boardIdx = items.findIndex((i) => i.href === "/board");
-      items.splice(boardIdx + 1, 0, {
-        href: "/galerias",
-        label: "Galerias",
-        id: "menu-galerias",
-        icon: Images,
-        isPro: true,
-      });
-    }
-    return items;
-  }, [galeriasEnabled]);
 
   const persistSidebarCollapsed = useCallback((collapsed: boolean) => {
     try {
@@ -313,7 +290,7 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
           )}
           aria-label="Principal"
         >
-          {activeNavItems.map(({ href, label, id, icon: Icon, isPro: isProFeature }) => (
+          {navItems.map(({ href, label, id, icon: Icon, isPro: isProFeature }) => (
             <Link
               key={href}
               href={href}

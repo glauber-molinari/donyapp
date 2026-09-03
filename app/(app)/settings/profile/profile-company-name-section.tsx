@@ -43,7 +43,7 @@ export function ProfileCompanyNameSection({ initialCompanyName, isAdmin }: Props
         <Input
           id="profile-company-name"
           label="Nome empresa"
-          hint="Aparece na galeria enviada ao cliente, no rodapé e na marca d'água (quando configurada como texto)."
+          hint="Aparece no rodapé dos e-mails ao cliente."
           value={companyName}
           onChange={(e) => setCompanyName(e.target.value)}
           disabled={!isAdmin || saving}
