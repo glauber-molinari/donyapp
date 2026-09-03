@@ -7,6 +7,7 @@ export type MarketingNavItem = { readonly href: string; readonly label: string }
 
 /** Links âncora na própria landing (`/`). */
 export const marketingLandingNavItems: readonly MarketingNavItem[] = [
+  { href: "#o-que-e", label: "O app" },
   { href: "#sobre", label: "Sobre" },
   { href: "#prova", label: "Resultados" },
   { href: "#planos", label: "Planos" },
@@ -16,6 +17,7 @@ export const marketingLandingNavItems: readonly MarketingNavItem[] = [
 
 /** Mesmas seções da home, com prefixo para uso fora da `/` (ex.: `/por-que-usar`). */
 export const marketingHomeAnchoredNavItems: readonly MarketingNavItem[] = [
+  { href: "/#o-que-e", label: "O app" },
   { href: "/#sobre", label: "Sobre" },
   { href: "/#prova", label: "Resultados" },
   { href: "/#planos", label: "Planos" },

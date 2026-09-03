@@ -61,12 +61,9 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
       <main>
         <section className="bg-ds-cream px-4 pb-0 pt-[9.5rem] sm:pt-[10rem] lg:pt-[11.25rem]">
           <div className="mx-auto max-w-[1200px] text-center">
-            <Link
-              href="/login"
-              className="group mb-8 inline-flex items-center gap-2 rounded-full bg-ds-accent px-1 py-1 pl-1.5 pr-3 text-[0.75rem] font-semibold text-white transition duration-ds ease-out hover:brightness-110 sm:mb-10"
-            >
-              <span className="pr-1">Pós-produção, sem caos</span>
-            </Link>
+            <p className="mb-6 text-sm font-semibold tracking-wide text-ds-accent sm:mb-8 sm:text-[0.95rem]">
+              Donyapp
+            </p>
 
             <h1
               className={cn(
@@ -80,10 +77,12 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
               <span className="text-[#ff5500]">do backup ao entregue</span>.
             </h1>
 
-            <p className="mx-auto mt-8 max-w-[55ch] text-pretty text-center text-lg leading-relaxed text-ds-muted sm:text-xl">
-              <span className="font-medium text-ds-ink">Cada entrega atrasada custa confiança e tempo.</span> <br /> Um
-              kanban feito para fotógrafos e videomakers: prazos claros, clientes organizados e a equipe alinhada,
-              sem planilhas nem ferramentas genéricas.
+            <p className="mx-auto mt-8 max-w-[58ch] text-pretty text-center text-lg leading-relaxed text-ds-muted sm:text-xl">
+              <span className="font-medium text-ds-ink">
+                O Donyapp é um app de gestão de pós-produção para fotógrafos e videomakers.
+              </span>{" "}
+              Organize jobs num kanban (do backup à entrega), clientes, prazos e equipe no mesmo lugar — sem planilha
+              solta nem ferramenta genérica.
             </p>
 
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
@@ -113,7 +112,52 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
           </div>
         </section>
 
-        <section className="border-t border-ds-border bg-ds-surface/60 py-16 lg:py-20">
+        <section
+          id="o-que-e"
+          className="scroll-mt-28 border-t border-ds-border bg-ds-surface/60 py-14 lg:scroll-mt-32 lg:py-16"
+        >
+          <div className="mx-auto max-w-[720px] px-4 text-center sm:px-6 lg:px-8">
+            <h2
+              className={cn(
+                displayClassName,
+                "text-balance text-2xl font-extrabold tracking-tight text-ds-ink sm:text-3xl",
+              )}
+            >
+              O que é o Donyapp
+            </h2>
+            <p className="mt-5 text-base leading-relaxed text-ds-muted sm:text-lg">
+              O Donyapp é um software web para estúdios e freelancers de foto e vídeo. A finalidade do app é
+              gerenciar o fluxo de pós-produção: cadastrar jobs, acompanhar etapas no kanban, guardar contatos,
+              receber formulários de clientes, ver a agenda da equipe e entregar o trabalho com prazo visível.
+            </p>
+            <div className="mt-8 rounded-ds-2xl border border-ds-border bg-white px-5 py-5 text-left sm:px-6">
+              <h3 className="text-sm font-bold text-ds-ink sm:text-base">Como usamos dados do Google</h3>
+              <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-ds-muted">
+                <li>
+                  <span className="font-medium text-ds-ink">Login com Google:</span> usamos nome, e-mail e foto de
+                  perfil da Conta Google só para criar e autenticar sua conta no Donyapp.
+                </li>
+                <li>
+                  <span className="font-medium text-ds-ink">Google Calendar (opcional):</span> um administrador pode
+                  conectar a agenda do estúdio em modo somente leitura para a equipe ver compromissos no app. Não
+                  criamos, alteramos nem excluímos eventos.
+                </li>
+              </ul>
+              <p className="mt-4 text-sm text-ds-muted">
+                Detalhes em{" "}
+                <Link
+                  href="/politica-de-privacidade"
+                  className="font-semibold text-ds-ink underline decoration-ds-border underline-offset-4 hover:decoration-ds-ink"
+                >
+                  Política de Privacidade
+                </Link>
+                .
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="border-t border-ds-border bg-ds-cream py-16 lg:py-20">
           <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
             <h2
               className={cn(

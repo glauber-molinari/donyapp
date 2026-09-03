@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { rewritePublicStorageUrl } from "@/lib/public-storage-url";
 import type { Database } from "@/types/database";
 
 export const USER_AVATARS_BUCKET = "user-avatars";
@@ -70,5 +71,5 @@ export async function uploadUserProfileAvatar(
   }
 
   const { data } = supabase.storage.from(USER_AVATARS_BUCKET).getPublicUrl(path);
-  return { ok: true, publicUrl: data.publicUrl };
+  return { ok: true, publicUrl: rewritePublicStorageUrl(data.publicUrl) ?? data.publicUrl };
 }

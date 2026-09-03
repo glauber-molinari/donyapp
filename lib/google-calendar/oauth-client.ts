@@ -2,9 +2,15 @@ import { google } from "googleapis";
 
 import { googleCalendarOAuthRedirectUri } from "@/lib/app-url";
 
-/** Escopos mínimos para Agenda: lista do calendário primary, eventos só em calendários próprios, e-mail da conta (exibição). */
+/**
+ * Escopos mínimos da Agenda:
+ * - events.owned.readonly: listar eventos do calendário primary (somente leitura)
+ * - openid + userinfo.email: identificar qual Conta Google o admin conectou
+ *
+ * Não pedimos calendar.calendarlist.readonly: usamos o ID fixo "primary" e
+ * colors.get (autorizado por events.owned.readonly) para a paleta de eventos.
+ */
 export const GOOGLE_CALENDAR_SCOPES = [
-  "https://www.googleapis.com/auth/calendar.calendarlist.readonly",
   "https://www.googleapis.com/auth/calendar.events.owned.readonly",
   "openid",
   "https://www.googleapis.com/auth/userinfo.email",

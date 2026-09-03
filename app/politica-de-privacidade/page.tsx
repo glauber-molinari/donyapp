@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Como o Donyapp trata dados pessoais e informações do uso do produto.",
 };
 
-const UPDATED_AT = "06/04/2026";
+const UPDATED_AT = "03/09/2026";
 
 export default function PrivacyPolicyPage() {
   return (
@@ -105,7 +105,36 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-xl font-bold">5. Compartilhamento de dados</h2>
+            <h2 className="text-xl font-bold">5. Dados da Conta Google e Google Calendar</h2>
+            <div className="space-y-3 text-sm leading-relaxed text-ds-muted">
+              <p>
+                O Donyapp usa serviços Google de duas formas distintas:
+              </p>
+              <ul className="list-disc space-y-2 pl-5">
+                <li>
+                  <span className="font-semibold text-ds-ink">Login com Google (autenticação)</span>:
+                  pedimos dados básicos da Conta Google (como e-mail, nome e foto de perfil) para criar e
+                  autenticar sua conta no Serviço. Esses dados não são usados para outros fins.
+                </li>
+                <li>
+                  <span className="font-semibold text-ds-ink">Google Calendar (integração opcional)</span>:
+                  um administrador do estúdio pode conectar o calendário principal da Conta Google em modo{" "}
+                  <span className="font-semibold text-ds-ink">somente leitura</span>. Usamos isso para
+                  exibir compromissos (título, horários, local, descrição e link do evento, quando
+                  existir) na agenda interna do Donyapp, para a equipe do estúdio. Não criamos, alteramos
+                  nem excluímos eventos pela API. Tokens OAuth ficam no servidor, vinculados à conta do
+                  estúdio; colaboradores não recebem as credenciais Google.
+                </li>
+              </ul>
+              <p>
+                O uso de dados obtidos das APIs Google limita-se às práticas descritas nesta Política e
+                às finalidades do produto. Não vendemos esses dados e não os usamos para publicidade.
+              </p>
+            </div>
+          </section>
+
+          <section className="space-y-3">
+            <h2 className="text-xl font-bold">6. Compartilhamento de dados</h2>
             <div className="space-y-3 text-sm leading-relaxed text-ds-muted">
               <p>
                 Podemos compartilhar dados com provedores que operam partes do Serviço (por exemplo:
@@ -120,7 +149,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-xl font-bold">6. Cookies e tecnologias similares</h2>
+            <h2 className="text-xl font-bold">7. Cookies e tecnologias similares</h2>
             <p className="text-sm leading-relaxed text-ds-muted">
               Usamos cookies e armazenamento local para manter sua sessão, lembrar preferências e
               melhorar a experiência. Você pode gerenciar cookies no seu navegador; algumas funções
@@ -129,7 +158,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-xl font-bold">7. Retenção e exclusão</h2>
+            <h2 className="text-xl font-bold">8. Retenção e exclusão</h2>
             <p className="text-sm leading-relaxed text-ds-muted">
               Mantemos dados pelo tempo necessário para fornecer o Serviço e cumprir obrigações
               legais. Quando possível, você pode solicitar exclusão de conta e/ou dados. Em alguns
@@ -139,7 +168,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-xl font-bold">8. Segurança</h2>
+            <h2 className="text-xl font-bold">9. Segurança</h2>
             <p className="text-sm leading-relaxed text-ds-muted">
               Adotamos medidas técnicas e organizacionais para proteger os dados (ex.: controle de
               acesso, criptografia em trânsito, segregação de ambientes). Mesmo assim, nenhum sistema
@@ -148,7 +177,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-xl font-bold">9. Direitos do titular</h2>
+            <h2 className="text-xl font-bold">10. Direitos do titular</h2>
             <div className="space-y-3 text-sm leading-relaxed text-ds-muted">
               <p>
                 Você pode solicitar: confirmação e acesso, correção, anonimização, portabilidade,
@@ -163,7 +192,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-xl font-bold">10. Crianças e adolescentes</h2>
+            <h2 className="text-xl font-bold">11. Crianças e adolescentes</h2>
             <p className="text-sm leading-relaxed text-ds-muted">
               O Serviço não é direcionado a menores de 18 anos. Se você acredita que dados de menores
               foram tratados indevidamente, contate o suporte.
@@ -171,7 +200,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-xl font-bold">11. Alterações desta Política</h2>
+            <h2 className="text-xl font-bold">12. Alterações desta Política</h2>
             <p className="text-sm leading-relaxed text-ds-muted">
               Podemos atualizar esta Política periodicamente. Quando houver mudanças relevantes,
               iremos comunicar pelo site/app. A data de atualização no topo indica a versão vigente.

@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { rewritePublicStorageUrl } from "@/lib/public-storage-url";
 import type { Database } from "@/types/database";
 
 export const MANUAL_ASSIGNEE_PHOTOS_BUCKET = "manual-assignee-photos";
@@ -73,5 +74,5 @@ export async function uploadManualAssigneePhoto(
   }
 
   const { data } = supabase.storage.from(MANUAL_ASSIGNEE_PHOTOS_BUCKET).getPublicUrl(path);
-  return { ok: true, publicUrl: data.publicUrl };
+  return { ok: true, publicUrl: rewritePublicStorageUrl(data.publicUrl) ?? data.publicUrl };
 }

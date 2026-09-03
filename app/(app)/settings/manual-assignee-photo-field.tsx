@@ -4,6 +4,7 @@ import { ImageUp } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { rewritePublicStorageUrl } from "@/lib/public-storage-url";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -45,7 +46,9 @@ export function ManualAssigneePhotoField({
     };
   }, [blobUrl]);
 
-  const displaySrc = removeRequested ? null : blobUrl ?? existingUrl ?? null;
+  const displaySrc = removeRequested
+    ? null
+    : blobUrl ?? rewritePublicStorageUrl(existingUrl) ?? null;
 
   function onPick(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];

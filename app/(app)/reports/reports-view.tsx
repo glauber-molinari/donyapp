@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 
+import { rewritePublicStorageUrl } from "@/lib/public-storage-url";
+
 import { fetchDeliveryMetrics, type DeliveryMetrics, type Period } from "./actions";
 
 const PERIODS: { value: Period; label: string }[] = [
@@ -478,8 +480,9 @@ function TopPerformers({ performers }: { performers: DeliveryMetrics["topPerform
                         {p.avatarUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
-                            src={p.avatarUrl}
+                            src={rewritePublicStorageUrl(p.avatarUrl) ?? p.avatarUrl}
                             alt=""
+                            referrerPolicy="no-referrer"
                             className="h-7 w-7 rounded-full object-cover"
                           />
                         ) : (

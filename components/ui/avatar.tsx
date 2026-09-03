@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import { rewritePublicStorageUrl } from "@/lib/public-storage-url";
 import { cn } from "@/lib/utils";
 
 function initialsFromName(name: string) {
@@ -48,11 +49,12 @@ export interface AvatarProps {
 
 export function Avatar({ src, name, size = "md", className }: AvatarProps) {
   const [failed, setFailed] = useState(false);
-  const showImg = Boolean(src) && !failed;
+  const resolvedSrc = rewritePublicStorageUrl(src);
+  const showImg = Boolean(resolvedSrc) && !failed;
 
   useEffect(() => {
     setFailed(false);
-  }, [src]);
+  }, [resolvedSrc]);
 
   return (
     <div
@@ -67,9 +69,10 @@ export function Avatar({ src, name, size = "md", className }: AvatarProps) {
       {showImg ? (
         // eslint-disable-next-line @next/next/no-img-element -- avatar dinâmico de terceiros
         <img
-          key={src ?? ""}
-          src={src!}
+          key={resolvedSrc ?? ""}
+          src={resolvedSrc!}
           alt=""
+          referrerPolicy="no-referrer"
           className="absolute inset-0 h-full w-full object-cover"
           onError={() => setFailed(true)}
         />

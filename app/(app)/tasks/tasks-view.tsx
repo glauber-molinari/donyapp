@@ -60,6 +60,7 @@ import {
 } from "./actions";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast";
+import { rewritePublicStorageUrl } from "@/lib/public-storage-url";
 import { cn } from "@/lib/utils";
 import type {
   Database,
@@ -224,11 +225,13 @@ function AvatarCircle({
   size?: "sm" | "md";
 }) {
   const sz = size === "sm" ? "h-6 w-6 text-[9px]" : "h-8 w-8 text-xs";
-  if (avatarUrl) {
+  const src = rewritePublicStorageUrl(avatarUrl);
+  if (src) {
     return (
       <img
-        src={avatarUrl}
+        src={src}
         alt={name}
+        referrerPolicy="no-referrer"
         className={cn("rounded-full object-cover ring-2 ring-white", sz)}
       />
     );

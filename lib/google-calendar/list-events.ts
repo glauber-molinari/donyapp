@@ -52,9 +52,9 @@ export async function listCalendarEventsForAccount(
   const calendarId = tokenRes.row.calendar_id || "primary";
 
   try {
-    const [colorsRes, calListRes, res] = await Promise.all([
+    // Sem calendarList: escopo mínimo (events.owned.readonly). Cores via colors.get + fallback.
+    const [colorsRes, res] = await Promise.all([
       cal.colors.get().catch(() => ({ data: undefined })),
-      cal.calendarList.get({ calendarId }).catch(() => ({ data: undefined })),
       cal.events.list({
         calendarId,
         timeMin: timeMin.toISOString(),
@@ -66,9 +66,10 @@ export async function listCalendarEventsForAccount(
     ]);
 
     const eventPalette = colorsRes.data?.event ?? {};
-    const listEntry = calListRes.data;
-    const defaultBg = listEntry?.backgroundColor ?? FALLBACK_BG;
-    const defaultFg = listEntry?.foregroundColor ?? FALLBACK_FG;
+    const calendarPalette = colorsRes.data?.calendar ?? {};
+    const primaryPalette = calendarPalette["1"] ?? Object.values(calendarPalette)[0];
+    const defaultBg = primaryPalette?.background ?? FALLBACK_BG;
+    const defaultFg = primaryPalette?.foreground ?? FALLBACK_FG;
 
     const items = res.data.items ?? [];
     const events: NormalizedCalendarEvent[] = [];

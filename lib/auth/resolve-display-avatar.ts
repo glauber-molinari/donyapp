@@ -1,6 +1,7 @@
 import type { User } from "@supabase/supabase-js";
 
 import { oauthAvatarUrlFromUser } from "@/lib/auth/oauth-profile";
+import { rewritePublicStorageUrl } from "@/lib/public-storage-url";
 import { pathFromUserAvatarPublicUrl } from "@/lib/user-avatar";
 
 export type UserAvatarProfile = {
@@ -25,8 +26,8 @@ export function resolveDisplayAvatarUrl(
   const isOurUpload = Boolean(storedOrNull && pathFromUserAvatarPublicUrl(storedOrNull));
 
   if (isOurUpload || (isCustom && storedOrNull)) {
-    return storedOrNull;
+    return rewritePublicStorageUrl(storedOrNull);
   }
 
-  return oauth ?? storedOrNull ?? null;
+  return oauth ?? rewritePublicStorageUrl(storedOrNull) ?? null;
 }
