@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
+import { homeJsonLdGraph, OG_IMAGE_PATH, SITE_DESCRIPTION, SITE_NAME, siteUrl } from "@/lib/agent/site";
 import { LandingPage } from "@/components/marketing/landing-page";
 
 const inter = Inter({
@@ -9,44 +10,40 @@ const inter = Inter({
   weight: ["400", "500", "600", "700", "800", "900"],
 });
 
-export const metadata: Metadata = {
-  title: "Donyapp | Gestão de pós-produção para fotógrafos e videomakers",
-  description:
-    "O Donyapp é um app de gestão de pós-produção para fotógrafos e videomakers: kanban de edição, clientes, prazos, formulários e agenda. Comece grátis.",
-};
+const canonical = `${siteUrl()}/`;
 
-function homeJsonLd() {
-  const siteUrl = (
-    process.env.NEXT_PUBLIC_APP_URL ?? "https://donyapp.com"
-  ).replace(/\/$/, "");
-  return {
-    "@context": "https://schema.org",
-    "@graph": [
+export const metadata: Metadata = {
+  title: `${SITE_NAME} | Gestão de pós-produção para fotógrafos e videomakers`,
+  description: SITE_DESCRIPTION,
+  alternates: { canonical },
+  openGraph: {
+    type: "website",
+    url: canonical,
+    title: `${SITE_NAME} | Gestão de pós-produção para fotógrafos e videomakers`,
+    description: SITE_DESCRIPTION,
+    images: [
       {
-        "@type": "Organization",
-        "@id": `${siteUrl}/#organization`,
-        name: "Donyapp",
-        url: siteUrl,
-        logo: `${siteUrl}/brand/logo-dony-png.png`,
-      },
-      {
-        "@type": "WebSite",
-        "@id": `${siteUrl}/#website`,
-        name: "Donyapp",
-        url: siteUrl,
-        inLanguage: "pt-BR",
-        publisher: { "@id": `${siteUrl}/#organization` },
+        url: OG_IMAGE_PATH,
+        width: 1200,
+        height: 630,
+        alt: `${SITE_NAME} — kanban de pós-produção`,
       },
     ],
-  };
-}
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE_NAME} | Gestão de pós-produção`,
+    description: SITE_DESCRIPTION,
+    images: [OG_IMAGE_PATH],
+  },
+};
 
 /**
  * Landing pública em /. Acessível a todos — visitantes e usuários logados.
  * Links de âncora (/#sobre, /#planos, etc.) funcionam sem redirecionamentos.
  */
 export default function Home() {
-  const jsonLd = homeJsonLd();
+  const jsonLd = homeJsonLdGraph();
   return (
     <>
       <script

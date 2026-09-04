@@ -1,9 +1,9 @@
 import type { MetadataRoute } from "next";
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+import { siteUrl } from "@/lib/agent/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = new URL(appUrl);
+  const base = new URL(siteUrl() || "https://www.donyapp.com");
   const now = new Date();
 
   return [
@@ -12,6 +12,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: "weekly",
       priority: 1,
+    },
+    {
+      url: new URL("/about", base).toString(),
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
+      url: new URL("/contact", base).toString(),
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
+      url: new URL("/privacy", base).toString(),
+      lastModified: now,
+      changeFrequency: "yearly",
+      priority: 0.5,
     },
     {
       url: new URL("/por-que-usar", base).toString(),
@@ -33,4 +51,3 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 }
-

@@ -1,10 +1,99 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import {
+  appendVary,
+  markdownResponseHeaders,
+  preferredType,
+} from "@/lib/agent/accept";
+import { notFoundMarkdown } from "@/lib/agent/markdown-content";
+import {
+  isMarkdownablePath,
+  isProtectedAppPath,
+  isPublicContentPath,
+} from "@/lib/agent/protected-routes";
 import { buildContentSecurityPolicy, generateCspNonce } from "@/lib/csp";
 import { resolveCorsOrigin } from "@/lib/cors-origin";
 import { updateSession } from "@/lib/supabase/middleware";
 
+function stripMdExtension(pathname: string): string {
+  if (pathname.endsWith(".md")) {
+    const base = pathname.slice(0, -3);
+    return base === "" ? "/" : base;
+  }
+  return pathname;
+}
+
+function markdownApiPath(contentPath: string): string {
+  if (contentPath === "/") return "/api/markdown";
+  return `/api/markdown${contentPath}`;
+}
+
+function negotiateMarkdown(request: NextRequest): NextResponse | null {
+  if (request.method !== "GET" && request.method !== "HEAD") return null;
+
+  const pathname = request.nextUrl.pathname;
+
+  // Never negotiate away from API, Next internals, or auth callbacks.
+  if (
+    pathname.startsWith("/api/") ||
+    pathname.startsWith("/_next/") ||
+    pathname.startsWith("/auth/")
+  ) {
+    return null;
+  }
+
+  const explicitMd = pathname.endsWith(".md");
+  const contentPath = stripMdExtension(pathname);
+  const accept = request.headers.get("accept");
+  const chosen = preferredType(accept);
+  const wantsMarkdown = explicitMd || chosen === "text/markdown";
+
+  if (!wantsMarkdown) {
+    if (chosen === null && accept) {
+      return new NextResponse(
+        "Not Acceptable\n\nAvailable: text/html, text/markdown\n",
+        {
+          status: 406,
+          headers: {
+            "Content-Type": "text/plain; charset=utf-8",
+            Vary: "Accept, Accept-Encoding",
+          },
+        },
+      );
+    }
+    return null;
+  }
+
+  if (isMarkdownablePath(contentPath)) {
+    const url = request.nextUrl.clone();
+    url.pathname = markdownApiPath(contentPath);
+    const rewritten = NextResponse.rewrite(url);
+    appendVary(rewritten.headers);
+    return rewritten;
+  }
+
+  // Existing HTML-only routes: fall through (do not fake a Markdown 404).
+  if (
+    isProtectedAppPath(contentPath) ||
+    isPublicContentPath(contentPath) ||
+    contentPath.startsWith("/api/") ||
+    (process.env.NODE_ENV === "development" &&
+      contentPath.startsWith("/dev-mobile-preview"))
+  ) {
+    return null;
+  }
+
+  // Truly unknown path + Markdown preferred → HTTP 404 with recovery links.
+  return new NextResponse(notFoundMarkdown(contentPath), {
+    status: 404,
+    headers: markdownResponseHeaders(),
+  });
+}
+
 export async function middleware(request: NextRequest) {
+  const markdown = negotiateMarkdown(request);
+  if (markdown) return markdown;
+
   const nonce = generateCspNonce();
   const isDev = process.env.NODE_ENV === "development";
   const csp = buildContentSecurityPolicy(nonce, isDev);
@@ -29,6 +118,12 @@ export async function middleware(request: NextRequest) {
     "Access-Control-Allow-Headers",
     "Content-Type, Authorization, asaas-access-token",
   );
+
+  // Public HTML pages that also offer Markdown must vary on Accept.
+  const path = request.nextUrl.pathname;
+  if (isMarkdownablePath(path) || path === "/") {
+    appendVary(response.headers);
+  }
 
   return response;
 }

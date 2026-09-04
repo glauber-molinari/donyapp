@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { isProtectedAppPath } from "@/lib/agent/protected-routes";
 import type { Database } from "@/types/database";
 
 function copyCookies(from: NextResponse, to: NextResponse) {
@@ -66,30 +67,11 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isPublic =
-    path === "/" ||
-    path === "/login" ||
-    path === "/signup" ||
-    path === "/forgot-password" ||
-    (process.env.NODE_ENV === "development" &&
-      path.startsWith("/dev-mobile-preview")) ||
-    path === "/sitemap.xml" ||
-    path === "/robots.txt" ||
-    path.startsWith("/auth/") ||
-    path.startsWith("/invite") ||
-    path.startsWith("/api/webhooks") ||
-    path.startsWith("/api/cron") ||
-    path.startsWith("/politica-de-privacidade") ||
-    path.startsWith("/termos-de-servico") ||
-    path.startsWith("/por-que-usar") ||
-    path.startsWith("/formulario/") ||
-    path.startsWith("/api/formularios/") ||
-    path.startsWith("/p/") ||
-    path.startsWith("/blog") ||
-    path.startsWith("/g/") ||
-    path.startsWith("/api/gallery/");
-
-  if (!user && !isPublic) {
+  /**
+   * Only known app surfaces require auth. Unknown paths must reach Next.js
+   * `not-found` (real HTTP 404) instead of soft-404 via /login.
+   */
+  if (!user && isProtectedAppPath(path)) {
     const redirect = NextResponse.redirect(new URL("/login", request.url));
     copyCookies(response, redirect);
     return redirect;

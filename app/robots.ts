@@ -1,15 +1,25 @@
 import type { MetadataRoute } from "next";
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+import { siteUrl } from "@/lib/agent/site";
 
 export default function robots(): MetadataRoute.Robots {
-  const base = new URL(appUrl);
+  const base = new URL(siteUrl() || "https://www.donyapp.com");
 
   return {
     rules: [
       {
         userAgent: "*",
-        allow: ["/", "/termos-de-servico", "/politica-de-privacidade"],
+        allow: [
+          "/",
+          "/about",
+          "/contact",
+          "/privacy",
+          "/llms.txt",
+          "/por-que-usar",
+          "/termos-de-servico",
+          "/politica-de-privacidade",
+          "/blog",
+        ],
         disallow: [
           "/login",
           "/login/",

@@ -7,7 +7,15 @@ export default function NotFound() {
         <p className="text-sm font-medium text-ds-muted">404</p>
         <h1 className="mt-2 text-2xl font-bold text-ds-ink">Página não encontrada</h1>
         <p className="mt-2 max-w-md text-sm text-ds-muted">
-          O endereço pode estar incorreto ou o conteúdo foi movido.
+          O endereço pode estar incorreto ou o conteúdo foi movido. Agentes: veja{" "}
+          <Link href="/llms.txt" className="font-medium text-ds-ink underline">
+            /llms.txt
+          </Link>{" "}
+          ou o{" "}
+          <Link href="/sitemap.xml" className="font-medium text-ds-ink underline">
+            sitemap
+          </Link>
+          .
         </p>
       </div>
       <div className="flex flex-wrap items-center justify-center gap-3">
@@ -16,6 +24,12 @@ export default function NotFound() {
           className="inline-flex h-10 items-center justify-center rounded-ds-xl bg-ds-accent px-4 text-sm font-medium text-white shadow-ds-sm transition-colors duration-ds hover:brightness-95"
         >
           Ir ao início
+        </Link>
+        <Link
+          href="/about"
+          className="inline-flex h-10 items-center justify-center rounded-ds-xl border border-ds-border bg-ds-surface px-4 text-sm font-medium text-ds-ink shadow-ds-sm transition-colors duration-ds hover:bg-ds-cream"
+        >
+          Sobre
         </Link>
         <Link
           href="/login"

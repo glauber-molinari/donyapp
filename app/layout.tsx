@@ -5,6 +5,12 @@ import { headers } from "next/headers";
 import "./globals.css";
 
 import { AppToaster } from "@/components/ui/app-toaster";
+import {
+  OG_IMAGE_PATH,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  siteUrl,
+} from "@/lib/agent/site";
 
 export const dynamic = "force-dynamic";
 
@@ -14,16 +20,15 @@ const inter = Inter({
   display: "swap",
 });
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+const appUrl = siteUrl() || "http://localhost:3000";
 
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
   title: {
-    default: "Donyapp | Gestão de pós-produção",
-    template: "%s | Donyapp",
+    default: `${SITE_NAME} | Gestão de pós-produção`,
+    template: `%s | ${SITE_NAME}`,
   },
-  description:
-    "Kanban de edição, prazos e clientes para fotógrafos e videomakers. Organize a pós-produção num fluxo pensado para o estúdio.",
+  description: SITE_DESCRIPTION,
   keywords: [
     "pós-produção",
     "kanban",
@@ -34,20 +39,30 @@ export const metadata: Metadata = {
     "prazos",
     "clientes",
   ],
-  applicationName: "Donyapp",
+  applicationName: SITE_NAME,
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     type: "website",
     locale: "pt_BR",
-    siteName: "Donyapp",
-    title: "Donyapp | Gestão de pós-produção",
-    description:
-      "Organize edições, prazos e clientes num fluxo pensado para estúdios e freelancers.",
+    siteName: SITE_NAME,
+    title: `${SITE_NAME} | Gestão de pós-produção`,
+    description: SITE_DESCRIPTION,
+    images: [
+      {
+        url: OG_IMAGE_PATH,
+        width: 1200,
+        height: 630,
+        alt: `${SITE_NAME} — kanban de pós-produção`,
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Donyapp | Gestão de pós-produção",
-    description:
-      "Kanban de pós-produção para fotógrafos e videomakers.",
+    title: `${SITE_NAME} | Gestão de pós-produção`,
+    description: SITE_DESCRIPTION,
+    images: [OG_IMAGE_PATH],
   },
   robots: { index: true, follow: true },
   manifest: "/manifest.webmanifest",
