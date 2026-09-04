@@ -17,15 +17,25 @@ How agents authenticate to the ${SITE_NAME} Agent API.
 
 These endpoints are public (rate-limited by platform defaults):
 
+- \`GET ${base}/api\` — API catalog index (machine-readable)
+- \`GET ${base}/api/v1\` — v1 route list
 - \`GET ${base}/api/v1/health\`
 - \`GET ${base}/api/v1/product\`
 - \`GET ${base}/api/v1/features\`
 - \`GET ${base}/api/v1/pricing\`
-- \`GET ${base}/openapi.json\`
+- \`GET ${base}/openapi.json\` (alias: \`GET ${base}/api/openapi.json\`)
 - \`GET ${base}/.well-known/mcp.json\`
 - MCP tools \`get_product\`, \`get_features\`, \`get_pricing\`, \`get_health\` via \`POST ${base}/api/mcp\`
+- MCP Apps UI resources under \`ui://donyapp/*.html\` via \`resources/list\` and \`resources/read\`
+- WebMCP tools on the homepage (same catalog actions via \`document.modelContext\`)
 
 Public responses never include customer jobs, contacts, or delivery links.
+
+Errors on \`/api/*\` Agent routes return JSON:
+
+\`\`\`json
+{ "error": { "code": "unauthorized", "message": "…", "status": 401, "resolution": "…" } }
+\`\`\`
 
 ## OAuth 2.0 (authorization code + PKCE S256)
 
@@ -53,6 +63,8 @@ ${scopeLines}
 ## OpenAPI
 
 Full schema: [${base}/openapi.json](${base}/openapi.json)
+
+API catalog: [${base}/api](${base}/api)
 
 ## MCP
 

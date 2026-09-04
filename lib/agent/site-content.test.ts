@@ -14,6 +14,8 @@ describe("agent markdown content", () => {
     assert.match(body, /\/pricing/);
     assert.match(body, /openapi\.json/);
     assert.match(body, /\/api\/mcp/);
+    assert.match(body, /API catalog index/);
+    assert.match(body, /WebMCP/);
     assert.match(body, /oauth-authorization-server/);
   });
 

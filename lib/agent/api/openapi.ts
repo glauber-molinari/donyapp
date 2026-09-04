@@ -19,6 +19,34 @@ export function buildOpenApiDocument(baseUrl: string = siteUrl()) {
       { name: "Discovery", description: "Machine-readable discovery documents" },
     ],
     paths: {
+      "/api": {
+        get: {
+          tags: ["Discovery"],
+          operationId: "getApiCatalog",
+          summary: "Machine-readable API catalog index",
+          security: [],
+          responses: {
+            "200": {
+              description: "API catalog with Link relations and endpoint list",
+              content: { "application/json": { schema: { type: "object" } } },
+            },
+          },
+        },
+      },
+      "/api/v1": {
+        get: {
+          tags: ["Discovery"],
+          operationId: "getApiV1Index",
+          summary: "v1 route list",
+          security: [],
+          responses: {
+            "200": {
+              description: "v1 routes",
+              content: { "application/json": { schema: { type: "object" } } },
+            },
+          },
+        },
+      },
       "/api/v1/health": {
         get: {
           tags: ["Public"],
@@ -108,6 +136,8 @@ export function buildOpenApiDocument(baseUrl: string = siteUrl()) {
             },
             "401": { $ref: "#/components/responses/Unauthorized" },
             "403": { $ref: "#/components/responses/Forbidden" },
+            "404": { $ref: "#/components/responses/NotFound" },
+            "405": { $ref: "#/components/responses/MethodNotAllowed" },
           },
         },
       },
@@ -128,6 +158,8 @@ export function buildOpenApiDocument(baseUrl: string = siteUrl()) {
             },
             "401": { $ref: "#/components/responses/Unauthorized" },
             "403": { $ref: "#/components/responses/Forbidden" },
+            "404": { $ref: "#/components/responses/NotFound" },
+            "405": { $ref: "#/components/responses/MethodNotAllowed" },
           },
         },
       },
@@ -209,6 +241,30 @@ export function buildOpenApiDocument(baseUrl: string = siteUrl()) {
             },
           },
         },
+        NotFound: {
+          description: "Resource not found",
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/Error" },
+            },
+          },
+        },
+        MethodNotAllowed: {
+          description: "HTTP method not allowed",
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/Error" },
+            },
+          },
+        },
+        BadRequest: {
+          description: "Malformed request",
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/Error" },
+            },
+          },
+        },
       },
       schemas: {
         Health: {
@@ -253,6 +309,10 @@ export function buildOpenApiDocument(baseUrl: string = siteUrl()) {
                 code: { type: "string" },
                 message: { type: "string" },
                 status: { type: "integer" },
+                resolution: {
+                  type: "string",
+                  description: "How an agent should recover from this error",
+                },
               },
             },
           },
@@ -263,6 +323,7 @@ export function buildOpenApiDocument(baseUrl: string = siteUrl()) {
       name: SITE_NAME,
       description: SITE_DESCRIPTION,
       mcp: `${baseUrl}/api/mcp`,
+      apiCatalog: `${baseUrl}/api`,
     },
   };
 }

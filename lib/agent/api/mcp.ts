@@ -9,11 +9,17 @@ import {
   publicPricing,
   publicProduct,
 } from "./catalog";
+import {
+  findMcpAppResource,
+  mcpAppResources,
+  MCP_APP_MIME,
+  toolUiMeta,
+} from "./mcp-apps";
 import { hasScope } from "./scopes";
 import { SITE_DESCRIPTION, SITE_NAME, siteUrl } from "../site";
 
 export const MCP_PROTOCOL_VERSION = "2025-03-26";
-export const MCP_SERVER_VERSION = "1.0.0";
+export const MCP_SERVER_VERSION = "1.1.0";
 
 export type McpTool = {
   name: string;
@@ -25,6 +31,7 @@ export type McpTool = {
     idempotentHint?: boolean;
     openWorldHint?: boolean;
   };
+  _meta?: Record<string, unknown>;
 };
 
 export function mcpTools(): McpTool[] {
@@ -35,6 +42,7 @@ export function mcpTools(): McpTool[] {
         "Return Donyapp product identity, audience, and discovery links (OpenAPI, MCP, OAuth, marketing pages).",
       inputSchema: { type: "object", properties: {}, additionalProperties: false },
       annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+      _meta: toolUiMeta("ui://donyapp/product.html"),
     },
     {
       name: "get_features",
@@ -42,18 +50,21 @@ export function mcpTools(): McpTool[] {
         "List Donyapp feature areas and Free plan limits for photographers/videomakers.",
       inputSchema: { type: "object", properties: {}, additionalProperties: false },
       annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+      _meta: toolUiMeta("ui://donyapp/features.html"),
     },
     {
       name: "get_pricing",
       description: "Return Free and Pro pricing in BRL cents (monthly and yearly).",
       inputSchema: { type: "object", properties: {}, additionalProperties: false },
       annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+      _meta: toolUiMeta("ui://donyapp/pricing.html"),
     },
     {
       name: "get_health",
       description: "Check that the Donyapp public Agent API is reachable.",
       inputSchema: { type: "object", properties: {}, additionalProperties: false },
       annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+      _meta: toolUiMeta("ui://donyapp/health.html"),
     },
     {
       name: "get_my_profile",
@@ -127,20 +138,27 @@ export async function callMcpTool(
 
 export function mcpManifest(baseUrl: string = siteUrl()) {
   const tools = mcpTools();
+  const apps = mcpAppResources();
   return {
     $schema: "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
     name: "donyapp",
     description: `${SITE_DESCRIPTION} MCP tools for catalog, pricing, and scoped account reads.`,
     version: MCP_SERVER_VERSION,
     remotes: [{ type: "streamable-http", url: `${baseUrl}/api/mcp` }],
-    // Compatibility fields used by various scanners
     url: `${baseUrl}/api/mcp`,
     transport: "streamable-http",
-    capabilities: { tools: true, resources: false },
+    capabilities: { tools: true, resources: true },
     tools: tools.map((t) => ({
       name: t.name,
       description: t.description,
       inputSchema: t.inputSchema,
+      ...(t._meta ? { _meta: t._meta } : {}),
+    })),
+    resources: apps.map((r) => ({
+      uri: r.uri,
+      name: r.name,
+      description: r.description,
+      mimeType: r.mimeType,
     })),
   };
 }
@@ -154,10 +172,18 @@ export function mcpServerCard(baseUrl: string = siteUrl()) {
     serverUrl: `${baseUrl}/api/mcp`,
     transport: "streamable-http",
     protocolVersion: MCP_PROTOCOL_VERSION,
+    capabilities: { tools: true, resources: true },
     tools: tools.map((t) => ({
       name: t.name,
       description: t.description,
       inputSchema: t.inputSchema,
+      ...(t._meta ? { _meta: t._meta } : {}),
+    })),
+    resources: mcpAppResources().map((r) => ({
+      uri: r.uri,
+      name: r.name,
+      description: r.description,
+      mimeType: r.mimeType,
     })),
   };
 }
@@ -173,7 +199,6 @@ export async function handleMcpJsonRpc(
       ? (message.params as Record<string, unknown>)
       : {};
 
-  // Notifications have no id
   if (id === undefined && method.startsWith("notifications/")) {
     return { notification: true };
   }
@@ -201,6 +226,7 @@ export async function handleMcpJsonRpc(
             protocolVersion: MCP_PROTOCOL_VERSION,
             capabilities: {
               tools: { listChanged: false },
+              resources: { listChanged: false, subscribe: false },
             },
             serverInfo: {
               name: "donyapp",
@@ -208,7 +234,7 @@ export async function handleMcpJsonRpc(
               title: SITE_NAME,
             },
             instructions:
-              "Use get_product, get_features, and get_pricing without auth. Authenticated tools need OAuth Bearer (see /.well-known/oauth-protected-resource).",
+              "Use get_product, get_features, and get_pricing without auth (each has an MCP App UI via ui://). Authenticated tools need OAuth Bearer (see /.well-known/oauth-protected-resource).",
           },
         },
       };
@@ -228,7 +254,47 @@ export async function handleMcpJsonRpc(
       return respond(result);
     }
     case "resources/list":
-      return respond({ resources: [] });
+      return respond({
+        resources: mcpAppResources().map((r) => ({
+          uri: r.uri,
+          name: r.name,
+          description: r.description,
+          mimeType: r.mimeType,
+          _meta: {
+            ui: {
+              csp: {
+                resourceDomains: [],
+                connectDomains: [],
+              },
+            },
+          },
+        })),
+      });
+    case "resources/read": {
+      const uri = typeof params.uri === "string" ? params.uri : "";
+      if (!uri) return respondError(-32602, "Missing resource uri");
+      const resource = findMcpAppResource(uri);
+      if (!resource) return respondError(-32002, `Resource not found: ${uri}`);
+      return respond({
+        contents: [
+          {
+            uri: resource.uri,
+            mimeType: MCP_APP_MIME,
+            text: resource.html,
+            _meta: {
+              ui: {
+                csp: {
+                  resourceDomains: [],
+                  connectDomains: [],
+                },
+              },
+            },
+          },
+        ],
+      });
+    }
+    case "resources/templates/list":
+      return respond({ resourceTemplates: [] });
     case "prompts/list":
       return respond({ prompts: [] });
     default:

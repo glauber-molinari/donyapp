@@ -31,6 +31,8 @@ export function publicProduct() {
       contact: `${base}/contact`,
       llmsTxt: `${base}/llms.txt`,
       openapi: `${base}/openapi.json`,
+      apiCatalog: `${base}/api`,
+      apiV1: `${base}/api/v1`,
       mcp: `${base}/api/mcp`,
       mcpManifest: `${base}/.well-known/mcp.json`,
       authDocs: `${base}/auth.md`,

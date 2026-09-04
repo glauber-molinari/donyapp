@@ -71,8 +71,10 @@ export function isPublicContentPath(pathname: string): boolean {
     path.startsWith("/oauth/") ||
     path.startsWith("/.well-known/") ||
     path.startsWith("/api/v1/") ||
+    path === "/api" ||
     path.startsWith("/api/mcp") ||
     path.startsWith("/api/openapi") ||
+    path === "/webmcp-register.js" ||
     path.startsWith("/invite") ||
     path.startsWith("/formulario/") ||
     path.startsWith("/p/") ||

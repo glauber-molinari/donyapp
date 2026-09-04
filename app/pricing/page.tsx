@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Script from "next/script";
+import { headers } from "next/headers";
 
+import { WebMcpSurface } from "@/components/agent/webmcp-surface";
 import { SITE_NAME, siteUrl } from "@/lib/agent/site";
 import {
   FREE_MAX_ACTIVE_JOBS,
@@ -38,9 +41,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
     <div className="min-h-screen bg-ds-cream text-ds-ink">
+      <Script src="/webmcp-register.js" strategy="afterInteractive" nonce={nonce} />
+      <WebMcpSurface />
       <header className="border-b border-ds-border bg-ds-cream/70 supports-[backdrop-filter]:backdrop-blur-md">
         <div className="mx-auto flex max-w-4xl items-center justify-between gap-3 px-4 py-4 sm:px-6">
           <Link href="/" className="text-sm font-semibold text-ds-ink hover:opacity-80">

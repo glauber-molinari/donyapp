@@ -15,6 +15,19 @@ export const SUPPORT_EMAIL = "suporte@donyapp.com";
 
 export const INSTAGRAM_URL = "https://www.instagram.com/dony__app/";
 
+/**
+ * JSON-LD `sameAs` profiles.
+ * When Wikidata (P856) / Wikipedia exist for Donyapp, append those canonical URLs here.
+ * Do not invent Wikipedia/Wikidata entries — notability + press + Wikidata item first.
+ */
+export function organizationSameAs(): string[] {
+  return [
+    INSTAGRAM_URL,
+    // Wikidata entity URL (e.g. https://www.wikidata.org/wiki/Q…) — add when item exists
+    // Wikipedia article URL (language edition) — add when article exists
+  ];
+}
+
 /** OG / social share image (absolute path under public/). */
 export const OG_IMAGE_PATH = "/marketing/kanban-oficial.png";
 
@@ -27,7 +40,7 @@ export function organizationJsonLd(baseUrl: string = siteUrl()) {
     url: baseUrl,
     logo: `${baseUrl}/brand/logo-dony-png.png`,
     email: SUPPORT_EMAIL,
-    sameAs: [INSTAGRAM_URL],
+    sameAs: organizationSameAs(),
     contactPoint: [
       {
         "@type": "ContactPoint" as const,

@@ -65,15 +65,19 @@ How an agent should call the product for a human:
 4. For policy or support, use [${url}/contact](${url}/contact) and [${url}/privacy](${url}/privacy).
 5. Prefer \`Accept: text/markdown\` on public marketing and legal URLs. Private job/contact data stays behind the browser app (\`/dashboard\`, \`/board\`, etc.).
 
-## Agent API / MCP / OAuth
+## Agent API / MCP / OAuth / WebMCP
 
 - OpenAPI: [${url}/openapi.json](${url}/openapi.json)
+- API catalog index: [${url}/api](${url}/api) (also \`GET ${url}/api/v1\`)
 - Public REST: \`GET ${url}/api/v1/health\`, \`/api/v1/product\`, \`/api/v1/features\`, \`/api/v1/pricing\`
 - Auth walkthrough: [${url}/auth.md](${url}/auth.md)
 - OAuth AS metadata: [${url}/.well-known/oauth-authorization-server](${url}/.well-known/oauth-authorization-server)
 - OAuth protected resource + scopes: [${url}/.well-known/oauth-protected-resource](${url}/.well-known/oauth-protected-resource)
 - MCP manifest: [${url}/.well-known/mcp.json](${url}/.well-known/mcp.json)
-- MCP Streamable HTTP: \`POST ${url}/api/mcp\`
+- MCP Streamable HTTP: \`POST ${url}/api/mcp\` (tools + MCP Apps \`ui://\` resources)
+- WebMCP: homepage registers \`document.modelContext\` tools (\`get_product\`, \`get_features\`, \`get_pricing\`, \`get_health\`) calling the same public REST paths; script \`${url}/webmcp-register.js\`
+
+API errors under \`/api/v1/*\` and \`/api/mcp\` return JSON bodies with \`error.code\`, \`error.message\`, \`error.status\`, and \`error.resolution\` (never HTML error pages for those routes).
 
 Do not use ${SITE_NAME} as a DAM, gallery host, or generic CRM. It is post-production workflow software for Brazil-focused photo/video freelancers and studios.
 

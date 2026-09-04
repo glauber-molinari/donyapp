@@ -135,18 +135,25 @@ export async function middleware(request: NextRequest) {
     appendVary(response.headers);
   }
 
-  // RFC 8288 discovery hints for agents (OpenAPI, MCP, OAuth, llms.txt).
+  // RFC 8288 discovery hints for agents (OpenAPI, MCP, OAuth, llms.txt, API catalog).
   if (
     path === "/" ||
     path === "/llms.txt" ||
-    path.startsWith("/api/v1/") ||
+    path === "/auth.md" ||
+    path === "/api" ||
+    path.startsWith("/api/v1") ||
     path === "/openapi.json" ||
+    path === "/api/openapi.json" ||
     path.startsWith("/.well-known/")
   ) {
     const origin = request.nextUrl.origin;
     response.headers.append(
       "Link",
       `<${origin}/openapi.json>; rel="service-desc"; type="application/openapi+json"`,
+    );
+    response.headers.append(
+      "Link",
+      `<${origin}/api>; rel="api-catalog"; type="application/json"`,
     );
     response.headers.append(
       "Link",
@@ -159,6 +166,10 @@ export async function middleware(request: NextRequest) {
     response.headers.append(
       "Link",
       `<${origin}/llms.txt>; rel="describedby"; type="text/plain"`,
+    );
+    response.headers.append(
+      "Link",
+      `<${origin}/auth.md>; rel="service-doc"; type="text/markdown"`,
     );
   }
 
