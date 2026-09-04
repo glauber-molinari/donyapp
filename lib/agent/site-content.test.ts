@@ -12,6 +12,9 @@ describe("agent markdown content", () => {
     assert.match(body, /Accept: text\/markdown/);
     assert.match(body, /\/features/);
     assert.match(body, /\/pricing/);
+    assert.match(body, /openapi\.json/);
+    assert.match(body, /\/api\/mcp/);
+    assert.match(body, /oauth-authorization-server/);
   });
 
   it("404 markdown points at sitemap and llms.txt", () => {

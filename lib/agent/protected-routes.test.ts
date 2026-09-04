@@ -30,6 +30,10 @@ describe("isPublicContentPath / isMarkdownablePath", () => {
     assert.equal(isPublicContentPath("/contact"), true);
     assert.equal(isPublicContentPath("/privacy"), true);
     assert.equal(isPublicContentPath("/llms.txt"), true);
+    assert.equal(isPublicContentPath("/openapi.json"), true);
+    assert.equal(isPublicContentPath("/.well-known/mcp.json"), true);
+    assert.equal(isPublicContentPath("/oauth/authorize"), true);
+    assert.equal(isPublicContentPath("/api/v1/product"), true);
   });
 
   it("lists markdownable marketing pages", () => {

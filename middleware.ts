@@ -33,11 +33,21 @@ function negotiateMarkdown(request: NextRequest): NextResponse | null {
 
   const pathname = request.nextUrl.pathname;
 
+  // Agent discovery documents served by dedicated route handlers (not Markdown mirrors).
+  if (
+    pathname === "/auth.md" ||
+    pathname === "/openapi.json" ||
+    pathname.startsWith("/.well-known/")
+  ) {
+    return null;
+  }
+
   // Never negotiate away from API, Next internals, or auth callbacks.
   if (
     pathname.startsWith("/api/") ||
     pathname.startsWith("/_next/") ||
-    pathname.startsWith("/auth/")
+    pathname.startsWith("/auth/") ||
+    pathname.startsWith("/oauth/")
   ) {
     return null;
   }
@@ -116,13 +126,40 @@ export async function middleware(request: NextRequest) {
   );
   response.headers.set(
     "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, asaas-access-token",
+    "Content-Type, Authorization, asaas-access-token, MCP-Session-Id, Mcp-Session-Id",
   );
 
   // Public HTML pages that also offer Markdown must vary on Accept.
   const path = request.nextUrl.pathname;
   if (isMarkdownablePath(path) || path === "/") {
     appendVary(response.headers);
+  }
+
+  // RFC 8288 discovery hints for agents (OpenAPI, MCP, OAuth, llms.txt).
+  if (
+    path === "/" ||
+    path === "/llms.txt" ||
+    path.startsWith("/api/v1/") ||
+    path === "/openapi.json" ||
+    path.startsWith("/.well-known/")
+  ) {
+    const origin = request.nextUrl.origin;
+    response.headers.append(
+      "Link",
+      `<${origin}/openapi.json>; rel="service-desc"; type="application/openapi+json"`,
+    );
+    response.headers.append(
+      "Link",
+      `<${origin}/.well-known/mcp.json>; rel="mcp"; type="application/json"`,
+    );
+    response.headers.append(
+      "Link",
+      `<${origin}/.well-known/oauth-protected-resource>; rel="oauth-protected-resource"`,
+    );
+    response.headers.append(
+      "Link",
+      `<${origin}/llms.txt>; rel="describedby"; type="text/plain"`,
+    );
   }
 
   return response;

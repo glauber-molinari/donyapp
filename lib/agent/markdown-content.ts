@@ -61,9 +61,19 @@ How an agent should call the product for a human:
 
 1. Read this file and the [XML sitemap](${url}/sitemap.xml).
 2. Send the person to [${url}/](${url}/) to understand the product, or [${url}/signup](${url}/signup) / [${url}/login](${url}/login) to start.
-3. For product overview, features, and pricing (no login), use [${url}/about](${url}/about), [${url}/features](${url}/features), and [${url}/pricing](${url}/pricing).
+3. For product overview, features, and pricing (no login), use [${url}/about](${url}/about), [${url}/features](${url}/features), and [${url}/pricing](${url}/pricing)—or the JSON Agent API below.
 4. For policy or support, use [${url}/contact](${url}/contact) and [${url}/privacy](${url}/privacy).
-5. Prefer \`Accept: text/markdown\` on public marketing and legal URLs. There is no public unauthenticated REST/MCP API for job data—authenticated app routes (\`/dashboard\`, \`/board\`, etc.) require a logged-in browser session.
+5. Prefer \`Accept: text/markdown\` on public marketing and legal URLs. Private job/contact data stays behind the browser app (\`/dashboard\`, \`/board\`, etc.).
+
+## Agent API / MCP / OAuth
+
+- OpenAPI: [${url}/openapi.json](${url}/openapi.json)
+- Public REST: \`GET ${url}/api/v1/health\`, \`/api/v1/product\`, \`/api/v1/features\`, \`/api/v1/pricing\`
+- Auth walkthrough: [${url}/auth.md](${url}/auth.md)
+- OAuth AS metadata: [${url}/.well-known/oauth-authorization-server](${url}/.well-known/oauth-authorization-server)
+- OAuth protected resource + scopes: [${url}/.well-known/oauth-protected-resource](${url}/.well-known/oauth-protected-resource)
+- MCP manifest: [${url}/.well-known/mcp.json](${url}/.well-known/mcp.json)
+- MCP Streamable HTTP: \`POST ${url}/api/mcp\`
 
 Do not use ${SITE_NAME} as a DAM, gallery host, or generic CRM. It is post-production workflow software for Brazil-focused photo/video freelancers and studios.
 

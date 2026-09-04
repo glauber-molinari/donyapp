@@ -57,6 +57,8 @@ export function isPublicContentPath(pathname: string): boolean {
     "/signup",
     "/forgot-password",
     "/llms.txt",
+    "/auth.md",
+    "/openapi.json",
     "/sitemap.xml",
     "/robots.txt",
     "/manifest.webmanifest",
@@ -66,6 +68,11 @@ export function isPublicContentPath(pathname: string): boolean {
   return (
     path.startsWith("/blog/") ||
     path.startsWith("/auth/") ||
+    path.startsWith("/oauth/") ||
+    path.startsWith("/.well-known/") ||
+    path.startsWith("/api/v1/") ||
+    path.startsWith("/api/mcp") ||
+    path.startsWith("/api/openapi") ||
     path.startsWith("/invite") ||
     path.startsWith("/formulario/") ||
     path.startsWith("/p/") ||
