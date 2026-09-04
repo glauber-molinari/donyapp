@@ -12,6 +12,8 @@ export default function robots(): MetadataRoute.Robots {
         allow: [
           "/",
           "/about",
+          "/features",
+          "/pricing",
           "/contact",
           "/privacy",
           "/llms.txt",

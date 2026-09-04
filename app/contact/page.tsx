@@ -26,11 +26,14 @@ export default function ContactPage() {
             {SITE_NAME}
           </Link>
           <nav className="flex flex-wrap items-center gap-3 text-sm">
+            <Link href="/features" className="text-ds-muted hover:text-ds-ink">
+              Recursos
+            </Link>
+            <Link href="/pricing" className="text-ds-muted hover:text-ds-ink">
+              Preços
+            </Link>
             <Link href="/about" className="text-ds-muted hover:text-ds-ink">
               Sobre
-            </Link>
-            <Link href="/privacy" className="text-ds-muted hover:text-ds-ink">
-              Privacidade
             </Link>
             <Link href="/login" className="font-semibold text-ds-ink hover:opacity-80">
               Entrar

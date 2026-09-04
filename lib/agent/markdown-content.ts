@@ -1,7 +1,21 @@
+import {
+  FREE_MAX_ACTIVE_JOBS,
+  FREE_MAX_CONTACTS,
+  PRO_PRICE_MONTHLY_CENTS,
+  PRO_PRICE_YEARLY_CENTS,
+} from "@/lib/plan-limits";
+
 import { INSTAGRAM_URL, SITE_DESCRIPTION, SITE_NAME, SUPPORT_EMAIL, siteUrl } from "./site";
 
 function base(): string {
   return siteUrl();
+}
+
+function formatBrl(cents: number): string {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(cents / 100);
 }
 
 export function notFoundMarkdown(requestedPath?: string): string {
@@ -19,6 +33,8 @@ ${pathLine}This URL is not a page on ${SITE_NAME}.
 - [XML sitemap](${url}/sitemap.xml)
 - [Home](${url}/)
 - [About](${url}/about)
+- [Features](${url}/features)
+- [Pricing](${url}/pricing)
 - [Contact](${url}/contact)
 - [Privacy](${url}/privacy)
 
@@ -45,8 +61,9 @@ How an agent should call the product for a human:
 
 1. Read this file and the [XML sitemap](${url}/sitemap.xml).
 2. Send the person to [${url}/](${url}/) to understand the product, or [${url}/signup](${url}/signup) / [${url}/login](${url}/login) to start.
-3. For policy or identity questions, use [${url}/about](${url}/about), [${url}/contact](${url}/contact), and [${url}/privacy](${url}/privacy).
-4. Prefer \`Accept: text/markdown\` on public marketing and legal URLs. There is no public unauthenticated REST/MCP API for job data—authenticated app routes (\`/dashboard\`, \`/board\`, etc.) require a logged-in browser session.
+3. For product overview, features, and pricing (no login), use [${url}/about](${url}/about), [${url}/features](${url}/features), and [${url}/pricing](${url}/pricing).
+4. For policy or support, use [${url}/contact](${url}/contact) and [${url}/privacy](${url}/privacy).
+5. Prefer \`Accept: text/markdown\` on public marketing and legal URLs. There is no public unauthenticated REST/MCP API for job data—authenticated app routes (\`/dashboard\`, \`/board\`, etc.) require a logged-in browser session.
 
 Do not use ${SITE_NAME} as a DAM, gallery host, or generic CRM. It is post-production workflow software for Brazil-focused photo/video freelancers and studios.
 
@@ -54,6 +71,8 @@ Do not use ${SITE_NAME} as a DAM, gallery host, or generic CRM. It is post-produ
 
 - [Home](${url}/)
 - [About](${url}/about)
+- [Features](${url}/features)
+- [Pricing](${url}/pricing)
 - [Contact](${url}/contact)
 - [Privacy](${url}/privacy)
 - [Why use ${SITE_NAME}](${url}/por-que-usar)
@@ -92,8 +111,10 @@ ${SITE_NAME} is a web app for photographers and videomakers to manage post-produ
 - Agent guide: [${url}/llms.txt](${url}/llms.txt)
 - Sitemap: [${url}/sitemap.xml](${url}/sitemap.xml)
 
-## Trust
+## Discover
 
+- [Features](${url}/features)
+- [Pricing](${url}/pricing)
 - [About](${url}/about)
 - [Contact](${url}/contact)
 - [Privacy](${url}/privacy)
@@ -108,10 +129,88 @@ It is built for freelancers who already juggle too many jobs in spreadsheets, an
 ## Links
 
 - Home: [${url}/](${url}/)
+- Features: [${url}/features](${url}/features)
+- Pricing: [${url}/pricing](${url}/pricing)
 - Contact: [${url}/contact](${url}/contact)
 - Privacy: [${url}/privacy](${url}/privacy)
 - llms.txt: [${url}/llms.txt](${url}/llms.txt)
 `;
+    case "/features":
+      return `# Features — ${SITE_NAME}
+
+${SITE_NAME} runs post-production as a job queue for photo/video freelancers and small studios. It does not host media files; delivery uses your existing Drive, Dropbox, or WeTransfer links.
+
+## Core workflow
+
+1. Create a job (name, client, deadline, delivery type).
+2. Move the card through kanban stages (default: Backup → Editing → Approval → Delivered; Pro can customize unlimited stages).
+3. Paste the delivery link and notify the client (email/WhatsApp on Pro).
+
+## Product areas
+
+- **Kanban** — shared job status; Free up to 4 columns; Pro unlimited stages.
+- **Contacts** — clients linked to jobs.
+- **Forms** — public briefing links; answers land in the workspace.
+- **Agenda** — optional Google Calendar read-only sync.
+- **Notes** — studio notes without a side spreadsheet.
+- **Team (Pro)** — email invites; shared board/contacts/agenda on the studio account.
+- **Delivery extras (Pro)** — auto email, WhatsApp, email templates, change history, team tasks, advanced reports, physical album board.
+
+## Free limits
+
+Up to ${FREE_MAX_ACTIVE_JOBS} active jobs, ${FREE_MAX_CONTACTS} contacts, 1 user per account. See [${url}/pricing](${url}/pricing).
+
+## Links
+
+- Pricing: [${url}/pricing](${url}/pricing)
+- About: [${url}/about](${url}/about)
+- Sign up: [${url}/signup](${url}/signup)
+- Home: [${url}/](${url}/)
+`;
+    case "/pricing": {
+      const proMonthly = formatBrl(PRO_PRICE_MONTHLY_CENTS);
+      const proYearly = formatBrl(PRO_PRICE_YEARLY_CENTS);
+      const proYearlyMonthly = formatBrl(Math.round(PRO_PRICE_YEARLY_CENTS / 12));
+      const yearlySavingsPercent = Math.max(
+        0,
+        Math.round((1 - PRO_PRICE_YEARLY_CENTS / (PRO_PRICE_MONTHLY_CENTS * 12)) * 100),
+      );
+      return `# Pricing — ${SITE_NAME}
+
+All prices in BRL. No card required for Free.
+
+## Free — R$ 0 / month
+
+- Up to ${FREE_MAX_ACTIVE_JOBS} active kanban jobs
+- Up to ${FREE_MAX_CONTACTS} contacts
+- Up to 4 kanban stages (Backup → Editing → Approval → Delivered)
+- Notes, Google Calendar agenda, client forms, basic reports
+- 1 user per account
+
+## Pro — ${proMonthly} / month
+
+Everything in Free, plus:
+
+- Unlimited jobs and contacts
+- Unlimited kanban stages (create, reorder, rename, set final stage)
+- Team invites by email
+- Auto email and WhatsApp on delivery; editable email templates
+- Job change history, team task kanban, advanced reports
+- Physical album board
+- Card payment inside the logged-in app
+
+## Pro yearly — ${proYearly} / year
+
+Same Pro features, about ${yearlySavingsPercent}% off vs 12× monthly (~${proYearlyMonthly}/month equivalent). Single annual card charge.
+
+## Links
+
+- Features: [${url}/features](${url}/features)
+- Home plans section: [${url}/#planos](${url}/#planos)
+- Sign up: [${url}/signup](${url}/signup)
+- Contact: [${url}/contact](${url}/contact)
+`;
+    }
     case "/contact":
       return `# Contact ${SITE_NAME}
 

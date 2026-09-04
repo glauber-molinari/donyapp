@@ -25,6 +25,8 @@ describe("isProtectedAppPath", () => {
 describe("isPublicContentPath / isMarkdownablePath", () => {
   it("marks trust and agent entry points as public", () => {
     assert.equal(isPublicContentPath("/about"), true);
+    assert.equal(isPublicContentPath("/features"), true);
+    assert.equal(isPublicContentPath("/pricing"), true);
     assert.equal(isPublicContentPath("/contact"), true);
     assert.equal(isPublicContentPath("/privacy"), true);
     assert.equal(isPublicContentPath("/llms.txt"), true);
@@ -33,6 +35,8 @@ describe("isPublicContentPath / isMarkdownablePath", () => {
   it("lists markdownable marketing pages", () => {
     assert.equal(isMarkdownablePath("/"), true);
     assert.equal(isMarkdownablePath("/about"), true);
+    assert.equal(isMarkdownablePath("/features"), true);
+    assert.equal(isMarkdownablePath("/pricing"), true);
     assert.equal(isMarkdownablePath("/dashboard"), false);
   });
 });

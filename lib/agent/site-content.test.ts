@@ -10,6 +10,8 @@ describe("agent markdown content", () => {
     assert.match(body, /## When to use this/);
     assert.match(body, /sitemap\.xml/);
     assert.match(body, /Accept: text\/markdown/);
+    assert.match(body, /\/features/);
+    assert.match(body, /\/pricing/);
   });
 
   it("404 markdown points at sitemap and llms.txt", () => {
@@ -17,11 +19,16 @@ describe("agent markdown content", () => {
     assert.match(body, /# 404/);
     assert.match(body, /sitemap\.xml/);
     assert.match(body, /llms\.txt/);
+    assert.match(body, /\/features/);
+    assert.match(body, /\/pricing/);
   });
 
-  it("serves markdown for home and trust pages", () => {
+  it("serves markdown for home, discovery, and trust pages", () => {
     assert.ok((markdownForPath("/") ?? "").length > 100);
     assert.ok((markdownForPath("/about") ?? "").length > 100);
+    assert.ok((markdownForPath("/features") ?? "").length > 100);
+    assert.ok((markdownForPath("/pricing") ?? "").length > 100);
+    assert.match(markdownForPath("/pricing") ?? "", /Pro/);
     assert.ok((markdownForPath("/contact") ?? "").length > 100);
     assert.ok((markdownForPath("/privacy") ?? "").length > 100);
     assert.equal(markdownForPath("/nope"), null);
