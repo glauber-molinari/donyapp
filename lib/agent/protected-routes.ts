@@ -78,7 +78,8 @@ export function isPublicContentPath(pathname: string): boolean {
     path.startsWith("/invite") ||
     path.startsWith("/formulario/") ||
     path.startsWith("/p/") ||
-    path.startsWith("/g/")
+    path.startsWith("/g/") ||
+    path.startsWith("/preview/")
   );
 }
 

@@ -7,14 +7,19 @@ import { cn } from "@/lib/utils";
 export function InsightBar({
   children,
   href,
+  onCtaClick,
   cta = "Abrir quadro",
   className,
 }: {
   children: ReactNode;
   href?: string;
+  onCtaClick?: () => void;
   cta?: string;
   className?: string;
 }) {
+  const ctaClass =
+    "inline-flex shrink-0 items-center gap-1.5 self-start rounded-full bg-ds-ink px-3.5 py-2 text-xs font-semibold text-ds-on-dark transition-colors hover:bg-ds-ink-2 sm:self-auto";
+
   return (
     <div
       className={cn(
@@ -25,13 +30,15 @@ export function InsightBar({
     >
       <div className="min-w-0 text-sm leading-relaxed text-ds-ink-2">{children}</div>
       {href ? (
-        <Link
-          href={href}
-          className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-full bg-ds-ink px-3.5 py-2 text-xs font-semibold text-ds-on-dark transition-colors hover:bg-ds-ink-2 sm:self-auto"
-        >
+        <Link href={href} className={ctaClass}>
           {cta}
           <ArrowRight className="h-3.5 w-3.5" aria-hidden />
         </Link>
+      ) : onCtaClick ? (
+        <button type="button" onClick={onCtaClick} className={ctaClass}>
+          {cta}
+          <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+        </button>
       ) : null}
     </div>
   );

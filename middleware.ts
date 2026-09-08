@@ -88,7 +88,8 @@ function negotiateMarkdown(request: NextRequest): NextResponse | null {
     isPublicContentPath(contentPath) ||
     contentPath.startsWith("/api/") ||
     (process.env.NODE_ENV === "development" &&
-      contentPath.startsWith("/dev-mobile-preview"))
+      contentPath.startsWith("/dev-mobile-preview")) ||
+    contentPath.startsWith("/preview/")
   ) {
     return null;
   }
