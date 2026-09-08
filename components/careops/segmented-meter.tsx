@@ -33,7 +33,7 @@ const FILL_CLASS: Record<Exclude<SegmentedMeterTone, "load">, string> = {
 /** Preenchimento da progressão de carga (tons sólidos do DS). */
 const LOAD_FILL_CLASS: Record<LoadTone, string> = {
   success: "bg-[#1F8A5B]", // verde
-  warn: "bg-[#B97700]", // amarelo
+  warn: "bg-[#C58C28]", // amarelo
   danger: "bg-[#C43838]", // vermelho
 };
 

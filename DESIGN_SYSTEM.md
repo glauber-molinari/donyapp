@@ -57,7 +57,7 @@ você vai produzir. Os tokens `ds-*` substituem cores cruas do Tailwind
 | Token | Hex | Uso |
 |-------|-----|-----|
 | `ds-success` / `ds-success-soft` | `#1f8a5b` / `#e2f3ea` | Entregue, confirmação |
-| `ds-warn` / `ds-warn-soft` | `#b97700` / `#fbeeda` | Prazo próximo (≤ 5 dias) |
+| `ds-warn` / `ds-warn-soft` | `#c58c28` / `#fbeeda` | Prazo próximo (≤ 5 dias) |
 | `ds-danger` / `ds-danger-soft` | `#c43838` / `#fbe3e3` | Atrasado, ação destrutiva |
 | `ds-info` / `ds-info-soft` | `#2a6fdb` / `#e3edfb` | Informação neutra |
 

@@ -55,7 +55,7 @@ module.exports = {
           // ── Sinal funcional ────────────────────────────
           success:        "#1f8a5b",   // entregue
           "success-soft": "#e2f3ea",
-          warn:           "#b97700",   // prazo próximo (≤5d)
+          warn:           "#c58c28",   // prazo próximo (≤5d)
           "warn-soft":    "#fbeeda",
           danger:         "#c43838",   // atrasado / ação destrutiva
           "danger-soft":  "#fbe3e3",
