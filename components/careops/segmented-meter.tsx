@@ -30,11 +30,11 @@ const FILL_CLASS: Record<Exclude<SegmentedMeterTone, "load">, string> = {
   muted: "bg-ds-muted-2",
 };
 
-/** Preenchimento da progressão de carga (soft, conforme DS). */
+/** Preenchimento da progressão de carga (tons sólidos do DS). */
 const LOAD_FILL_CLASS: Record<LoadTone, string> = {
-  success: "bg-[#E2F3EA]", // verde soft
-  warn: "bg-[#FBEEDA]", // amarelo soft
-  danger: "bg-[#FBE3E3]", // vermelho soft
+  success: "bg-[#1F8A5B]", // verde
+  warn: "bg-[#B97700]", // amarelo
+  danger: "bg-[#C43838]", // vermelho
 };
 
 /** Texto/número acompanhando a carga — tom sólido para contraste. */
@@ -69,12 +69,6 @@ export function SegmentedMeter({
     ? LOAD_FILL_CLASS[loadTone!]
     : FILL_CLASS[tone];
 
-  const loadRingClass: Record<LoadTone, string> = {
-    success: "ring-1 ring-inset ring-ds-success/25",
-    warn: "ring-1 ring-inset ring-ds-warn/25",
-    danger: "ring-1 ring-inset ring-ds-danger/25",
-  };
-
   return (
     <div
       className={cn("flex h-2.5 w-full items-stretch gap-[3px]", className)}
@@ -88,9 +82,7 @@ export function SegmentedMeter({
           key={i}
           className={cn(
             "min-w-0 flex-1 rounded-full transition-colors",
-            i < filled
-              ? cn(fillClass, loadTone ? loadRingClass[loadTone] : null)
-              : "bg-ds-hairline"
+            i < filled ? fillClass : "bg-ds-hairline"
           )}
         />
       ))}
