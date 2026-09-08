@@ -29,7 +29,7 @@ import { KanbanMiniPreview } from "@/components/app/kanban-mini-preview";
 import { useOnboardingTour } from "@/components/app/onboarding-tour";
 import { InsightBar } from "@/components/careops/insight-bar";
 import { MetricTile } from "@/components/careops/metric-tile";
-import { SegmentedMeter } from "@/components/careops/segmented-meter";
+import { SegmentedMeter, LOAD_TEXT_CLASS, loadToneFromPercent } from "@/components/careops/segmented-meter";
 import { StageDonut } from "@/components/careops/stage-donut";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -783,13 +783,14 @@ export function DashboardView({
                 </Link>
               </div>
               <ul className="flex flex-col gap-3.5">
-                {stageSlices
+                    {stageSlices
                   .filter((s) => s.count > 0)
                   .map((s) => {
                     const util =
                       metrics.activeJobs > 0
                         ? Math.round((s.count / metrics.activeJobs) * 100)
                         : 0;
+                    const loadTone = loadToneFromPercent(util);
                     return (
                       <li key={s.id} className="min-w-0">
                         <div className="mb-1.5 flex items-center justify-between gap-3">
@@ -811,14 +812,19 @@ export function DashboardView({
                               </p>
                             </div>
                           </div>
-                          <p className="shrink-0 text-xs font-semibold tabular-nums text-ds-ink">
+                          <p
+                            className={cn(
+                              "shrink-0 text-xs font-semibold tabular-nums",
+                              LOAD_TEXT_CLASS[loadTone]
+                            )}
+                          >
                             {util}%
                           </p>
                         </div>
                         <SegmentedMeter
                           value={s.count}
                           max={Math.max(metrics.activeJobs, 1)}
-                          tone="accent"
+                          tone="load"
                           segments={20}
                         />
                       </li>

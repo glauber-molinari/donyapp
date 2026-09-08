@@ -20,7 +20,7 @@ import { useMemo, useState } from "react";
 import { ProximityPill } from "@/components/app/deadline-proximity";
 import { InsightBar } from "@/components/careops/insight-bar";
 import { MetricTile } from "@/components/careops/metric-tile";
-import { SegmentedMeter } from "@/components/careops/segmented-meter";
+import { SegmentedMeter, LOAD_TEXT_CLASS, loadToneFromPercent } from "@/components/careops/segmented-meter";
 import { StageDonut } from "@/components/careops/stage-donut";
 import { Badge, type JobTypeBadgeValue } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -472,7 +472,10 @@ export function VisualPreviewClient() {
                     </p>
                   </div>
                   <ul className="flex flex-col gap-3.5">
-                    {STAGE_SLICES.filter((s) => s.count > 0).map((s) => (
+                    {STAGE_SLICES.filter((s) => s.count > 0).map((s) => {
+                      const util = Math.round((s.count / activeJobs) * 100);
+                      const loadTone = loadToneFromPercent(util);
+                      return (
                       <li key={s.id}>
                         <div className="mb-1.5 flex items-center justify-between gap-3">
                           <div className="flex items-center gap-2.5">
@@ -493,18 +496,24 @@ export function VisualPreviewClient() {
                               </p>
                             </div>
                           </div>
-                          <p className="text-xs font-semibold tabular-nums text-ds-ink">
-                            {Math.round((s.count / activeJobs) * 100)}%
+                          <p
+                            className={cn(
+                              "text-xs font-semibold tabular-nums",
+                              LOAD_TEXT_CLASS[loadTone]
+                            )}
+                          >
+                            {util}%
                           </p>
                         </div>
                         <SegmentedMeter
                           value={s.count}
                           max={activeJobs}
-                          tone="accent"
+                          tone="load"
                           segments={20}
                         />
                       </li>
-                    ))}
+                      );
+                    })}
                   </ul>
                 </div>
               </div>
