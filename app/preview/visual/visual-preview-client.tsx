@@ -739,7 +739,16 @@ export function VisualPreviewClient() {
 
               <div className="w-full min-w-0 overflow-x-auto pb-4 [scrollbar-width:thin]">
                 <div className="flex w-max min-w-full gap-3">
-                  {BOARD_COLUMNS.map((col) => (
+                  {(() => {
+                    const boardTotal = BOARD_COLUMNS.reduce(
+                      (sum, c) => sum + c.cards.length,
+                      0
+                    );
+                    const loadMax = Math.max(boardTotal, 1);
+                    return BOARD_COLUMNS.map((col) => {
+                    const loadPct = Math.round((col.cards.length / loadMax) * 100);
+                    const loadTone = loadToneFromPercent(loadPct);
+                    return (
                     <div
                       key={col.name}
                       className="flex w-[min(88vw,18rem)] shrink-0 flex-col overflow-hidden rounded-[1.25rem] border border-ds-border/50 shadow-ds-md lg:w-64"
@@ -757,16 +766,22 @@ export function VisualPreviewClient() {
                           <h2 className="text-[11px] font-bold uppercase tracking-[0.08em] text-ds-ink-2">
                             {col.name}
                           </h2>
-                          <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-white/80 px-1.5 text-[11px] font-semibold tabular-nums text-ds-ink shadow-sm">
+                          <span
+                            className={cn(
+                              "inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-white/80 px-1.5 text-[11px] font-semibold tabular-nums shadow-sm",
+                              LOAD_TEXT_CLASS[loadTone]
+                            )}
+                            title={`${loadPct}% da fila`}
+                          >
                             {col.cards.length}
                           </span>
                         </div>
                         <SegmentedMeter
                           className="mt-2.5"
                           value={col.cards.length}
-                          max={4}
+                          max={loadMax}
                           segments={12}
-                          tone="muted"
+                          tone="load"
                         />
                       </div>
                       <div className="flex flex-col gap-2.5 p-2.5">
@@ -796,7 +811,9 @@ export function VisualPreviewClient() {
                         ))}
                       </div>
                     </div>
-                  ))}
+                    );
+                    });
+                  })()}
                 </div>
               </div>
             </div>

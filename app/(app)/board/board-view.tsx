@@ -41,7 +41,7 @@ import {
   updateJobClientRevision,
   type KanbanColumnSync,
 } from "../jobs/actions";
-import { SegmentedMeter } from "@/components/careops/segmented-meter";
+import { SegmentedMeter, LOAD_TEXT_CLASS, loadToneFromPercent } from "@/components/careops/segmented-meter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
@@ -657,6 +657,7 @@ const KanbanColumn = memo(function KanbanColumn({
   jobsForBadgeList,
   dragDisabled,
   searchQuery,
+  boardJobCount,
   assigneesByJobId,
   onOpenJob,
   onSendMaterial,
@@ -667,6 +668,8 @@ const KanbanColumn = memo(function KanbanColumn({
   jobsForBadgeList: JobFotoVideoListPick[];
   dragDisabled: boolean;
   searchQuery: string;
+  /** Total de jobs no quadro (mês filtrado) — base da carga da coluna. */
+  boardJobCount: number;
   assigneesByJobId: Map<
     string,
     { id: string; name: string; avatarUrl: string | null }[]
@@ -688,6 +691,10 @@ const KanbanColumn = memo(function KanbanColumn({
   const accentHex = kanbanStageAccentHex(stage.color);
 
   const columnTint = `color-mix(in srgb, ${accentHex} 13%, rgb(250 249 247))`;
+
+  const loadMax = Math.max(boardJobCount, 1);
+  const loadPct = Math.round((visibleIds.length / loadMax) * 100);
+  const loadTone = loadToneFromPercent(loadPct);
 
   return (
     <div
@@ -716,16 +723,22 @@ const KanbanColumn = memo(function KanbanColumn({
           <h2 className="break-words text-[11px] font-bold uppercase tracking-[0.08em] text-ds-ink-2">
             {stage.name}
           </h2>
-          <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-white/80 px-1.5 text-[11px] font-semibold tabular-nums text-ds-ink shadow-sm">
+          <span
+            className={cn(
+              "inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-white/80 px-1.5 text-[11px] font-semibold tabular-nums shadow-sm",
+              LOAD_TEXT_CLASS[loadTone]
+            )}
+            title={`${loadPct}% da fila neste mês`}
+          >
             {visibleIds.length}
           </span>
         </div>
         <SegmentedMeter
           className="mt-2.5"
           value={visibleIds.length}
-          max={Math.max(visibleIds.length, 4)}
+          max={loadMax}
           segments={12}
-          tone="muted"
+          tone="load"
         />
       </div>
       {dragDisabled ? (
@@ -1245,6 +1258,7 @@ export function BoardView({
                   jobsForBadgeList={jobsForTypeBadge}
                   dragDisabled={dragDisabled}
                   searchQuery={searchQuery}
+                  boardJobCount={filteredJobs.length}
                   assigneesByJobId={assigneesByJobId}
                   onOpenJob={setDetailJob}
                   onSendMaterial={setEmailStub}
