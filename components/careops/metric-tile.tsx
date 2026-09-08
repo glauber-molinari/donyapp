@@ -1,43 +1,69 @@
-import type { LucideIcon } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Minus, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { Sparkline } from "@/components/careops/sparkline";
 import { cn } from "@/lib/utils";
 
 const toneStyles = {
   accent: {
     icon: "bg-ds-accent-soft text-ds-accent",
-    spark: "text-ds-accent",
-    fill: "rgba(255,85,0,0.18)",
   },
   danger: {
     icon: "bg-ds-danger-soft text-ds-danger",
-    spark: "text-ds-danger",
-    fill: "rgba(196,56,56,0.16)",
   },
   warn: {
     icon: "bg-ds-warn-soft text-ds-warn",
-    spark: "text-ds-warn",
-    fill: "rgba(185,119,0,0.16)",
   },
   success: {
     icon: "bg-ds-success-soft text-ds-success",
-    spark: "text-ds-success",
-    fill: "rgba(31,138,91,0.16)",
   },
   info: {
     icon: "bg-ds-info-soft text-ds-info",
-    spark: "text-ds-info",
-    fill: "rgba(42,111,219,0.16)",
   },
   muted: {
     icon: "bg-ds-cream text-ds-muted",
-    spark: "text-ds-muted",
-    fill: "rgba(107,102,96,0.12)",
   },
 } as const;
 
 export type MetricTone = keyof typeof toneStyles;
+
+/** Sentimento da variação: sobe/desce pode ser bom ou ruim conforme a métrica. */
+export type MetricTrendSentiment = "good" | "bad" | "warn" | "neutral";
+
+export type MetricTrend = {
+  direction: "up" | "down" | "flat";
+  /** Texto curto: "+2 vs semana" ou "2 na fila". */
+  label: string;
+  sentiment?: MetricTrendSentiment;
+};
+
+const sentimentClass: Record<MetricTrendSentiment, string> = {
+  good: "text-ds-success bg-ds-success-soft/80",
+  bad: "text-ds-danger bg-ds-danger-soft/80",
+  warn: "text-ds-warn bg-ds-warn-soft/80",
+  neutral: "text-ds-muted bg-ds-cream",
+};
+
+function TrendBadge({ trend }: { trend: MetricTrend }) {
+  const sentiment = trend.sentiment ?? "neutral";
+  const Icon =
+    trend.direction === "up"
+      ? ArrowUpRight
+      : trend.direction === "down"
+        ? ArrowDownRight
+        : Minus;
+
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold tabular-nums",
+        sentimentClass[sentiment]
+      )}
+    >
+      <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden />
+      {trend.label}
+    </span>
+  );
+}
 
 export function MetricTile({
   label,
@@ -45,7 +71,7 @@ export function MetricTile({
   hint,
   icon: Icon,
   tone = "accent",
-  sparkValues,
+  trend,
   className,
   footer,
 }: {
@@ -54,7 +80,8 @@ export function MetricTile({
   hint?: string;
   icon: LucideIcon;
   tone?: MetricTone;
-  sparkValues?: number[];
+  /** Seta + texto com comparação ou aviso real (substitui sparkline decorativo). */
+  trend?: MetricTrend;
   className?: string;
   footer?: ReactNode;
 }) {
@@ -88,9 +115,9 @@ export function MetricTile({
           <Icon className="h-5 w-5" aria-hidden />
         </div>
       </div>
-      {sparkValues && sparkValues.length > 1 ? (
-        <div className={cn("mt-3", t.spark)}>
-          <Sparkline values={sparkValues} fill={t.fill} stroke="currentColor" />
+      {trend ? (
+        <div className="mt-3">
+          <TrendBadge trend={trend} />
         </div>
       ) : null}
       {footer ? <div className="mt-3">{footer}</div> : null}

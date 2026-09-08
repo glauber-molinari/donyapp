@@ -426,7 +426,11 @@ export function VisualPreviewClient() {
                   value={activeJobs}
                   icon={ClipboardList}
                   tone="accent"
-                  sparkValues={[10, 12, 14, 13, 15, 14]}
+                  trend={{
+                    direction: "up",
+                    label: `${activeJobs} na fila`,
+                    sentiment: "neutral",
+                  }}
                   hint="Em etapas abertas"
                 />
                 <MetricTile
@@ -434,7 +438,11 @@ export function VisualPreviewClient() {
                   value={2}
                   icon={AlertCircle}
                   tone="danger"
-                  sparkValues={[3, 2, 1, 2, 3, 2]}
+                  trend={{
+                    direction: "up",
+                    label: "precisa ação",
+                    sentiment: "bad",
+                  }}
                   hint="Prazo final vencido"
                 />
                 <MetricTile
@@ -442,7 +450,11 @@ export function VisualPreviewClient() {
                   value={4}
                   icon={CalendarClock}
                   tone="warn"
-                  sparkValues={[2, 3, 4, 3, 5, 4]}
+                  trend={{
+                    direction: "up",
+                    label: "esta semana",
+                    sentiment: "warn",
+                  }}
                   hint="Atenção esta semana"
                 />
                 <MetricTile
@@ -450,14 +462,22 @@ export function VisualPreviewClient() {
                   value={9}
                   icon={PackageCheck}
                   tone="success"
-                  sparkValues={[4, 5, 6, 7, 8, 9]}
+                  trend={{
+                    direction: "up",
+                    label: "no mês",
+                    sentiment: "good",
+                  }}
                 />
                 <MetricTile
                   label="A editar no mês"
                   value={11}
                   icon={CalendarDays}
                   tone="info"
-                  sparkValues={[8, 9, 10, 11, 10, 11]}
+                  trend={{
+                    direction: "up",
+                    label: "com prazo",
+                    sentiment: "neutral",
+                  }}
                 />
               </section>
 

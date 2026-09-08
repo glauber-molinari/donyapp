@@ -480,46 +480,66 @@ export function DashboardView({
     }));
   }, [jobs, stages]);
 
-  const sparkActive = [
-    Math.max(0, metrics.activeJobs - 4),
-    Math.max(0, metrics.activeJobs - 2),
-    metrics.activeJobs,
-    Math.max(0, metrics.activeJobs - 1),
-    metrics.activeJobs + Math.min(2, metrics.toEditThisMonth),
-    metrics.activeJobs,
-  ];
-  const sparkOverdue = [
-    Math.max(0, metrics.overdue + 1),
-    metrics.overdue,
-    Math.max(0, metrics.overdue - 1),
-    metrics.overdue,
-    Math.max(0, metrics.overdue + 1),
-    metrics.overdue,
-  ];
-  const sparkDue = [
-    Math.max(0, metrics.dueSoon - 1),
-    metrics.dueSoon,
-    Math.max(0, metrics.dueSoon + 1),
-    metrics.dueSoon,
-    Math.max(0, metrics.dueSoon - 1),
-    metrics.dueSoon,
-  ];
-  const sparkDelivered = [
-    Math.max(0, metrics.deliveredThisMonth - 2),
-    Math.max(0, metrics.deliveredThisMonth - 1),
-    metrics.deliveredThisMonth,
-    Math.max(0, metrics.deliveredThisMonth - 1),
-    metrics.deliveredThisMonth + 1,
-    metrics.deliveredThisMonth,
-  ];
-  const sparkEdit = [
-    Math.max(0, metrics.toEditThisMonth - 2),
-    metrics.toEditThisMonth,
-    Math.max(0, metrics.toEditThisMonth - 1),
-    metrics.toEditThisMonth + 1,
-    metrics.toEditThisMonth,
-    Math.max(0, metrics.toEditThisMonth - 1),
-  ];
+  const trendActive =
+    metrics.activeJobs > 0
+      ? {
+          direction: "up" as const,
+          label: `${metrics.activeJobs} na fila`,
+          sentiment: "neutral" as const,
+        }
+      : {
+          direction: "flat" as const,
+          label: "Nenhum aberto",
+          sentiment: "neutral" as const,
+        };
+  const trendOverdue =
+    metrics.overdue > 0
+      ? {
+          direction: "up" as const,
+          label: "precisa ação",
+          sentiment: "bad" as const,
+        }
+      : {
+          direction: "down" as const,
+          label: "Em dia",
+          sentiment: "good" as const,
+        };
+  const trendDueSoon =
+    metrics.dueSoon > 0
+      ? {
+          direction: "up" as const,
+          label: "esta semana",
+          sentiment: "warn" as const,
+        }
+      : {
+          direction: "down" as const,
+          label: "Tranquilo",
+          sentiment: "good" as const,
+        };
+  const trendDelivered =
+    metrics.deliveredThisMonth > 0
+      ? {
+          direction: "up" as const,
+          label: "no mês",
+          sentiment: "good" as const,
+        }
+      : {
+          direction: "flat" as const,
+          label: "ainda zerado",
+          sentiment: "neutral" as const,
+        };
+  const trendToEdit =
+    metrics.toEditThisMonth > 0
+      ? {
+          direction: "up" as const,
+          label: "com prazo",
+          sentiment: "neutral" as const,
+        }
+      : {
+          direction: "flat" as const,
+          label: "sem prazo no mês",
+          sentiment: "neutral" as const,
+        };
 
   return (
     <div className="flex flex-col gap-6">
@@ -707,7 +727,7 @@ export function DashboardView({
             value={metrics.activeJobs}
             icon={ClipboardList}
             tone="accent"
-            sparkValues={sparkActive}
+            trend={trendActive}
             hint="Em etapas abertas"
           />
           <MetricTile
@@ -715,7 +735,7 @@ export function DashboardView({
             value={metrics.overdue}
             icon={AlertCircle}
             tone="danger"
-            sparkValues={sparkOverdue}
+            trend={trendOverdue}
             hint="Prazo final vencido"
           />
           <MetricTile
@@ -723,7 +743,7 @@ export function DashboardView({
             value={metrics.dueSoon}
             icon={CalendarClock}
             tone="warn"
-            sparkValues={sparkDue}
+            trend={trendDueSoon}
             hint="Atenção esta semana"
           />
           <MetricTile
@@ -731,7 +751,7 @@ export function DashboardView({
             value={metrics.deliveredThisMonth}
             icon={PackageCheck}
             tone="success"
-            sparkValues={sparkDelivered}
+            trend={trendDelivered}
             className="hidden xl:block"
           />
           <MetricTile
@@ -739,7 +759,7 @@ export function DashboardView({
             value={metrics.toEditThisMonth}
             icon={CalendarDays}
             tone="info"
-            sparkValues={sparkEdit}
+            trend={trendToEdit}
             className="hidden xl:block"
           />
         </div>
@@ -749,14 +769,14 @@ export function DashboardView({
             value={metrics.deliveredThisMonth}
             icon={PackageCheck}
             tone="success"
-            sparkValues={sparkDelivered}
+            trend={trendDelivered}
           />
           <MetricTile
             label="A editar no mês"
             value={metrics.toEditThisMonth}
             icon={CalendarDays}
             tone="info"
-            sparkValues={sparkEdit}
+            trend={trendToEdit}
           />
         </div>
 
