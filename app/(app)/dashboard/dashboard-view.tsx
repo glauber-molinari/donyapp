@@ -4,7 +4,6 @@ import {
   AlertCircle,
   CalendarClock,
   CalendarDays,
-  ClipboardList,
   ExternalLink,
   PackageCheck,
   Pencil,
@@ -480,18 +479,6 @@ export function DashboardView({
     }));
   }, [jobs, stages]);
 
-  const trendActive =
-    metrics.activeJobs > 0
-      ? {
-          direction: "up" as const,
-          label: `${metrics.activeJobs} na fila`,
-          sentiment: "neutral" as const,
-        }
-      : {
-          direction: "flat" as const,
-          label: "Nenhum aberto",
-          sentiment: "neutral" as const,
-        };
   const trendOverdue =
     metrics.overdue > 0
       ? {
@@ -721,15 +708,7 @@ export function DashboardView({
       ) : null}
 
       <section aria-label="Métricas do estúdio" className="flex flex-col gap-4">
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-          <MetricTile
-            label="Jobs ativos"
-            value={metrics.activeJobs}
-            icon={ClipboardList}
-            tone="accent"
-            trend={trendActive}
-            hint="Em etapas abertas"
-          />
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <MetricTile
             label="Atrasados"
             value={metrics.overdue}
@@ -746,24 +725,6 @@ export function DashboardView({
             trend={trendDueSoon}
             hint="Atenção esta semana"
           />
-          <MetricTile
-            label="Entregues no mês"
-            value={metrics.deliveredThisMonth}
-            icon={PackageCheck}
-            tone="success"
-            trend={trendDelivered}
-            className="hidden xl:block"
-          />
-          <MetricTile
-            label="A editar no mês"
-            value={metrics.toEditThisMonth}
-            icon={CalendarDays}
-            tone="info"
-            trend={trendToEdit}
-            className="hidden xl:block"
-          />
-        </div>
-        <div className="grid gap-3 xl:hidden sm:grid-cols-2">
           <MetricTile
             label="Entregues no mês"
             value={metrics.deliveredThisMonth}

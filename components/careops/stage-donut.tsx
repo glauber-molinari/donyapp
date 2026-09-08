@@ -74,8 +74,8 @@ export function StageDonut({
         <span className="font-display text-2xl font-bold tabular-nums text-ds-ink">
           {total}
         </span>
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-ds-muted-2">
-          ativos
+        <span className="max-w-[5.5rem] text-center text-[9px] font-semibold uppercase leading-tight tracking-wider text-ds-muted-2">
+          Jobs ativos
         </span>
       </div>
     </div>

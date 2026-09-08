@@ -4,7 +4,6 @@ import {
   AlertCircle,
   CalendarClock,
   CalendarDays,
-  ClipboardList,
   ExternalLink,
   LayoutDashboard,
   LaptopMinimal,
@@ -420,19 +419,7 @@ export function VisualPreviewClient() {
                 perder o ritmo.
               </InsightBar>
 
-              <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-                <MetricTile
-                  label="Jobs ativos"
-                  value={activeJobs}
-                  icon={ClipboardList}
-                  tone="accent"
-                  trend={{
-                    direction: "up",
-                    label: `${activeJobs} na fila`,
-                    sentiment: "neutral",
-                  }}
-                  hint="Em etapas abertas"
-                />
+              <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <MetricTile
                   label="Atrasados"
                   value={2}
