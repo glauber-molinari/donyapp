@@ -41,6 +41,7 @@ import {
   updateJobClientRevision,
   type KanbanColumnSync,
 } from "../jobs/actions";
+import { SegmentedMeter } from "@/components/careops/segmented-meter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
@@ -560,11 +561,11 @@ const JobCardContent = memo(function JobCardContent({
   return (
     <div
       className={cn(
-        "rounded-lg border border-ds-border/70 bg-white shadow-sm",
+        "rounded-[1rem] border border-ds-border/60 bg-white shadow-ds-md",
         // Padding padrão (sem container queries)
-        "p-2 sm:p-3",
+        "p-3 sm:p-3.5",
         isDragging && "opacity-60",
-        overlay && "shadow-md ring-2 ring-ds-accent/15",
+        overlay && "shadow-ds-lg ring-2 ring-ds-accent/15",
         openEnabled && !dragHandle && "cursor-pointer"
       )}
       style={{ boxShadow: cardShadow }}
@@ -622,7 +623,7 @@ const SortableJobCard = memo(function SortableJobCard({
   const dragHandle = dragDisabled ? undefined : (
     <button
       type="button"
-      className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-md border border-transparent text-ds-muted hover:border-ds-border/80 hover:bg-ds-cream hover:text-ds-ink"
+      className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl border border-transparent text-ds-muted hover:border-ds-border/80 hover:bg-ds-cream hover:text-ds-ink"
       aria-label="Arrastar card"
       {...listeners}
       {...attributes}
@@ -691,7 +692,7 @@ const KanbanColumn = memo(function KanbanColumn({
   return (
     <div
       className={cn(
-        "flex min-h-0 flex-col overflow-hidden rounded-xl border border-ds-border/60 shadow-sm transition-[box-shadow,colors]",
+        "flex min-h-0 flex-col overflow-hidden rounded-[1.25rem] border border-ds-border/50 bg-ds-surface shadow-ds-md transition-[box-shadow,colors]",
         /* Mobile/tablet: colunas com largura legível, scroll horizontal livre */
         "max-lg:w-[min(88vw,20rem)] max-lg:max-w-[20rem] max-lg:shrink-0 max-lg:flex-none",
         "lg:min-w-[128px] lg:max-w-[260px] lg:flex-1 lg:basis-0"
@@ -706,19 +707,31 @@ const KanbanColumn = memo(function KanbanColumn({
       }}
     >
       <div
-        className="shrink-0 border-b border-ds-border/35 px-2.5 py-2"
+        className="shrink-0 border-b border-ds-border/30 px-3 py-3"
         style={{
-          backgroundColor: `color-mix(in srgb, ${accentHex} 22%, white)`,
+          backgroundColor: `color-mix(in srgb, ${accentHex} 18%, white)`,
         }}
       >
-        <h2 className="break-words text-[11px] font-semibold uppercase tracking-wide text-ds-muted">
-          {stage.name}
-        </h2>
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="break-words text-[11px] font-bold uppercase tracking-[0.08em] text-ds-ink-2">
+            {stage.name}
+          </h2>
+          <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-white/80 px-1.5 text-[11px] font-semibold tabular-nums text-ds-ink shadow-sm">
+            {visibleIds.length}
+          </span>
+        </div>
+        <SegmentedMeter
+          className="mt-2.5"
+          value={visibleIds.length}
+          max={Math.max(visibleIds.length, 4)}
+          segments={12}
+          tone="muted"
+        />
       </div>
       {dragDisabled ? (
         <div
           className={cn(
-            "flex flex-col gap-2 px-2 pb-2 pt-1.5",
+            "flex flex-col gap-2.5 px-2.5 pb-2.5 pt-2",
             visibleIds.length === 0 && "min-h-[72px]"
           )}
         >
@@ -745,7 +758,7 @@ const KanbanColumn = memo(function KanbanColumn({
           <div
             ref={setNodeRef}
             className={cn(
-              "flex flex-col gap-2 px-2 pb-2 pt-1.5",
+              "flex flex-col gap-2.5 px-2.5 pb-2.5 pt-2",
               jobIds.length === 0 && "min-h-[72px]"
             )}
           >
@@ -1033,17 +1046,20 @@ export function BoardView({
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
           <div className="flex flex-col gap-2">
-            <h1 className="text-xl font-bold tracking-tight text-ds-ink">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ds-muted-2">
+              Pós-produção
+            </p>
+            <h1 className="font-display text-3xl font-bold tracking-tight text-ds-ink">
               {pageTitle}
             </h1>
             {albumBoardEnabled ? (
               <div
                 role="tablist"
                 aria-label="Tipo de quadro"
-                className="inline-flex gap-0.5 rounded-ds-lg border border-ds-border bg-ds-cream/40 p-1"
+                className="inline-flex gap-0.5 rounded-full border border-ds-border bg-ds-cream/50 p-1"
               >
                 <button
                   type="button"
@@ -1054,9 +1070,9 @@ export function BoardView({
                     router.push("/board");
                   }}
                   className={cn(
-                    "rounded-xl px-3 py-1.5 text-xs font-medium transition-colors",
+                    "rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors",
                     !isAlbumBoard
-                      ? "bg-ds-surface text-ds-ink shadow-ds-sm"
+                      ? "bg-ds-ink text-ds-on-dark shadow-ds-sm"
                       : "text-ds-muted hover:text-ds-ink"
                   )}
                 >
@@ -1071,9 +1087,9 @@ export function BoardView({
                     router.push("/board?board=album");
                   }}
                   className={cn(
-                    "rounded-xl px-3 py-1.5 text-xs font-medium transition-colors",
+                    "rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors",
                     isAlbumBoard
-                      ? "bg-ds-surface text-ds-ink shadow-ds-sm"
+                      ? "bg-ds-ink text-ds-on-dark shadow-ds-sm"
                       : "text-ds-muted hover:text-ds-ink"
                   )}
                 >
@@ -1095,7 +1111,7 @@ export function BoardView({
               value={boardMonthYm}
               onChange={(e) => setBoardMonthYm(e.target.value)}
               title="Mostra jobs com prazo interno ou final no mês; em Entregue, também os atualizados nesse mês."
-              className="rounded-ds-lg border border-ds-border bg-ds-surface px-3 py-2 text-sm text-ds-ink shadow-ds-sm focus:border-ds-accent/50 focus:outline-none focus:ring-2 focus:ring-ds-accent/20"
+              className="rounded-full border border-ds-border bg-ds-surface px-3 py-2 text-sm text-ds-ink shadow-ds-sm focus:border-ds-accent/50 focus:outline-none focus:ring-2 focus:ring-ds-accent/20"
             />
           </div>
         </div>
@@ -1110,7 +1126,7 @@ export function BoardView({
               placeholder="Buscar job ou contato…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-ds-lg border border-ds-border bg-ds-surface py-2.5 pl-10 pr-3 text-sm text-ds-ink shadow-ds-sm placeholder:text-ds-muted-2 focus:border-ds-accent/50 focus:outline-none focus:ring-2 focus:ring-ds-accent/20"
+              className="w-full rounded-full border border-ds-border bg-ds-surface py-2.5 pl-10 pr-3 text-sm text-ds-ink shadow-ds-sm placeholder:text-ds-muted-2 focus:border-ds-accent/50 focus:outline-none focus:ring-2 focus:ring-ds-accent/20"
               aria-label="Buscar no quadro"
             />
           </div>
@@ -1118,7 +1134,7 @@ export function BoardView({
             id="btn-novo-job"
             type="button"
             size="md"
-            className="hidden w-full sm:inline-flex sm:w-auto"
+            className="hidden w-full rounded-full sm:inline-flex sm:w-auto"
             disabled={noStages || createDisabled}
             onClick={() => {
               setErrorMessage(null);

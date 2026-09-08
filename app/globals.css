@@ -39,8 +39,8 @@ html {
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: var(--font-inter), system-ui, sans-serif;
-  font-feature-settings: "ss01", "cv11";  /* Inter: formas alternativas + dígitos contextuais */
+  font-family: var(--font-plus-jakarta), var(--font-inter), system-ui, sans-serif;
+  font-feature-settings: "ss01", "cv11";
   -webkit-font-smoothing: antialiased;
   /** Idem html — defesa em profundidade. */
   overflow-x: hidden;

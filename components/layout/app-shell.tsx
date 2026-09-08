@@ -139,11 +139,11 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
 
   const linkClass = (href: string, collapsed: boolean) =>
     cn(
-      "flex items-center gap-3 rounded-ds-xl px-3 py-2.5 min-h-[44px] text-sm font-medium transition-colors duration-ds ease-out",
+      "flex items-center gap-3 rounded-full px-3 py-2.5 min-h-[44px] text-sm font-medium transition-colors duration-ds ease-out",
       collapsed && "md:justify-center md:gap-0 md:px-2 md:py-3",
       pathname === href ||
         (href !== "/dashboard" && href !== "/" && pathname.startsWith(href))
-        ? "bg-ds-cream text-ds-ink font-semibold"
+        ? "bg-ds-ink text-ds-on-dark font-semibold shadow-ds-sm"
         : "text-ds-muted hover:bg-ds-cream/80 hover:text-ds-ink"
     );
 
@@ -353,10 +353,10 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
               id="menu-support"
               title={sidebarCollapsed ? "Suporte" : undefined}
               className={cn(
-                "relative flex items-center gap-3 rounded-ds-xl px-3 py-2.5 text-sm font-medium transition-colors duration-ds ease-out",
+                "relative flex items-center gap-3 rounded-full px-3 py-2.5 text-sm font-medium transition-colors duration-ds ease-out",
                 sidebarCollapsed && "md:justify-center md:px-2 md:py-3",
                 pathname === "/support" || pathname.startsWith("/support/")
-                  ? "bg-ds-cream text-ds-ink font-semibold"
+                  ? "bg-ds-ink text-ds-on-dark font-semibold shadow-ds-sm"
                   : "text-ds-muted hover:bg-ds-cream/80 hover:text-ds-ink"
               )}
             >

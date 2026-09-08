@@ -27,6 +27,10 @@ import { SdCardTagsField } from "@/components/app/sd-card-tags-field";
 import { JobAssigneesMultiField } from "@/components/app/job-assignees-multi-field";
 import { KanbanMiniPreview } from "@/components/app/kanban-mini-preview";
 import { useOnboardingTour } from "@/components/app/onboarding-tour";
+import { InsightBar } from "@/components/careops/insight-bar";
+import { MetricTile } from "@/components/careops/metric-tile";
+import { SegmentedMeter } from "@/components/careops/segmented-meter";
+import { StageDonut } from "@/components/careops/stage-donut";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -47,6 +51,7 @@ import {
   videoAssigneeSourceForSplitEdit,
 } from "@/lib/job-foto-video-split";
 import { formatDatePt } from "@/lib/job-display";
+import { kanbanStageAccentHex } from "@/lib/kanban-stage-accent";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import type { Database, Plan, UserRole } from "@/types/database";
@@ -456,17 +461,87 @@ export function DashboardView({
   const noStages = stageOptions.length === 0;
   const needsAttention = metrics.overdue > 0 || metrics.dueSoon > 0;
 
+  const stageSlices = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const j of jobs) {
+      if (j.kanban_stages?.is_final) continue;
+      if (!j.stage_id) continue;
+      counts.set(j.stage_id, (counts.get(j.stage_id) ?? 0) + 1);
+    }
+    return stages.map((s, i) => ({
+      id: s.id,
+      name: s.name,
+      count: counts.get(s.id) ?? 0,
+      color: kanbanStageAccentHex(
+        ["bg-ds-accent/10", "bg-amber-50", "bg-blue-50", "bg-green-50", "bg-pink-50"][
+          i % 5
+        ]
+      ),
+    }));
+  }, [jobs, stages]);
+
+  const sparkActive = [
+    Math.max(0, metrics.activeJobs - 4),
+    Math.max(0, metrics.activeJobs - 2),
+    metrics.activeJobs,
+    Math.max(0, metrics.activeJobs - 1),
+    metrics.activeJobs + Math.min(2, metrics.toEditThisMonth),
+    metrics.activeJobs,
+  ];
+  const sparkOverdue = [
+    Math.max(0, metrics.overdue + 1),
+    metrics.overdue,
+    Math.max(0, metrics.overdue - 1),
+    metrics.overdue,
+    Math.max(0, metrics.overdue + 1),
+    metrics.overdue,
+  ];
+  const sparkDue = [
+    Math.max(0, metrics.dueSoon - 1),
+    metrics.dueSoon,
+    Math.max(0, metrics.dueSoon + 1),
+    metrics.dueSoon,
+    Math.max(0, metrics.dueSoon - 1),
+    metrics.dueSoon,
+  ];
+  const sparkDelivered = [
+    Math.max(0, metrics.deliveredThisMonth - 2),
+    Math.max(0, metrics.deliveredThisMonth - 1),
+    metrics.deliveredThisMonth,
+    Math.max(0, metrics.deliveredThisMonth - 1),
+    metrics.deliveredThisMonth + 1,
+    metrics.deliveredThisMonth,
+  ];
+  const sparkEdit = [
+    Math.max(0, metrics.toEditThisMonth - 2),
+    metrics.toEditThisMonth,
+    Math.max(0, metrics.toEditThisMonth - 1),
+    metrics.toEditThisMonth + 1,
+    metrics.toEditThisMonth,
+    Math.max(0, metrics.toEditThisMonth - 1),
+  ];
+
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold text-ds-ink">Dashboard</h1>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ds-muted-2">
+            Estúdio
+          </p>
+          <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-ds-ink">
+            Dashboard
+          </h1>
+          <p className="mt-1.5 max-w-xl text-sm text-ds-muted">
+            Visão rápida da fila, dos prazos e do ritmo de entrega.
+          </p>
+        </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
           {!tourCompleted && onboardingTour ? (
             <Button
               type="button"
               variant="secondary"
               size="md"
-              className="w-full sm:w-auto"
+              className="w-full rounded-full sm:w-auto"
               onClick={() => onboardingTour.startTour()}
             >
               <Sparkles className="h-4 w-4" aria-hidden />
@@ -477,7 +552,7 @@ export function DashboardView({
             id="btn-novo-job"
             type="button"
             size="md"
-            className="w-full sm:w-auto"
+            className="w-full rounded-full sm:w-auto"
             disabled={noStages}
             onClick={() => {
               setErrorMessage(null);
@@ -501,10 +576,10 @@ export function DashboardView({
       {plan === "pro" &&
       members.length === 1 &&
       teamProInviteBannerDismissed === false ? (
-        <Card className="relative border border-ds-accent/25 bg-ds-cream/40 p-4 pr-12 shadow-sm sm:pr-14">
+        <Card className="relative rounded-[1.125rem] border border-ds-accent/25 bg-ds-cream/40 p-4 pr-12 shadow-ds-md sm:pr-14">
           <button
             type="button"
-            className="absolute right-2 top-2 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-ds-lg text-ds-muted transition-colors hover:bg-black/5 hover:text-ds-ink"
+            className="absolute right-2 top-2 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ds-muted transition-colors hover:bg-black/5 hover:text-ds-ink"
             aria-label="Fechar aviso"
             onClick={() => {
               setTeamProInviteBannerDismissed(true);
@@ -519,7 +594,7 @@ export function DashboardView({
           </button>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-ds-xl bg-white/80 text-ds-accent shadow-sm">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/80 text-ds-accent shadow-sm">
                 <UsersRound className="h-5 w-5" aria-hidden />
               </div>
               <div className="min-w-0">
@@ -531,7 +606,7 @@ export function DashboardView({
             </div>
             <Link
               href="/settings/team"
-              className="inline-flex h-10 shrink-0 items-center justify-center rounded-ds-xl border border-ds-border bg-ds-surface px-4 text-sm font-medium text-ds-ink shadow-ds-sm transition-colors hover:bg-ds-cream"
+              className="inline-flex h-10 shrink-0 items-center justify-center rounded-full border border-ds-border bg-ds-surface px-4 text-sm font-medium text-ds-ink shadow-ds-sm transition-colors hover:bg-ds-cream"
             >
               Convidar agora
             </Link>
@@ -546,22 +621,21 @@ export function DashboardView({
       ) : null}
 
       {metrics.activeJobs > 0 ? (
-        <p className="text-sm text-ds-muted">
-          <span className="font-medium text-ds-ink">Neste mês:</span>{" "}
-          {metrics.deliveredThisMonth} entrega(s) registrada(s) e{" "}
-          {metrics.toEditThisMonth} item(ns) com prazo no mês. Vale conferir o quadro
-          para não perder o ritmo.
-        </p>
+        <InsightBar href="/board" cta="Abrir Pós-Produção">
+          <span className="font-semibold text-ds-ink">Neste mês:</span>{" "}
+          {metrics.deliveredThisMonth} entrega(s) e {metrics.toEditThisMonth} item(ns)
+          com prazo. Vale conferir o quadro para não perder o ritmo.
+        </InsightBar>
       ) : null}
 
       {needsAttention && attentionBannerDismissed === false ? (
         <div
-          className="relative rounded-ds-xl border border-ds-warn/20 bg-ds-warn-soft px-4 py-4 pr-12 sm:px-5 sm:pr-14"
+          className="relative rounded-[1.125rem] border border-ds-warn/20 bg-ds-warn-soft px-4 py-4 pr-12 shadow-ds-sm sm:px-5 sm:pr-14"
           role="status"
         >
           <button
             type="button"
-            className="absolute right-2 top-2 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-ds-lg text-ds-warn/80 transition-colors hover:bg-ds-warn/10 hover:text-ds-warn"
+            className="absolute right-2 top-2 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ds-warn/80 transition-colors hover:bg-ds-warn/10 hover:text-ds-warn"
             aria-label="Fechar aviso de prazos"
             onClick={() => {
               setAttentionBannerDismissed(true);
@@ -587,7 +661,7 @@ export function DashboardView({
                 type="button"
                 variant="secondary"
                 size="sm"
-                className="border-ds-warn/20 bg-white"
+                className="rounded-full border-ds-warn/20 bg-white"
                 onClick={() => router.push("/dashboard?attention=overdue")}
               >
                 Ver atrasados
@@ -598,7 +672,7 @@ export function DashboardView({
                 type="button"
                 variant="secondary"
                 size="sm"
-                className="border-ds-warn/20 bg-white"
+                className="rounded-full border-ds-warn/20 bg-white"
                 onClick={() => router.push("/dashboard?attention=dueSoon")}
               >
                 Ver prazo em até 3 dias
@@ -606,7 +680,7 @@ export function DashboardView({
             ) : null}
             <Link
               href="/board"
-              className="inline-flex h-8 items-center gap-1 rounded-ds-xl px-3 text-sm font-medium text-ds-warn underline-offset-4 hover:underline"
+              className="inline-flex h-8 items-center gap-1 rounded-full px-3 text-sm font-medium text-ds-warn underline-offset-4 hover:underline"
             >
               Abrir Edições
               <ExternalLink className="h-3.5 w-3.5" aria-hidden />
@@ -616,6 +690,7 @@ export function DashboardView({
                 type="button"
                 variant="ghost"
                 size="sm"
+                className="rounded-full"
                 onClick={() => router.push("/dashboard")}
               >
                 Limpar filtro
@@ -625,117 +700,140 @@ export function DashboardView({
         </div>
       ) : null}
 
-      <section aria-label="Métricas do estúdio">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          <Card className="p-4 shadow-sm">
-            <div className="flex items-start gap-3">
-              <div className="rounded-ds-xl bg-ds-cream/90 p-2 text-ds-accent">
-                <ClipboardList className="h-5 w-5 shrink-0" aria-hidden />
-              </div>
-              <div className="min-w-0">
-                <p className="text-2xl font-bold tabular-nums text-ds-ink">
-                  {metrics.activeJobs}
-                </p>
-                <p className="text-xs leading-snug text-ds-muted">Jobs ativos</p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-4 shadow-sm">
-            <div className="flex items-start gap-3">
-              <div className="rounded-ds-xl bg-ds-danger-soft p-2 text-ds-danger">
-                <AlertCircle className="h-5 w-5 shrink-0" aria-hidden />
-              </div>
-              <div className="min-w-0">
-                <p className="text-2xl font-bold tabular-nums text-ds-ink">
-                  {metrics.overdue}
-                </p>
-                <p className="text-xs leading-snug text-ds-muted">Atrasados</p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-4 shadow-sm">
-            <div className="flex items-start gap-3">
-              <div className="rounded-ds-xl bg-ds-warn-soft p-2 text-ds-warn">
-                <CalendarClock className="h-5 w-5 shrink-0" aria-hidden />
-              </div>
-              <div className="min-w-0">
-                <p className="text-2xl font-bold tabular-nums text-ds-ink">
-                  {metrics.dueSoon}
-                </p>
-                <p className="text-xs leading-snug text-ds-muted">
-                  Prazo em até 3 dias
-                </p>
-              </div>
-            </div>
-          </Card>
-          <Card className="hidden p-4 shadow-sm lg:block">
-            <div className="flex items-start gap-3">
-              <div className="rounded-ds-xl bg-ds-success-soft p-2 text-ds-success">
-                <PackageCheck className="h-5 w-5 shrink-0" aria-hidden />
-              </div>
-              <div className="min-w-0">
-                <p className="text-2xl font-bold tabular-nums text-ds-ink">
-                  {metrics.deliveredThisMonth}
-                </p>
-                <p className="text-xs leading-snug text-ds-muted">Entregues no mês</p>
-              </div>
-            </div>
-          </Card>
-          <Card className="hidden p-4 shadow-sm lg:block">
-            <div className="flex items-start gap-3">
-              <div className="rounded-ds-xl bg-ds-info-soft p-2 text-ds-info">
-                <CalendarDays className="h-5 w-5 shrink-0" aria-hidden />
-              </div>
-              <div className="min-w-0">
-                <p className="text-2xl font-bold tabular-nums text-ds-ink">
-                  {metrics.toEditThisMonth}
-                </p>
-                <p className="text-xs leading-snug text-ds-muted">A editar neste mês</p>
-              </div>
-            </div>
-          </Card>
+      <section aria-label="Métricas do estúdio" className="flex flex-col gap-4">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          <MetricTile
+            label="Jobs ativos"
+            value={metrics.activeJobs}
+            icon={ClipboardList}
+            tone="accent"
+            sparkValues={sparkActive}
+            hint="Em etapas abertas"
+          />
+          <MetricTile
+            label="Atrasados"
+            value={metrics.overdue}
+            icon={AlertCircle}
+            tone="danger"
+            sparkValues={sparkOverdue}
+            hint="Prazo final vencido"
+          />
+          <MetricTile
+            label="Prazo ≤ 3 dias"
+            value={metrics.dueSoon}
+            icon={CalendarClock}
+            tone="warn"
+            sparkValues={sparkDue}
+            hint="Atenção esta semana"
+          />
+          <MetricTile
+            label="Entregues no mês"
+            value={metrics.deliveredThisMonth}
+            icon={PackageCheck}
+            tone="success"
+            sparkValues={sparkDelivered}
+            className="hidden xl:block"
+          />
+          <MetricTile
+            label="A editar no mês"
+            value={metrics.toEditThisMonth}
+            icon={CalendarDays}
+            tone="info"
+            sparkValues={sparkEdit}
+            className="hidden xl:block"
+          />
         </div>
-        <details className="mt-3 rounded-ds-xl border border-ds-border bg-ds-surface/60 px-3 py-2 lg:hidden">
-          <summary className="cursor-pointer text-sm font-medium text-ds-ink">
-            Mais indicadores
-          </summary>
-          <div className="mt-3 grid grid-cols-2 gap-3 pb-2">
-            <Card className="p-4 shadow-sm">
-              <div className="flex items-start gap-3">
-                <div className="rounded-ds-xl bg-ds-success-soft p-2 text-ds-success">
-                  <PackageCheck className="h-5 w-5 shrink-0" aria-hidden />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xl font-bold tabular-nums text-ds-ink">
-                    {metrics.deliveredThisMonth}
+        <div className="grid gap-3 xl:hidden sm:grid-cols-2">
+          <MetricTile
+            label="Entregues no mês"
+            value={metrics.deliveredThisMonth}
+            icon={PackageCheck}
+            tone="success"
+            sparkValues={sparkDelivered}
+          />
+          <MetricTile
+            label="A editar no mês"
+            value={metrics.toEditThisMonth}
+            icon={CalendarDays}
+            tone="info"
+            sparkValues={sparkEdit}
+          />
+        </div>
+
+        {metrics.activeJobs > 0 && stageSlices.some((s) => s.count > 0) ? (
+          <div className="grid gap-4 lg:grid-cols-[180px_1fr]">
+            <div className="flex items-center justify-center rounded-[1.125rem] border border-ds-border/70 bg-ds-surface p-4 shadow-ds-md">
+              <StageDonut slices={stageSlices} />
+            </div>
+            <div className="rounded-[1.125rem] border border-ds-border/70 bg-ds-surface p-4 shadow-ds-md sm:p-5">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="font-display text-base font-bold text-ds-ink">
+                    Performance por etapa
+                  </h2>
+                  <p className="text-xs text-ds-muted">
+                    Onde a fila está concentrada agora
                   </p>
-                  <p className="text-xs leading-snug text-ds-muted">Entregues no mês</p>
                 </div>
+                <Link
+                  href="/board"
+                  className="text-xs font-semibold text-ds-accent hover:underline"
+                >
+                  Ver todos
+                </Link>
               </div>
-            </Card>
-            <Card className="p-4 shadow-sm">
-              <div className="flex items-start gap-3">
-                <div className="rounded-ds-xl bg-ds-info-soft p-2 text-ds-info">
-                  <CalendarDays className="h-5 w-5 shrink-0" aria-hidden />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xl font-bold tabular-nums text-ds-ink">
-                    {metrics.toEditThisMonth}
-                  </p>
-                  <p className="text-xs leading-snug text-ds-muted">
-                    A editar neste mês
-                  </p>
-                </div>
-              </div>
-            </Card>
+              <ul className="flex flex-col gap-3.5">
+                {stageSlices
+                  .filter((s) => s.count > 0)
+                  .map((s) => {
+                    const util =
+                      metrics.activeJobs > 0
+                        ? Math.round((s.count / metrics.activeJobs) * 100)
+                        : 0;
+                    return (
+                      <li key={s.id} className="min-w-0">
+                        <div className="mb-1.5 flex items-center justify-between gap-3">
+                          <div className="flex min-w-0 items-center gap-2.5">
+                            <span
+                              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-bold text-ds-ink"
+                              style={{
+                                backgroundColor: `color-mix(in srgb, ${s.color} 22%, white)`,
+                              }}
+                            >
+                              {s.name.slice(0, 1)}
+                            </span>
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-semibold text-ds-ink">
+                                {s.name}
+                              </p>
+                              <p className="text-[11px] text-ds-muted">
+                                {s.count} job{s.count === 1 ? "" : "s"}
+                              </p>
+                            </div>
+                          </div>
+                          <p className="shrink-0 text-xs font-semibold tabular-nums text-ds-ink">
+                            {util}%
+                          </p>
+                        </div>
+                        <SegmentedMeter
+                          value={s.count}
+                          max={Math.max(metrics.activeJobs, 1)}
+                          tone="accent"
+                          segments={20}
+                        />
+                      </li>
+                    );
+                  })}
+              </ul>
+            </div>
           </div>
-        </details>
+        ) : null}
       </section>
 
       {errorMessage ? (
         <div
           role="alert"
-          className="rounded-xl border border-ds-danger/20 bg-ds-danger-soft px-4 py-3 text-sm text-ds-danger"
+          className="rounded-[1.125rem] border border-ds-danger/20 bg-ds-danger-soft px-4 py-3 text-sm text-ds-danger"
         >
           {errorMessage}
         </div>
@@ -751,6 +849,7 @@ export function DashboardView({
           >
             <Button
               type="button"
+              className="rounded-full"
               disabled={noStages}
               onClick={() => {
                 setErrorMessage(null);
@@ -771,7 +870,7 @@ export function DashboardView({
             <div className="flex flex-col gap-1">
               <h2
                 id="dashboard-jobs-heading"
-                className="text-lg font-semibold text-ds-ink"
+                className="font-display text-lg font-bold text-ds-ink"
               >
                 Lista de jobs
               </h2>
@@ -801,7 +900,7 @@ export function DashboardView({
                     placeholder="Buscar por job, contato, etapa ou tipo…"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    className="w-full rounded-ds-xl border border-ds-border bg-ds-surface py-2.5 pl-10 pr-3 text-sm text-ds-ink shadow-ds-sm placeholder:text-ds-muted-2 focus:border-ds-accent/50 focus:outline-none focus:ring-2 focus:ring-ds-accent/20"
+                    className="w-full rounded-full border border-ds-border bg-ds-surface py-2.5 pl-10 pr-3 text-sm text-ds-ink shadow-ds-sm placeholder:text-ds-muted-2 focus:border-ds-accent/50 focus:outline-none focus:ring-2 focus:ring-ds-accent/20"
                   />
                 </div>
               </div>
@@ -820,16 +919,16 @@ export function DashboardView({
             </div>
           </div>
 
-          <Card className="p-4">
+          <Card className="rounded-[1.25rem] border-ds-border/70 p-4 shadow-ds-md sm:p-5">
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <div className="inline-flex w-full rounded-ds-xl border border-ds-border bg-ds-surface p-1 sm:w-auto">
+                <div className="inline-flex w-full rounded-full border border-ds-border bg-ds-cream/50 p-1 sm:w-auto">
                   <button
                     type="button"
                     className={cn(
-                      "flex-1 rounded-ds-xl px-3 py-2 text-sm font-medium transition-colors sm:flex-none",
+                      "flex-1 rounded-full px-4 py-2 text-sm font-semibold transition-colors sm:flex-none",
                       tab === "active"
-                        ? "bg-ds-cream text-ds-ink shadow-sm"
+                        ? "bg-ds-ink text-ds-on-dark shadow-sm"
                         : "text-ds-muted hover:text-ds-ink"
                     )}
                     onClick={() => setTab("active")}
@@ -840,9 +939,9 @@ export function DashboardView({
                   <button
                     type="button"
                     className={cn(
-                      "flex-1 rounded-ds-xl px-3 py-2 text-sm font-medium transition-colors sm:flex-none",
+                      "flex-1 rounded-full px-4 py-2 text-sm font-semibold transition-colors sm:flex-none",
                       tab === "done"
-                        ? "bg-ds-cream text-ds-ink shadow-sm"
+                        ? "bg-ds-ink text-ds-on-dark shadow-sm"
                         : "text-ds-muted hover:text-ds-ink"
                     )}
                     onClick={() => setTab("done")}
@@ -899,6 +998,7 @@ export function DashboardView({
                       type="button"
                       variant="secondary"
                       size="sm"
+                      className="rounded-full"
                       onClick={() => router.push("/dashboard")}
                     >
                       Limpar filtro de atenção
@@ -907,7 +1007,7 @@ export function DashboardView({
                 </div>
               ) : (
                 <>
-                  <div className="hidden overflow-hidden rounded-ds-xl border border-ds-border lg:block">
+                  <div className="hidden overflow-hidden rounded-[1rem] border border-ds-border lg:block">
                     <table className="w-full border-collapse text-left text-sm">
                       <thead>
                         <tr className="border-b border-ds-border bg-ds-cream/90">
@@ -992,7 +1092,7 @@ export function DashboardView({
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       aria-label={`Abrir material final de ${j.name}`}
-                                      className="inline-flex h-8 w-8 items-center justify-center rounded-ds-xl text-ds-muted transition-colors hover:bg-ds-cream hover:text-ds-ink"
+                                      className="inline-flex h-8 w-8 items-center justify-center rounded-full text-ds-muted transition-colors hover:bg-ds-cream hover:text-ds-ink"
                                     >
                                       <ExternalLink className="h-4 w-4" />
                                     </a>
