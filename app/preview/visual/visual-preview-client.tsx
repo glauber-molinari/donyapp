@@ -18,6 +18,7 @@ import Image from "next/image";
 import { useMemo, useState } from "react";
 
 import { ProximityPill } from "@/components/app/deadline-proximity";
+import { CreateJobModal } from "@/components/careops/create-job-modal";
 import { InsightBar } from "@/components/careops/insight-bar";
 import { MetricTile } from "@/components/careops/metric-tile";
 import { SegmentedMeter, LOAD_TEXT_CLASS, loadToneFromPercent } from "@/components/careops/segmented-meter";
@@ -278,6 +279,7 @@ export function VisualPreviewClient() {
   const [tab, setTab] = useState<PreviewTab>("dashboard");
   const [jobsTab, setJobsTab] = useState<JobsListTab>("active");
   const [query, setQuery] = useState("");
+  const [createOpen, setCreateOpen] = useState(false);
   const allJobs = useMemo(() => buildMockJobs(), []);
   const activeJobs = useMemo(
     () => STAGE_SLICES.reduce((sum, s) => sum + s.count, 0),
@@ -404,6 +406,7 @@ export function VisualPreviewClient() {
                 </div>
                 <button
                   type="button"
+                  onClick={() => setCreateOpen(true)}
                   className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-ds-accent px-4 text-sm font-medium text-white"
                 >
                   <Plus className="h-4 w-4" aria-hidden />
@@ -730,6 +733,7 @@ export function VisualPreviewClient() {
                 </div>
                 <button
                   type="button"
+                  onClick={() => setCreateOpen(true)}
                   className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-ds-accent px-4 text-sm font-medium text-white"
                 >
                   <Plus className="h-4 w-4" aria-hidden />
@@ -820,6 +824,8 @@ export function VisualPreviewClient() {
           )}
         </main>
       </div>
+
+      <CreateJobModal open={createOpen} onClose={() => setCreateOpen(false)} />
     </div>
   );
 }
