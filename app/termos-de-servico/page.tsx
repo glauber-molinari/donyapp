@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Regras de uso do Dony.app e condições para acesso ao produto.",
 };
 
-const UPDATED_AT = "06/04/2026";
+const UPDATED_AT = "09/09/2026";
 
 export default function TermsOfServicePage() {
   return (
@@ -50,9 +50,12 @@ export default function TermsOfServicePage() {
           <section className="space-y-3">
             <h2 className="text-xl font-bold">2. Descrição do Serviço</h2>
             <p className="text-sm leading-relaxed text-ds-muted">
-              O Dony.app é uma ferramenta de organização de pós-produção (ex.: kanban, prazos, contatos
-              e colaboração). Recursos podem mudar ao longo do tempo, inclusive por motivos técnicos,
-              segurança e evolução do produto.
+              O Dony.app é um app web de organização de pós-produção para fotógrafos, videomakers e
+              estúdios. Inclui kanban de jobs, prazos, contatos, anotações, formulários para clientes,
+              relatórios, tarefas e colaboração em equipe. Um administrador pode conectar o Google
+              Calendar em modo leitura para a equipe ver a agenda no app. Na entrega, o plano Pro
+              pode disparar e-mail ao cliente ou abrir o WhatsApp Web com o link do material. Recursos
+              podem mudar por motivo técnico, de segurança ou de evolução do produto.
             </p>
           </section>
 
@@ -61,8 +64,8 @@ export default function TermsOfServicePage() {
             <div className="space-y-3 text-sm leading-relaxed text-ds-muted">
               <ul className="list-disc space-y-2 pl-5">
                 <li>
-                  O login é realizado via Conta Google. Você é responsável por manter a segurança da
-                  sua conta e dispositivo.
+                  O login pode ser feito com Conta Google ou com e-mail e senha. Você é responsável
+                  por manter a segurança da sua conta, senha e dispositivo.
                 </li>
                 <li>
                   Você deve fornecer informações verdadeiras e manter dados atualizados quando
@@ -96,12 +99,15 @@ export default function TermsOfServicePage() {
             <div className="space-y-3 text-sm leading-relaxed text-ds-muted">
               <p>
                 Você mantém a titularidade do conteúdo que inserir no Dony.app (ex.: dados de clientes,
-                descrições e prazos). Você concede uma licença limitada para hospedarmos e processarmos
-                esse conteúdo apenas para fornecer o Serviço.
+                jobs, prazos, notas, respostas de formulário e links de entrega). Você concede uma
+                licença limitada para hospedarmos e processarmos esse conteúdo apenas para fornecer o
+                Serviço, inclusive para enviar e-mails que você dispara (convite, entrega, tarefa,
+                suporte).
               </p>
               <p>
                 Você é responsável por obter autorizações necessárias para tratar dados de terceiros
-                (ex.: seus clientes) no app.
+                (ex.: seus clientes) no app, inclusive quando um cliente preenche um formulário pelo
+                link que você envia.
               </p>
             </div>
           </section>
@@ -109,9 +115,10 @@ export default function TermsOfServicePage() {
           <section className="space-y-3">
             <h2 className="text-xl font-bold">6. Planos, pagamentos e testes</h2>
             <p className="text-sm leading-relaxed text-ds-muted">
-              O Dony.app pode oferecer plano gratuito e planos pagos. Condições (preço, limites,
-              renovação e cancelamento) podem ser apresentadas dentro do app e podem mudar. Se houver
-              provedor de pagamento, ele poderá aplicar termos próprios para processamento.
+              Há plano gratuito e planos pagos (Pro mensal e Pro anual). Preço, limites, renovação e
+              cancelamento aparecem na landing e dentro do app, e podem mudar. Cobrança do Pro é feita
+              por processador de pagamento (hoje, Asaas), com cartão de crédito. O processador aplica
+              os termos dele ao pagamento. Nós não guardamos o número completo do cartão.
             </p>
           </section>
 

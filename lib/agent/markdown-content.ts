@@ -245,7 +245,7 @@ We read support mail on business days. Include your account email and a short de
     case "/privacy":
       return `# Privacy — ${SITE_NAME}
 
-${SITE_NAME} processes account data (name, email, profile), workspace content you enter (contacts, jobs, notes, form answers), usage/diagnostic logs needed to run the service, and subscription status when you pay. Payment card data is handled by the payment provider, not stored as full card numbers on our servers.
+${SITE_NAME} processes account data (name, email, profile photo; Google and/or email-password login), workspace content (contacts, jobs, notes, form answers, support tickets), transactional email, WhatsApp Web links for delivery, usage logs, site analytics, and subscription status. Card numbers are handled by Asaas, not stored in full on our servers.
 
 We use data to operate the product, authenticate you, bill plans, fix bugs, and meet legal obligations under Brazil's LGPD. You can request access, correction, deletion, and related rights by emailing [${SUPPORT_EMAIL}](mailto:${SUPPORT_EMAIL}).
 
@@ -264,7 +264,7 @@ The full Portuguese policy is the legal source of truth:
 
 Documento completo em HTML: [${url}/politica-de-privacidade](${url}/politica-de-privacidade)
 
-Resumo: tratamos dados de conta, conteúdo do workspace, logs técnicos e status de assinatura para operar o ${SITE_NAME}. Contato do titular: [${SUPPORT_EMAIL}](mailto:${SUPPORT_EMAIL}).
+Resumo: tratamos dados de conta (Google ou e-mail/senha), conteúdo do workspace, formulários, e-mails transacionais, WhatsApp Web na entrega, logs, Analytics e status de assinatura. Contato do titular: [${SUPPORT_EMAIL}](mailto:${SUPPORT_EMAIL}).
 
 Versão amigável em inglês/curta: [${url}/privacy](${url}/privacy)
 `;

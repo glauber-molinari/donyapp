@@ -53,10 +53,11 @@ export default function PrivacyPage() {
         <div className="mt-10 space-y-6 text-sm leading-relaxed text-ds-muted">
           <p>
             O {SITE_NAME} trata dados de conta (nome, e-mail, foto de perfil e identificadores de
-            login), conteúdo que você coloca no workspace (contatos, jobs, prazos, notas, respostas
-            de formulário), logs técnicos necessários para operar e proteger o serviço, e status de
-            assinatura quando há plano pago. Dados sensíveis de cartão ficam com o provedor de
-            pagamento; nós não guardamos o número completo do cartão nos nossos servidores.
+            login com Google ou e-mail/senha), conteúdo do workspace (contatos, jobs, prazos, notas,
+            tarefas, respostas de formulário, tickets), e-mails transacionais (convite, entrega,
+            tarefa, suporte), abertura do WhatsApp Web na entrega, logs técnicos, Analytics do site e
+            status de assinatura. Dados do cartão ficam com o Asaas; nós não guardamos o número
+            completo.
           </p>
           <p>
             Usamos esses dados para autenticar, rodar o produto, cobrar planos, diagnosticar falhas e

@@ -526,7 +526,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                 },
                 {
                   q: "Preciso instalar algo?",
-                  a: "Não. Tudo roda no navegador. Você entra com a Conta Google: usamos nome, e-mail e foto só para criar e autenticar a conta.",
+                  a: "Não. Tudo roda no navegador. Você entra com Google ou e-mail e senha. No Google, usamos nome, e-mail e foto para criar a conta e mostrar seu perfil à equipe.",
                 },
                 {
                   q: "A agenda usa o Google Calendar?",

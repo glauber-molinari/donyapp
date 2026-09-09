@@ -93,7 +93,7 @@ export function LoginForm({ next = "/dashboard" }: { next?: string }) {
         {loading === "google" ? "Redirecionando..." : "Entrar com Google"}
       </button>
       <p className="text-center text-xs leading-relaxed text-ds-muted-2">
-        Usamos nome, e-mail e foto da Conta Google só para criar e autenticar sua conta.
+        Usamos nome, e-mail e foto da Conta Google para criar a conta, autenticar e mostrar seu perfil à equipe.
       </p>
 
       <div className="relative flex items-center gap-3">

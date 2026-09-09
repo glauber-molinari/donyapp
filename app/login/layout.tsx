@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Entrar",
-  description: "Acesse o Dony.app com sua Conta Google.",
+  description: "Entre no Dony.app com Google ou e-mail e senha.",
   robots: { index: false, follow: false },
 };
 

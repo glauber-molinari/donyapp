@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Como o Dony.app trata dados pessoais e informações do uso do produto.",
 };
 
-const UPDATED_AT = "03/09/2026";
+const UPDATED_AT = "09/09/2026";
 
 export default function PrivacyPolicyPage() {
   return (
@@ -53,7 +53,7 @@ export default function PrivacyPolicyPage() {
               <ul className="list-disc space-y-2 pl-5">
                 <li>
                   <span className="font-semibold text-ds-ink">Dados de conta</span>: nome, e-mail,
-                  foto de perfil e identificadores vinculados ao login via Google.
+                  foto de perfil e identificadores vinculados ao login (Google e/ou e-mail e senha).
                 </li>
                 <li>
                   <span className="font-semibold text-ds-ink">Dados do seu workspace</span>: nomes
@@ -61,19 +61,28 @@ export default function PrivacyPolicyPage() {
                 </li>
                 <li>
                   <span className="font-semibold text-ds-ink">Conteúdo do usuário</span>: informações
-                  cadastradas por você no app (ex.: contatos de clientes, cards, prazos, descrições,
-                  observações).
+                  que você cadastra (contatos, jobs, prazos, descrições, notas, tarefas, tickets de
+                  suporte, links de entrega). Também respostas enviadas pelos seus clientes em
+                  formulários públicos; o conteúdo depende do que você pedir no modelo (pode incluir
+                  telefone, endereço ou CPF).
+                </li>
+                <li>
+                  <span className="font-semibold text-ds-ink">Comunicação</span>: e-mails transacionais
+                  que o app dispara (convite de equipe, entrega ao cliente, atribuição de tarefa,
+                  tickets de suporte e aviso de formulário recebido). Na entrega, o app pode abrir o
+                  WhatsApp Web no seu navegador com o telefone e a mensagem; a mensagem sai da sua
+                  conta do WhatsApp, não de um servidor nosso.
                 </li>
                 <li>
                   <span className="font-semibold text-ds-ink">Dados de uso e diagnóstico</span>:
-                  eventos técnicos necessários para operar e proteger o Serviço (ex.: logs de acesso,
-                  IP, tipo de navegador, datas/horários, páginas e ações).
+                  eventos técnicos para operar e proteger o Serviço (ex.: logs de acesso, IP, tipo de
+                  navegador, datas/horários, páginas e ações) e medição de audiência no site (Vercel
+                  Analytics).
                 </li>
                 <li>
-                  <span className="font-semibold text-ds-ink">Cobrança e plano</span>: quando
-                  aplicável, dados relacionados a pagamento/assinatura (ex.: status do plano, id de
-                  cobrança). Dados sensíveis de cartão normalmente são processados pelo provedor de
-                  pagamento, não por nós.
+                  <span className="font-semibold text-ds-ink">Cobrança e plano</span>: status do plano,
+                  período e identificador da assinatura no processador de pagamento (hoje, Asaas).
+                  Dados do cartão ficam com o Asaas; nós não guardamos o número completo.
                 </li>
               </ul>
             </div>
@@ -85,7 +94,9 @@ export default function PrivacyPolicyPage() {
               <p>Usamos dados pessoais para:</p>
               <ul className="list-disc space-y-2 pl-5">
                 <li>Fornecer o Serviço (criar conta, autenticar, manter sessão e operar recursos).</li>
-                <li>Permitir colaboração (times, convites, permissões e compartilhamento interno).</li>
+                <li>Permitir colaboração (times, convites, permissões e perfil visível à equipe).</li>
+                <li>Enviar os e-mails que você dispara no fluxo do produto e abrir o WhatsApp Web na entrega.</li>
+                <li>Cobrar o plano Pro e manter o status da assinatura.</li>
                 <li>Melhorar e manter o produto (correções, desempenho, prevenção de abuso).</li>
                 <li>Cumprir obrigações legais e responder a solicitações legítimas.</li>
                 <li>Comunicar avisos importantes sobre o Serviço (segurança, mudanças relevantes).</li>
@@ -113,8 +124,9 @@ export default function PrivacyPolicyPage() {
               <ul className="list-disc space-y-2 pl-5">
                 <li>
                   <span className="font-semibold text-ds-ink">Login com Google (autenticação)</span>:
-                  pedimos dados básicos da Conta Google (como e-mail, nome e foto de perfil) para criar e
-                  autenticar sua conta no Serviço. Esses dados não são usados para outros fins.
+                  pedimos dados básicos da Conta Google (e-mail, nome e foto de perfil) para criar e
+                  autenticar sua conta e para exibir seu perfil à equipe no app (board, tarefas,
+                  relatórios). Não vendemos esses dados e não os usamos para publicidade.
                 </li>
                 <li>
                   <span className="font-semibold text-ds-ink">Google Calendar (integração opcional)</span>:
@@ -137,9 +149,15 @@ export default function PrivacyPolicyPage() {
             <h2 className="text-xl font-bold">6. Compartilhamento de dados</h2>
             <div className="space-y-3 text-sm leading-relaxed text-ds-muted">
               <p>
-                Podemos compartilhar dados com provedores que operam partes do Serviço (por exemplo:
-                hospedagem/infra, autenticação, banco de dados, e-mail transacional, pagamentos),
-                sempre na medida necessária para prestar o Serviço.
+                Podemos compartilhar dados com provedores que operam partes do Serviço, na medida
+                necessária para prestá-lo. Hoje isso inclui hospedagem (Vercel), autenticação e banco
+                (Supabase), e-mail transacional (Resend) e pagamentos (Asaas). Também usamos Vercel
+                Analytics no site.
+              </p>
+              <p>
+                Existe uma API pública e um fluxo OAuth para aplicativos ou agentes que você autorizar.
+                Esse acesso lê resumo de perfil e plano da conta, sem jobs nem dados de clientes do
+                estúdio.
               </p>
               <p>
                 Também podemos compartilhar informações quando exigido por lei, ordem judicial ou
@@ -151,19 +169,19 @@ export default function PrivacyPolicyPage() {
           <section className="space-y-3">
             <h2 className="text-xl font-bold">7. Cookies e tecnologias similares</h2>
             <p className="text-sm leading-relaxed text-ds-muted">
-              Usamos cookies e armazenamento local para manter sua sessão, lembrar preferências e
-              melhorar a experiência. Você pode gerenciar cookies no seu navegador; algumas funções
-              podem deixar de funcionar se forem bloqueados.
+              Usamos cookies e armazenamento local para manter sua sessão, lembrar preferências da
+              interface e medir visitas no site (Vercel Analytics). Você pode gerenciar cookies no
+              navegador; login e algumas funções param de funcionar se a sessão for bloqueada.
             </p>
           </section>
 
           <section className="space-y-3">
             <h2 className="text-xl font-bold">8. Retenção e exclusão</h2>
             <p className="text-sm leading-relaxed text-ds-muted">
-              Mantemos dados pelo tempo necessário para fornecer o Serviço e cumprir obrigações
-              legais. Quando possível, você pode solicitar exclusão de conta e/ou dados. Em alguns
-              casos, pode haver retenção mínima por requisitos legais, prevenção de fraude e
-              auditoria.
+              Mantemos dados pelo tempo em que a conta existir e pelo prazo necessário para obrigações
+              legais. Não há botão de autoexclusão no app: para apagar conta ou dados, escreva para{" "}
+              <span className="font-semibold text-ds-ink">suporte@donyapp.com</span>. Em alguns casos
+              pode haver retenção mínima por lei, prevenção de fraude ou auditoria.
             </p>
           </section>
 
