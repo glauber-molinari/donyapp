@@ -9,11 +9,11 @@ import {
 import { getPublishedPosts } from "@/lib/blog/actions";
 
 export const metadata: Metadata = {
-  title: "Novidades & Aprendizados | Donyapp",
+  title: "Novidades & Aprendizados | Dony.app",
   description:
     "Pós-produção, gestão de estúdio e tudo que acontece por aqui. Artigos para fotógrafos e videomakers que querem organizar melhor seu fluxo de trabalho.",
   openGraph: {
-    title: "Novidades & Aprendizados | Donyapp",
+    title: "Novidades & Aprendizados | Dony.app",
     description:
       "Pós-produção, gestão de estúdio e tudo que acontece por aqui. Artigos para fotógrafos e videomakers.",
     type: "website",
@@ -27,7 +27,7 @@ export default async function BlogIndexPage() {
     <div className="min-h-screen bg-ds-cream text-ds-ink antialiased">
       <MarketingSiteHeader navItems={marketingHomeAnchoredNavItems} />
 
-      <main className="mx-auto max-w-[1200px] px-4 pb-20 pt-[9.5rem] sm:px-6 sm:pt-[10rem] lg:px-8 lg:pt-[11.25rem]">
+      <main className="mx-auto max-w-[1200px] px-4 pb-20 pt-[6.75rem] sm:px-6 sm:pt-32 lg:px-8 lg:pt-[11.25rem]">
         <header className="mb-12 text-center">
           <h1 className="text-balance text-4xl font-black tracking-tight text-ds-ink sm:text-5xl">
             Novidades & Aprendizados
@@ -61,7 +61,7 @@ export default async function BlogIndexPage() {
 
       <footer className="border-t border-ds-hairline bg-ds-cream py-8 text-center text-xs text-ds-muted-2">
         <LegalLinks linkClassName="text-ds-muted-2 text-xs" />
-        <p className="mt-3">© {new Date().getFullYear()} Donyapp</p>
+        <p className="mt-3">© {new Date().getFullYear()} Dony.app</p>
       </footer>
     </div>
   );

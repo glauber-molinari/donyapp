@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Termos de Serviço",
-  description: "Regras de uso do Donyapp e condições para acesso ao produto.",
+  description: "Regras de uso do Dony.app e condições para acesso ao produto.",
 };
 
 const UPDATED_AT = "06/04/2026";
@@ -14,7 +14,7 @@ export default function TermsOfServicePage() {
       <header className="border-b border-ds-border bg-ds-cream/70 supports-[backdrop-filter]:backdrop-blur-md">
         <div className="mx-auto flex max-w-4xl items-center justify-between gap-3 px-4 py-4 sm:px-6">
           <Link href="/" className="text-sm font-semibold text-ds-ink hover:opacity-80">
-            Donyapp
+            Dony.app
           </Link>
           <nav className="flex items-center gap-3 text-sm">
             <Link href="/politica-de-privacidade" className="text-ds-muted hover:text-ds-ink">
@@ -37,7 +37,7 @@ export default function TermsOfServicePage() {
           <section className="space-y-3">
             <h2 className="text-xl font-bold">1. Aceite</h2>
             <p className="text-sm leading-relaxed text-ds-muted">
-              Ao acessar o site ou usar o Donyapp (“Serviço”), você concorda com estes Termos e com a
+              Ao acessar o site ou usar o Dony.app (“Serviço”), você concorda com estes Termos e com a
               nossa{" "}
               <Link href="/politica-de-privacidade" className="font-semibold text-ds-ink hover:underline">
                 Política de Privacidade
@@ -50,7 +50,7 @@ export default function TermsOfServicePage() {
           <section className="space-y-3">
             <h2 className="text-xl font-bold">2. Descrição do Serviço</h2>
             <p className="text-sm leading-relaxed text-ds-muted">
-              O Donyapp é uma ferramenta de organização de pós-produção (ex.: kanban, prazos, contatos
+              O Dony.app é uma ferramenta de organização de pós-produção (ex.: kanban, prazos, contatos
               e colaboração). Recursos podem mudar ao longo do tempo, inclusive por motivos técnicos,
               segurança e evolução do produto.
             </p>
@@ -95,7 +95,7 @@ export default function TermsOfServicePage() {
             <h2 className="text-xl font-bold">5. Conteúdo do usuário</h2>
             <div className="space-y-3 text-sm leading-relaxed text-ds-muted">
               <p>
-                Você mantém a titularidade do conteúdo que inserir no Donyapp (ex.: dados de clientes,
+                Você mantém a titularidade do conteúdo que inserir no Dony.app (ex.: dados de clientes,
                 descrições e prazos). Você concede uma licença limitada para hospedarmos e processarmos
                 esse conteúdo apenas para fornecer o Serviço.
               </p>
@@ -109,7 +109,7 @@ export default function TermsOfServicePage() {
           <section className="space-y-3">
             <h2 className="text-xl font-bold">6. Planos, pagamentos e testes</h2>
             <p className="text-sm leading-relaxed text-ds-muted">
-              O Donyapp pode oferecer plano gratuito e planos pagos. Condições (preço, limites,
+              O Dony.app pode oferecer plano gratuito e planos pagos. Condições (preço, limites,
               renovação e cancelamento) podem ser apresentadas dentro do app e podem mudar. Se houver
               provedor de pagamento, ele poderá aplicar termos próprios para processamento.
             </p>
@@ -128,7 +128,7 @@ export default function TermsOfServicePage() {
           <section className="space-y-3">
             <h2 className="text-xl font-bold">8. Propriedade intelectual</h2>
             <p className="text-sm leading-relaxed text-ds-muted">
-              O Donyapp, sua marca, layout, componentes e software são protegidos por direitos de
+              O Dony.app, sua marca, layout, componentes e software são protegidos por direitos de
               propriedade intelectual. Estes Termos não transferem direitos sobre o Serviço para
               você.
             </p>

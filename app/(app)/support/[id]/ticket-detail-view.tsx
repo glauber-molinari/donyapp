@@ -154,7 +154,7 @@ function MessageBubble({ message }: { message: TicketMessage }) {
         <p
           className={`mb-1 text-xs font-semibold ${isSupport ? "text-ds-accent" : "text-ds-muted"}`}
         >
-          {isSupport ? "Equipe Donyapp" : message.senderName}
+          {isSupport ? "Equipe Dony.app" : message.senderName}
         </p>
         <p className="whitespace-pre-wrap text-sm leading-relaxed text-ds-ink">{message.content}</p>
       </div>

@@ -8,7 +8,7 @@ import type { SupportTicketCategory, SupportTicketStatus } from "@/types/databas
 import { SupportView, type TicketSummary } from "./support-view";
 
 export const metadata: Metadata = {
-  title: "Suporte | Donyapp",
+  title: "Suporte | Dony.app",
 };
 
 export default async function SupportPage() {

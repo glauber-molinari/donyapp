@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Convite",
-  description: "Aceite o convite para entrar na equipe no Donyapp.",
+  description: "Aceite o convite para entrar na equipe no Dony.app.",
   robots: { index: false, follow: false },
 };
 

@@ -22,7 +22,7 @@ import { WEBMCP_CATALOG_TOOLS } from "../webmcp/catalog-tools";
 describe("agent API catalog", () => {
   it("exposes health, product, features, and pricing", () => {
     assert.equal(publicHealth().status, "ok");
-    assert.equal(publicProduct().name, "Donyapp");
+    assert.equal(publicProduct().name, "Dony.app");
     assert.ok(publicProduct().links.openapi.includes("/openapi.json"));
     assert.ok(publicProduct().links.apiCatalog.includes("/api"));
     assert.ok(publicFeatures().areas.length >= 4);
@@ -216,6 +216,6 @@ describe("MCP", () => {
     assert.ok(!("notification" in res));
     if ("notification" in res) return;
     const body = res.body as { result?: { content?: { text?: string }[] } };
-    assert.match(body.result?.content?.[0]?.text ?? "", /Donyapp/);
+    assert.match(body.result?.content?.[0]?.text ?? "", /Dony\.app/);
   });
 });

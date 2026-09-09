@@ -43,7 +43,7 @@ describe("agent markdown content", () => {
 describe("JSON-LD identity", () => {
   it("organization has contactPoint and address", () => {
     const org = organizationJsonLd("https://www.donyapp.com");
-    assert.equal(org.name, "Donyapp");
+    assert.equal(org.name, "Dony.app");
     assert.ok(org.description.length > 20);
     assert.equal(org.contactPoint[0]?.email, "suporte@donyapp.com");
     assert.equal(org.contactPoint[0]?.contactType, "customer support");

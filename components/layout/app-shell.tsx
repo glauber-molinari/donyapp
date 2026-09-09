@@ -121,7 +121,7 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
       /* ignore */
     }
   }, []);
-  const helpBody = `Olá, equipe Donyapp.\n\nEstou na tela: ${pathname}\nPreciso de ajuda com: `;
+  const helpBody = `Olá, equipe Dony.app.\n\nEstou na tela: ${pathname}\nPreciso de ajuda com: `;
   const helpWhats = supportWhatsAppLink(helpBody);
 
   useEffect(() => {
@@ -187,11 +187,11 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
           <Link
             href="/dashboard"
             className="flex items-center justify-center"
-            aria-label="Donyapp, início"
+            aria-label="Dony.app, início"
           >
             <Image
               src="/brand/logo-dony-png.png"
-              alt="Donyapp"
+              alt="Dony.app"
               width={120}
               height={32}
               className="h-9 w-auto max-w-[9.5rem] object-contain"
@@ -219,11 +219,11 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
           <Link
             href="/dashboard"
             className="flex min-w-0 flex-1 items-center"
-            aria-label="Donyapp, início"
+            aria-label="Dony.app, início"
           >
             <Image
               src="/brand/logo-dony-png.png"
-              alt="Donyapp"
+              alt="Dony.app"
               width={120}
               height={32}
               className="h-9 w-auto max-w-[9rem] object-contain object-left"
@@ -269,7 +269,7 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
           <Link
             href="/dashboard"
             className="flex justify-center"
-            aria-label="Donyapp, início"
+            aria-label="Dony.app, início"
             title="Início"
           >
             <Image
@@ -447,11 +447,11 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
               <Link
                 href="/dashboard"
                 className="flex items-center"
-                aria-label="Donyapp, início"
+                aria-label="Dony.app, início"
               >
                 <Image
                   src="/brand/logo-dony-png.png"
-                  alt="Donyapp"
+                  alt="Dony.app"
                   width={108}
                   height={28}
                   className="h-7 w-auto object-contain"

@@ -22,7 +22,7 @@ export default async function ResetPasswordPage() {
         <div className="mb-6 flex justify-center">
           <Image
             src="/brand/logo-dony-png.png"
-            alt="Donyapp"
+            alt="Dony.app"
             width={120}
             height={32}
             className="h-8 w-auto max-w-[11rem] object-contain"

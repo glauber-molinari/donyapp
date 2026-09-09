@@ -56,7 +56,7 @@ export default async function FeaturesPage() {
 
         <div className="mt-10 space-y-8 text-sm leading-relaxed text-ds-muted">
           <p>
-            O {SITE_NAME} é um app web para fotógrafos, videomakers e estúdios pequenos. A ideia é
+            O Dony é um app web para fotógrafos, videomakers e estúdios pequenos. A ideia é
             simples: cada job vira um card no kanban, com cliente, prazo e etapas que batem com o
             fluxo real. Não guarda arquivos de mídia; você cola o link do Drive, Dropbox ou
             WeTransfer na hora de entregar.

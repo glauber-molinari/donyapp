@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export function GET() {
   const base = siteUrl();
   return jsonOk({
-    name: "Donyapp Agent API",
+    name: "Dony.app Agent API",
     description:
       "Public catalog endpoints plus OAuth-scoped profile/account summaries. See OpenAPI for the full contract.",
     documentation: `${base}/auth.md`,

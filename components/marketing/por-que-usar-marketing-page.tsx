@@ -15,7 +15,7 @@ export function PorQueUsarMarketingPage({ displayClassName, bodyClassName }: Por
 
       <main>
         <section
-          className="border-t border-ds-border bg-ds-surface/80 px-4 pb-16 pt-[9.5rem] sm:pt-[10rem] lg:scroll-mt-32 lg:pb-24 lg:pt-[11.25rem]"
+          className="border-t border-ds-border bg-ds-surface/80 px-4 pb-16 pt-[6.75rem] sm:pt-32 lg:scroll-mt-32 lg:pb-24 lg:pt-[11.25rem]"
           aria-labelledby="por-que-usar-heading"
         >
           <div className="mx-auto max-w-[1200px] sm:px-6 lg:px-8">
@@ -35,7 +35,7 @@ export function PorQueUsarMarketingPage({ displayClassName, bodyClassName }: Por
                 "mt-6 max-w-3xl text-balance text-2xl font-extrabold tracking-tight text-ds-ink sm:text-3xl lg:text-[2.25rem]",
               )}
             >
-              Por que usar o Donyapp?
+              Por que usar o Dony.app?
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-ds-muted sm:text-lg">
               Feito para o fluxo real de pós-produção. Sem virar mais uma planilha paralela.
@@ -48,7 +48,7 @@ export function PorQueUsarMarketingPage({ displayClassName, bodyClassName }: Por
                 </h2>
                 <div className="space-y-4 text-sm leading-relaxed text-ds-muted sm:text-base lg:col-span-8">
                   <p>
-                    O Donyapp é gestão de pós-produção para fotógrafos e videomakers que vivem de prazo, revisão e
+                    O Dony.app é gestão de pós-produção para fotógrafos e videomakers que vivem de prazo, revisão e
                     cliente no WhatsApp. Você organiza jobs num kanban que acompanha o fluxo real (do backup à
                     entrega), com contatos vinculados e prazos sempre visíveis.
                   </p>

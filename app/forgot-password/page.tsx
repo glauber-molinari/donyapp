@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ForgotPasswordForm } from "./forgot-password-form";
 
 export const metadata: Metadata = {
-  title: "Esqueci a senha | Donyapp",
+  title: "Esqueci a senha | Dony.app",
 };
 
 export default function ForgotPasswordPage() {
@@ -15,7 +15,7 @@ export default function ForgotPasswordPage() {
         <div className="mb-6 flex justify-center">
           <Image
             src="/brand/logo-dony-png.png"
-            alt="Donyapp"
+            alt="Dony.app"
             width={120}
             height={32}
             className="h-8 w-auto max-w-[11rem] object-contain"

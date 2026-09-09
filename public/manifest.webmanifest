@@ -1,6 +1,6 @@
 {
-  "name": "Donyapp — Gestão de pós-produção",
-  "short_name": "Donyapp",
+  "name": "Dony.app — Gestão de pós-produção",
+  "short_name": "Dony.app",
   "description": "Kanban de edição, prazos e clientes para fotógrafos e videomakers.",
   "start_url": "/dashboard",
   "scope": "/",

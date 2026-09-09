@@ -10,7 +10,7 @@ import { markTicketRead } from "../actions";
 import { TicketDetailView, type TicketMessage } from "./ticket-detail-view";
 
 export const metadata: Metadata = {
-  title: "Ticket de suporte | Donyapp",
+  title: "Ticket de suporte | Dony.app",
 };
 
 export default async function SupportTicketPage({ params }: { params: { id: string } }) {

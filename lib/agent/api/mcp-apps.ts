@@ -62,12 +62,12 @@ export function mcpAppResources(): McpUiResource[] {
   return [
     {
       uri: "ui://donyapp/product.html",
-      name: "Donyapp product",
+      name: "Dony.app product",
       description: "Interactive summary of product identity and discovery links.",
       mimeType: MCP_APP_MIME,
       html: shell(
-        "Donyapp — produto",
-        `<h1>Donyapp <span class="accent">produto</span></h1>
+        "Dony.app — produto",
+        `<h1>Dony.app <span class="accent">produto</span></h1>
          <p>Gestão de pós-produção para fotógrafos e videomakers.</p>
          <div class="card"><pre id="data" class="muted">Aguardando resultado da tool get_product…</pre></div>
          <p class="muted">Fonte: <code>GET /api/v1/product</code></p>`,
@@ -75,11 +75,11 @@ export function mcpAppResources(): McpUiResource[] {
     },
     {
       uri: "ui://donyapp/features.html",
-      name: "Donyapp features",
+      name: "Dony.app features",
       description: "Interactive list of feature areas and Free plan limits.",
       mimeType: MCP_APP_MIME,
       html: shell(
-        "Donyapp — recursos",
+        "Dony.app — recursos",
         `<h1>Recursos</h1>
          <p>Áreas do produto e limites do plano Free.</p>
          <div class="card"><pre id="data" class="muted">Aguardando resultado da tool get_features…</pre></div>
@@ -88,11 +88,11 @@ export function mcpAppResources(): McpUiResource[] {
     },
     {
       uri: "ui://donyapp/pricing.html",
-      name: "Donyapp pricing",
+      name: "Dony.app pricing",
       description: "Interactive Free and Pro pricing (BRL).",
       mimeType: MCP_APP_MIME,
       html: shell(
-        "Donyapp — preços",
+        "Dony.app — preços",
         `<h1>Preços</h1>
          <p>Planos Free e Pro em reais (centavos no JSON).</p>
          <div class="card"><pre id="data" class="muted">Aguardando resultado da tool get_pricing…</pre></div>
@@ -101,11 +101,11 @@ export function mcpAppResources(): McpUiResource[] {
     },
     {
       uri: "ui://donyapp/health.html",
-      name: "Donyapp health",
+      name: "Dony.app health",
       description: "Agent API health status panel.",
       mimeType: MCP_APP_MIME,
       html: shell(
-        "Donyapp — health",
+        "Dony.app — health",
         `<h1>Health</h1>
          <p>Status do Agent API público.</p>
          <div class="card"><pre id="data" class="muted">Aguardando resultado da tool get_health…</pre></div>

@@ -16,7 +16,7 @@ export async function BlogLandingSection() {
               Do estúdio para você
             </h2>
             <p className="mt-1 text-sm text-ds-muted">
-              Aprendizados e novidades do Donyapp.
+              Aprendizados e novidades do Dony.app.
             </p>
           </div>
           <Link

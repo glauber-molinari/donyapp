@@ -69,7 +69,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Donyapp",
+    title: "Dony.app",
   },
   /** Chrome recomenda além de apple-mobile-web-app-capable (gerado por appleWebApp). */
   other: {

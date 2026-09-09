@@ -39,7 +39,7 @@ export function mcpTools(): McpTool[] {
     {
       name: "get_product",
       description:
-        "Return Donyapp product identity, audience, and discovery links (OpenAPI, MCP, OAuth, marketing pages).",
+        "Return Dony.app product identity, audience, and discovery links (OpenAPI, MCP, OAuth, marketing pages).",
       inputSchema: { type: "object", properties: {}, additionalProperties: false },
       annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
       _meta: toolUiMeta("ui://donyapp/product.html"),
@@ -47,7 +47,7 @@ export function mcpTools(): McpTool[] {
     {
       name: "get_features",
       description:
-        "List Donyapp feature areas and Free plan limits for photographers/videomakers.",
+        "List Dony.app feature areas and Free plan limits for photographers/videomakers.",
       inputSchema: { type: "object", properties: {}, additionalProperties: false },
       annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
       _meta: toolUiMeta("ui://donyapp/features.html"),
@@ -61,7 +61,7 @@ export function mcpTools(): McpTool[] {
     },
     {
       name: "get_health",
-      description: "Check that the Donyapp public Agent API is reachable.",
+      description: "Check that the Dony.app public Agent API is reachable.",
       inputSchema: { type: "object", properties: {}, additionalProperties: false },
       annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
       _meta: toolUiMeta("ui://donyapp/health.html"),

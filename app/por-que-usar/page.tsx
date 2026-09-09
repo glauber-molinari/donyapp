@@ -10,9 +10,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Por que usar o Donyapp?",
+  title: "Por que usar o Dony.app?",
   description:
-    "Entenda em poucos minutos por que o Donyapp foi feito para o fluxo real de pós-produção: kanban, prazos, contatos e equipe no mesmo lugar.",
+    "Entenda em poucos minutos por que o Dony.app foi feito para o fluxo real de pós-produção: kanban, prazos, contatos e equipe no mesmo lugar.",
 };
 
 export default function PorQueUsarPage() {

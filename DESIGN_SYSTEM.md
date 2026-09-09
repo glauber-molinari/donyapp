@@ -1,4 +1,4 @@
-# Design System — Donyapp
+# Design System — Dony.app
 
 > **Fonte da verdade.** Toda nova tela, componente ou ajuste visual do app, da
 > landing e do admin deve seguir este documento. Tokens canônicos vivem em
@@ -238,7 +238,7 @@ prazo de download, assinatura do estúdio.
 
 ### 4 adjetivos da voz
 
-A comunicação Donyapp é **direta, calma, especialista e brasileira**.
+A comunicação Dony.app é **direta, calma, especialista e brasileira**.
 
 - **Direta** — uma ideia por frase, verbo claro, sem rodeio.
 - **Calma** — não usa urgência manipulativa, exclamação ou caps lock.

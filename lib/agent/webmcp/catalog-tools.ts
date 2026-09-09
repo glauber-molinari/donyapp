@@ -18,7 +18,7 @@ export const WEBMCP_CATALOG_TOOLS: WebMcpCatalogTool[] = [
   {
     name: "get_product",
     description:
-      "Fetches Donyapp product identity, audience, and discovery links from GET /api/v1/product. Returns JSON with name, description, and links (OpenAPI, MCP, OAuth, marketing pages).",
+      "Fetches Dony.app product identity, audience, and discovery links from GET /api/v1/product. Returns JSON with name, description, and links (OpenAPI, MCP, OAuth, marketing pages).",
     path: "/api/v1/product",
     annotations: {
       readOnlyHint: true,
@@ -29,7 +29,7 @@ export const WEBMCP_CATALOG_TOOLS: WebMcpCatalogTool[] = [
   {
     name: "get_features",
     description:
-      "Fetches Donyapp feature areas and Free plan limits from GET /api/v1/features. Returns JSON listing kanban, contacts, forms, agenda, team, and delivery.",
+      "Fetches Dony.app feature areas and Free plan limits from GET /api/v1/features. Returns JSON listing kanban, contacts, forms, agenda, team, and delivery.",
     path: "/api/v1/features",
     annotations: {
       readOnlyHint: true,
@@ -51,7 +51,7 @@ export const WEBMCP_CATALOG_TOOLS: WebMcpCatalogTool[] = [
   {
     name: "get_health",
     description:
-      "Checks that the Donyapp public Agent API is reachable via GET /api/v1/health. Returns { status: \"ok\", service, time }.",
+      "Checks that the Dony.app public Agent API is reachable via GET /api/v1/health. Returns { status: \"ok\", service, time }.",
     path: "/api/v1/health",
     annotations: {
       readOnlyHint: true,

@@ -1,5 +1,5 @@
 /**
- * Acesso ao painel admin da plataforma (Donyapp).
+ * Acesso ao painel admin da plataforma (Dony.app).
  * Defina DONYAPP_ADMIN_EMAILS com e-mails separados por vírgula (case-insensitive).
  */
 export function getPlatformAdminEmails(): string[] {

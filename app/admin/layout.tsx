@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Admin | Donyapp",
+  title: "Admin | Dony.app",
   robots: { index: false, follow: false },
 };
 
@@ -42,7 +42,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <header className="border-b border-ds-border bg-ds-surface">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-ds-muted">Donyapp</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-ds-muted">Dony.app</p>
             <h1 className="text-lg font-semibold">Painel administrativo</h1>
             <p className="text-xs text-ds-muted">{user.email}</p>
           </div>

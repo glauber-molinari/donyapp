@@ -59,12 +59,8 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
       <MarketingSiteHeader navItems={marketingLandingNavItems} />
 
       <main>
-        <section className="bg-ds-cream px-4 pb-0 pt-[9.5rem] sm:pt-[10rem] lg:pt-[11.25rem]">
+        <section className="bg-ds-cream px-4 pb-0 pt-[6.75rem] sm:pt-32 lg:pt-[11.25rem]">
           <div className="mx-auto max-w-[1200px] text-center">
-            <p className="mb-6 text-sm font-semibold tracking-wide text-ds-accent sm:mb-8 sm:text-[0.95rem]">
-              Donyapp
-            </p>
-
             <h1
               className={cn(
                 displayClassName,
@@ -79,10 +75,10 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
 
             <p className="mx-auto mt-8 max-w-[58ch] text-pretty text-center text-lg leading-relaxed text-ds-muted sm:text-xl">
               <span className="font-medium text-ds-ink">
-                O Donyapp é um app de gestão de pós-produção para fotógrafos e videomakers.
+                O Dony é um app web de gestão de pós-produção para fotógrafos, videomakers e estúdios.
               </span>{" "}
-              Organize jobs num kanban (do backup à entrega), clientes, prazos e equipe no mesmo lugar — sem planilha
-              solta nem ferramenta genérica.
+              Cadastre jobs, acompanhe o kanban, guarde clientes, receba formulários, veja a agenda da equipe e
+              entregue com o prazo à vista, sem planilha solta nem ferramenta genérica.
             </p>
 
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
@@ -112,51 +108,6 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
           </div>
         </section>
 
-        <section
-          id="o-que-e"
-          className="scroll-mt-28 border-t border-ds-border bg-ds-surface/60 py-14 lg:scroll-mt-32 lg:py-16"
-        >
-          <div className="mx-auto max-w-[720px] px-4 text-center sm:px-6 lg:px-8">
-            <h2
-              className={cn(
-                displayClassName,
-                "text-balance text-2xl font-extrabold tracking-tight text-ds-ink sm:text-3xl",
-              )}
-            >
-              O que é o Donyapp
-            </h2>
-            <p className="mt-5 text-base leading-relaxed text-ds-muted sm:text-lg">
-              O Donyapp é um software web para estúdios e freelancers de foto e vídeo. A finalidade do app é
-              gerenciar o fluxo de pós-produção: cadastrar jobs, acompanhar etapas no kanban, guardar contatos,
-              receber formulários de clientes, ver a agenda da equipe e entregar o trabalho com prazo visível.
-            </p>
-            <div className="mt-8 rounded-ds-2xl border border-ds-border bg-white px-5 py-5 text-left sm:px-6">
-              <h3 className="text-sm font-bold text-ds-ink sm:text-base">Como usamos dados do Google</h3>
-              <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-ds-muted">
-                <li>
-                  <span className="font-medium text-ds-ink">Login com Google:</span> usamos nome, e-mail e foto de
-                  perfil da Conta Google só para criar e autenticar sua conta no Donyapp.
-                </li>
-                <li>
-                  <span className="font-medium text-ds-ink">Google Calendar (opcional):</span> um administrador pode
-                  conectar a agenda do estúdio em modo somente leitura para a equipe ver compromissos no app. Não
-                  criamos, alteramos nem excluímos eventos.
-                </li>
-              </ul>
-              <p className="mt-4 text-sm text-ds-muted">
-                Detalhes em{" "}
-                <Link
-                  href="/politica-de-privacidade"
-                  className="font-semibold text-ds-ink underline decoration-ds-border underline-offset-4 hover:decoration-ds-ink"
-                >
-                  Política de Privacidade
-                </Link>
-                .
-              </p>
-            </div>
-          </div>
-        </section>
-
         <section className="border-t border-ds-border bg-ds-cream py-16 lg:py-20">
           <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
             <h2
@@ -182,7 +133,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                 {
                   step: "03",
                   title: "Entregue ao cliente",
-                  text: "Cole o link do Drive, Dropbox ou WeTransfer e dispare por e-mail automático ou WhatsApp direto do app.",
+                  text: "Cole o link do Drive, Dropbox ou WeTransfer e dispare por e-mail automático ou WhatsApp Web direto do app.",
                 },
               ].map(({ step, title, text }) => (
                 <li key={step} className="relative flex flex-col gap-3 rounded-ds-card border border-ds-border bg-white p-6 shadow-ds-sm">
@@ -214,7 +165,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
               Tudo que o estúdio precisa no mesmo lugar
             </h2>
             <p className="mx-auto mt-5 max-w-xl text-center text-lg text-ds-muted">
-              Pensado para quem vive de prazo, revisão e cliente no WhatsApp.
+              Feito para estúdios e freelancers de foto e vídeo que vivem de prazo, revisão e cliente no WhatsApp.
             </p>
             <ul className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {[
@@ -239,7 +190,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                 {
                   icon: Calendar,
                   title: "Agenda integrada",
-                  text: "Sincronize com o Google Calendar e visualize os eventos da equipe no mesmo lugar que os jobs.",
+                  text: "O admin pode conectar o Google Calendar, se quiser. A equipe vê os compromissos junto dos jobs. Só leitura: a gente não cria nem mexe em eventos.",
                   pro: false,
                 },
                 {
@@ -311,7 +262,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                   ))}
                 </ul>
                 <p className="mt-8 text-sm font-semibold text-ds-accent">
-                  O Donyapp resolve cada um deles.
+                  O Dony.app resolve cada um deles.
                 </p>
               </div>
               <ul className="flex h-full flex-col justify-center gap-6 rounded-ds-card border border-ds-border-strong bg-white p-8 shadow-ds-sm">
@@ -344,7 +295,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-ds-ink">Cliente avisado na hora certa</p>
                     <p className="mt-1 text-sm leading-relaxed text-ds-muted">
-                      Na entrega, dispare e-mail ou WhatsApp direto do app — com o link do material e sem sair do fluxo.
+                      Na entrega, dispare e-mail ou WhatsApp Web direto do app, com o link do material e sem sair do fluxo.
                     </p>
                   </div>
                 </li>
@@ -463,7 +414,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                     "Etapas ilimitadas no kanban (reordenar, renomear e definir etapa final)",
                     "Equipe: convites por e-mail (multi-usuário)",
                     "E-mail automático ao enviar material para o cliente",
-                    "Envio de material por WhatsApp direto do app",
+                    "Envio de material por WhatsApp Web direto do app",
                     "Modelos de e-mail de entrega personalizáveis",
                     "Histórico de alterações dos jobs",
                     "Tarefas: kanban de atividades da equipe",
@@ -513,7 +464,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                 href="/login"
                 className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-ds-2xl border-[1.5px] border-ds-border bg-ds-surface px-6 py-3 text-sm font-semibold text-ds-ink transition duration-ds ease-out hover:border-stone-300"
               >
-                Assinar anual
+                Assinar Pro anual
                 <ArrowRight className="h-4 w-4" />
               </Link>
 
@@ -566,7 +517,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
             <div className="mt-8 space-y-2">
               {[
                 {
-                  q: "O Donyapp é gratuito?",
+                  q: "O Dony.app é gratuito?",
                   a: "Sim. Você pode começar no plano gratuito e mudar quando o estúdio crescer. Não pedimos cartão para testar.",
                 },
                 {
@@ -575,7 +526,23 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                 },
                 {
                   q: "Preciso instalar algo?",
-                  a: "Não. Tudo roda no navegador; entre com sua conta Google e monte seu board em minutos.",
+                  a: "Não. Tudo roda no navegador. Você entra com a Conta Google: usamos nome, e-mail e foto só para criar e autenticar a conta.",
+                },
+                {
+                  q: "A agenda usa o Google Calendar?",
+                  a: (
+                    <>
+                      Sim, se um administrador conectar. É opcional. Mostramos os compromissos no app e paramos por aí:
+                      não criamos, alteramos nem apagamos eventos. O detalhe está na{" "}
+                      <Link
+                        href="/politica-de-privacidade"
+                        className="font-medium text-ds-ink underline decoration-ds-border underline-offset-4 hover:decoration-ds-ink"
+                      >
+                        Política de Privacidade
+                      </Link>
+                      .
+                    </>
+                  ),
                 },
                 {
                   q: "Posso personalizar as colunas do kanban?",
@@ -586,7 +553,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                   a: "Sim, no plano Pro: você convida por e-mail e todos enxergam os mesmos jobs, contatos e board. Os dados ficam na conta do estúdio, não presos a um único login.",
                 },
                 {
-                  q: "O Donyapp guarda meus arquivos de foto e vídeo?",
+                  q: "O Dony.app guarda meus arquivos de foto e vídeo?",
                   a: "Não armazenamos seus arquivos. Você usa o serviço que já utiliza (Drive, Dropbox, WeTransfer etc.) e cola o link de entrega no job. No plano Pro, ao mover o job para a etapa final, você pode enviar um e-mail ao cliente com modelo editável. O envio é opcional e você confirma antes.",
                 },
               ].map(({ q, a }) => (
@@ -644,7 +611,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
           <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:gap-5">
             <Image
               src="/brand/logo-dony-png.png"
-              alt="Donyapp"
+              alt="Dony.app"
               width={100}
               height={28}
               className="h-6 w-auto max-w-[8rem] object-contain opacity-90"
@@ -677,7 +644,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
             </a>
           </div>
           <div className="flex flex-col items-center gap-2 sm:items-end sm:text-right">
-            <p className="text-ds-muted">Donyapp, gestão de pós-produção para fotógrafos e videomakers.</p>
+            <p className="text-ds-muted">Dony.app, gestão de pós-produção para fotógrafos e videomakers.</p>
             <LegalLinks className="text-xs" linkClassName="text-ds-muted-2 hover:text-ds-ink" />
           </div>
         </div>

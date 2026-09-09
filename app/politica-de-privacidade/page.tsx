@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Política de Privacidade",
-  description: "Como o Donyapp trata dados pessoais e informações do uso do produto.",
+  description: "Como o Dony.app trata dados pessoais e informações do uso do produto.",
 };
 
 const UPDATED_AT = "03/09/2026";
@@ -14,7 +14,7 @@ export default function PrivacyPolicyPage() {
       <header className="border-b border-ds-border bg-ds-cream/70 supports-[backdrop-filter]:backdrop-blur-md">
         <div className="mx-auto flex max-w-4xl items-center justify-between gap-3 px-4 py-4 sm:px-6">
           <Link href="/" className="text-sm font-semibold text-ds-ink hover:opacity-80">
-            Donyapp
+            Dony.app
           </Link>
           <nav className="flex items-center gap-3 text-sm">
             <Link href="/termos-de-servico" className="text-ds-muted hover:text-ds-ink">
@@ -37,7 +37,7 @@ export default function PrivacyPolicyPage() {
           <section className="space-y-3">
             <h2 className="text-xl font-bold">1. Sobre esta Política</h2>
             <p className="text-sm leading-relaxed text-ds-muted">
-              Esta Política descreve como o Donyapp (“nós”) coleta, usa, armazena e compartilha dados
+              Esta Política descreve como o Dony.app (“nós”) coleta, usa, armazena e compartilha dados
               pessoais quando você acessa o site, cria conta e usa o produto de gestão de pós-produção
               (o “Serviço”). Ela foi preparada em linguagem direta, mas não substitui aconselhamento
               jurídico.
@@ -48,7 +48,7 @@ export default function PrivacyPolicyPage() {
             <h2 className="text-xl font-bold">2. Quais dados coletamos</h2>
             <div className="space-y-3 text-sm leading-relaxed text-ds-muted">
               <p>
-                O Donyapp pode tratar as seguintes categorias de dados, conforme o uso do Serviço:
+                O Dony.app pode tratar as seguintes categorias de dados, conforme o uso do Serviço:
               </p>
               <ul className="list-disc space-y-2 pl-5">
                 <li>
@@ -108,7 +108,7 @@ export default function PrivacyPolicyPage() {
             <h2 className="text-xl font-bold">5. Dados da Conta Google e Google Calendar</h2>
             <div className="space-y-3 text-sm leading-relaxed text-ds-muted">
               <p>
-                O Donyapp usa serviços Google de duas formas distintas:
+                O Dony.app usa serviços Google de duas formas distintas:
               </p>
               <ul className="list-disc space-y-2 pl-5">
                 <li>
@@ -121,7 +121,7 @@ export default function PrivacyPolicyPage() {
                   um administrador do estúdio pode conectar o calendário principal da Conta Google em modo{" "}
                   <span className="font-semibold text-ds-ink">somente leitura</span>. Usamos isso para
                   exibir compromissos (título, horários, local, descrição e link do evento, quando
-                  existir) na agenda interna do Donyapp, para a equipe do estúdio. Não criamos, alteramos
+                  existir) na agenda interna do Dony.app, para a equipe do estúdio. Não criamos, alteramos
                   nem excluímos eventos pela API. Tokens OAuth ficam no servidor, vinculados à conta do
                   estúdio; colaboradores não recebem as credenciais Google.
                 </li>

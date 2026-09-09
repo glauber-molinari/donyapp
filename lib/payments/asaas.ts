@@ -52,7 +52,7 @@ function subscriptionDates(): { nextDueDate: string; endDate: string } {
 }
 
 /**
- * Cria um link de pagamento com cobrança recorrente mensal e `externalReference` = `accountId` (UUID da conta Donyapp).
+ * Cria um link de pagamento com cobrança recorrente mensal e `externalReference` = `accountId` (UUID da conta Dony.app).
  */
 export async function createAsaasProPaymentLink(accountId: string): Promise<
   { ok: true; url: string; id: string } | { ok: false; error: string }

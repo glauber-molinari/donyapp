@@ -48,7 +48,7 @@ export async function generateMetadata({
   const canonical = `${appUrl}/blog/${post.slug}`;
 
   return {
-    title: `${post.title} | Donyapp`,
+    title: `${post.title} | Dony.app`,
     description: post.summary,
     alternates: { canonical },
     openGraph: {
@@ -58,7 +58,7 @@ export async function generateMetadata({
       publishedTime: post.published_at ?? undefined,
       modifiedTime: post.updated_at,
       url: canonical,
-      siteName: "Donyapp",
+      siteName: "Dony.app",
       ...(post.cover_image_url && {
         images: [{ url: post.cover_image_url, width: 1200, height: 630, alt: post.title }],
       }),
@@ -104,7 +104,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
 
       <MarketingSiteHeader navItems={marketingHomeAnchoredNavItems} />
 
-      <main className="mx-auto max-w-2xl px-4 pb-20 pt-[9.5rem] sm:px-6 sm:pt-[10rem] lg:pt-[11.25rem]">
+      <main className="mx-auto max-w-2xl px-4 pb-20 pt-[6.75rem] sm:px-6 sm:pt-32 lg:pt-[11.25rem]">
         {/* Breadcrumb */}
         <nav aria-label="Breadcrumb" className="mb-8 flex items-center gap-2 text-sm text-ds-muted">
           <Link href="/blog" className="hover:text-ds-ink">
@@ -177,7 +177,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
 
       <footer className="border-t border-ds-hairline bg-ds-cream py-8 text-center text-xs text-ds-muted-2">
         <LegalLinks linkClassName="text-ds-muted-2 text-xs" />
-        <p className="mt-3">© {new Date().getFullYear()} Donyapp</p>
+        <p className="mt-3">© {new Date().getFullYear()} Dony.app</p>
       </footer>
     </div>
   );

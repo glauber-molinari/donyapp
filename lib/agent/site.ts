@@ -6,7 +6,7 @@ export function siteUrl(): string {
   ).replace(/\/$/, "");
 }
 
-export const SITE_NAME = "Donyapp";
+export const SITE_NAME = "Dony.app";
 
 export const SITE_DESCRIPTION =
   "App de gestão de pós-produção para fotógrafos e videomakers: kanban de edição, clientes, prazos, formulários e agenda.";
@@ -17,7 +17,7 @@ export const INSTAGRAM_URL = "https://www.instagram.com/dony__app/";
 
 /**
  * JSON-LD `sameAs` profiles.
- * When Wikidata (P856) / Wikipedia exist for Donyapp, append those canonical URLs here.
+ * When Wikidata (P856) / Wikipedia exist for Dony.app, append those canonical URLs here.
  * Do not invent Wikipedia/Wikidata entries — notability + press + Wikidata item first.
  */
 export function organizationSameAs(): string[] {

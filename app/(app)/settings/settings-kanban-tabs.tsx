@@ -227,7 +227,7 @@ export function SettingsKanbanTabs({
             </div>
             <h3 className="mb-2 text-lg font-bold text-orange-900">Responsáveis Manuais</h3>
             <p className="mb-4 text-sm text-orange-800">
-              Cadastre editores externos por nome, e-mail e foto. Ideal quando você trabalha com freelancers ou equipes externas que não precisam acessar o Donyapp.
+              Cadastre editores externos por nome, e-mail e foto. Ideal quando você trabalha com freelancers ou equipes externas que não precisam acessar o Dony.app.
             </p>
             <div className="mb-4 rounded-lg bg-white/60 p-3">
               <p className="text-xs font-medium text-orange-900">✨ Funcionalidades:</p>

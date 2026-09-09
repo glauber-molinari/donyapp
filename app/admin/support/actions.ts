@@ -46,7 +46,7 @@ export async function replyToTicket(ticketId: string, content: string): Promise<
   const { error: msgError } = await (svc as any).from("support_ticket_messages").insert({
     ticket_id: ticketId,
     sender_type: "support",
-    sender_name: "Equipe Donyapp",
+    sender_name: "Equipe Dony.app",
     content: trimmed,
   });
 
@@ -82,7 +82,7 @@ export async function replyToTicket(ticketId: string, content: string): Promise<
     await resend.emails.send({
       from,
       to: [userEmail],
-      subject: "Seu ticket de suporte foi respondido — Donyapp",
+      subject: "Seu ticket de suporte foi respondido — Dony.app",
       html,
       text: replyText,
     });

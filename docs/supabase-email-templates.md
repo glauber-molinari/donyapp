@@ -6,7 +6,7 @@ A confirmação de cadastro, recuperação de senha e magic link vêm do **Supab
 
 ## Passo a passo — confirmação de cadastro
 
-1. Abra [Supabase Dashboard](https://supabase.com/dashboard) → projeto **Donyapp**.
+1. Abra [Supabase Dashboard](https://supabase.com/dashboard) → projeto **Dony.app**.
 2. **Authentication** → **Email Templates**.
 3. Selecione **Confirm signup**.
 4. **Subject:** cole o valor de `SUPABASE_CONFIRM_SIGNUP_SUBJECT` em `lib/email/supabase-auth-email-templates.ts`  

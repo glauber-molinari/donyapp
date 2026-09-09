@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ReportsView } from "./reports-view";
 
 export const metadata: Metadata = {
-  title: "Relatórios | Donyapp",
+  title: "Relatórios | Dony.app",
 };
 
 function ReportsLoadingFallback() {

@@ -224,7 +224,7 @@ export function DeliveryEmailModal({
             </div>
             <p className="font-semibold text-orange-900">Envio de e-mail automático ao cliente</p>
             <p className="mt-2 text-orange-800">
-              Envie o link de entrega diretamente do Donyapp para o e-mail do cliente, com templates personalizados e reply-to configurável.
+              Envie o link de entrega diretamente do Dony.app para o e-mail do cliente, com templates personalizados e reply-to configurável.
             </p>
             <Link
               href="/settings/plan"

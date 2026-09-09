@@ -83,13 +83,13 @@ export function buildTicketReplyEmailHtml(params: {
         <tr><td>
           <p style="margin:0 0 16px;font-size:18px;font-weight:600;color:#1a1a1a;">Olá, ${name}!</p>
           <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#333;">
-            Seu ticket de suporte foi respondido pela equipe Donyapp. Confira a resposta abaixo:
+            Seu ticket de suporte foi respondido pela equipe Dony.app. Confira a resposta abaixo:
           </p>
           <div style="border-left:3px solid #ea580c;padding:12px 16px;margin-bottom:24px;background:#fdf8f5;border-radius:0 8px 8px 0;">
             ${reply}
           </div>
           <p style="margin:0 0 24px;">
-            <a href="${ticketUrl}" style="display:inline-block;background:#ea580c;color:#fff;text-decoration:none;padding:12px 20px;border-radius:10px;font-weight:600;font-size:15px;">Ver ticket no Donyapp</a>
+            <a href="${ticketUrl}" style="display:inline-block;background:#ea580c;color:#fff;text-decoration:none;padding:12px 20px;border-radius:10px;font-weight:600;font-size:15px;">Ver ticket no Dony.app</a>
           </p>
           <p style="margin:0;font-size:13px;color:#666666;">
             Se o botão não funcionar, acesse: <span style="word-break:break-all;color:#444;">${ticketUrl}</span>

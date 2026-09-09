@@ -31,14 +31,14 @@ export default function LoginPage({
         <div className="mb-6 flex justify-center">
           <Image
             src="/brand/logo-dony-png.png"
-            alt="Donyapp"
+            alt="Dony.app"
             width={120}
             height={32}
             className="h-8 w-auto max-w-[11rem] object-contain"
             priority
           />
         </div>
-        <h1 className="sr-only">Donyapp | Entrar</h1>
+        <h1 className="sr-only">Dony.app | Entrar</h1>
         <p className="text-center text-sm text-ds-muted">
           Gestão de pós-produção para fotógrafos e videomakers.
         </p>
