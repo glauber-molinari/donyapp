@@ -14,7 +14,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { ProximityPill } from "@/components/app/deadline-proximity";
 import { CreateJobModal } from "@/components/careops/create-job-modal";
@@ -23,10 +23,18 @@ import { MetricTile } from "@/components/careops/metric-tile";
 import { SegmentedMeter, LOAD_TEXT_CLASS, loadToneFromPercent } from "@/components/careops/segmented-meter";
 import { StageDonut } from "@/components/careops/stage-donut";
 import { Badge, type JobTypeBadgeValue } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 type PreviewTab = "dashboard" | "board";
 type JobsListTab = "active" | "done";
+type DateBase = "deadline" | "internalDeadline";
+
+function clampPage(page: number, totalPages: number) {
+  return Math.min(Math.max(1, page), Math.max(1, totalPages));
+}
 
 function ymdOffset(daysFromToday: number): string {
   const d = new Date();
@@ -278,6 +286,11 @@ export function VisualPreviewClient() {
   const [tab, setTab] = useState<PreviewTab>("dashboard");
   const [jobsTab, setJobsTab] = useState<JobsListTab>("active");
   const [query, setQuery] = useState("");
+  const [dateBase, setDateBase] = useState<DateBase>("deadline");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [pageSize, setPageSize] = useState(10);
+  const [page, setPage] = useState(1);
   const [createOpen, setCreateOpen] = useState(false);
   const allJobs = useMemo(() => buildMockJobs(), []);
   const activeJobs = useMemo(
@@ -285,20 +298,43 @@ export function VisualPreviewClient() {
     []
   );
 
-  const listedJobs = useMemo(() => {
+  const filteredJobs = useMemo(() => {
     const q = query.trim().toLowerCase();
+    const fromMs = dateFrom ? Date.parse(`${dateFrom}T00:00:00`) : null;
+    const toMs = dateTo ? Date.parse(`${dateTo}T23:59:59`) : null;
+
     return allJobs.filter((j) => {
       const matchTab = jobsTab === "done" ? Boolean(j.done) : !j.done;
       if (!matchTab) return false;
-      if (!q) return true;
-      return (
-        j.name.toLowerCase().includes(q) ||
-        j.contact.toLowerCase().includes(q) ||
-        j.stage.toLowerCase().includes(q) ||
-        j.workType.toLowerCase().includes(q)
-      );
+      if (q) {
+        const hit =
+          j.name.toLowerCase().includes(q) ||
+          j.contact.toLowerCase().includes(q) ||
+          j.stage.toLowerCase().includes(q) ||
+          j.workType.toLowerCase().includes(q);
+        if (!hit) return false;
+      }
+      if (!fromMs && !toMs) return true;
+      const raw = dateBase === "deadline" ? j.deadline : j.internalDeadline;
+      const dt = Date.parse(raw);
+      if (!Number.isFinite(dt)) return true;
+      if (fromMs && dt < fromMs) return false;
+      if (toMs && dt > toMs) return false;
+      return true;
     });
-  }, [allJobs, jobsTab, query]);
+  }, [allJobs, jobsTab, query, dateBase, dateFrom, dateTo]);
+
+  const totalItems = filteredJobs.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const safePage = clampPage(page, totalPages);
+  const listedJobs = useMemo(() => {
+    const start = (safePage - 1) * pageSize;
+    return filteredJobs.slice(start, start + pageSize);
+  }, [filteredJobs, pageSize, safePage]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [query, jobsTab, dateBase, dateFrom, dateTo, pageSize]);
 
   return (
     <div className="flex min-h-screen bg-ds-cream">
@@ -528,9 +564,9 @@ export function VisualPreviewClient() {
                 </div>
               </div>
 
-              <section className="rounded-[1.25rem] border border-ds-border/70 bg-ds-surface p-4 shadow-ds-md sm:p-5">
-                <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                  <div>
+              <section className="flex flex-col gap-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
+                  <div className="flex flex-col gap-1">
                     <h2 className="font-display text-lg font-bold text-ds-ink">
                       Lista de jobs
                     </h2>
@@ -540,54 +576,114 @@ export function VisualPreviewClient() {
                         : "Ativos, ordenados pelo prazo final mais próximo."}
                     </p>
                   </div>
-                  <div className="relative w-full sm:max-w-sm">
-                    <Search
-                      className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ds-muted-2"
-                      aria-hidden
-                    />
-                    <input
-                      type="search"
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                      placeholder="Buscar por job, contato, etapa ou tipo…"
-                      className="w-full rounded-full border border-ds-border bg-ds-cream/40 py-2.5 pl-10 pr-3 text-sm text-ds-ink placeholder:text-ds-muted-2 focus:border-ds-accent/50 focus:outline-none focus:ring-2 focus:ring-ds-accent/20"
+
+                  <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-end">
+                    <div className="flex w-full flex-col gap-1 sm:w-[22rem]">
+                      <label
+                        htmlFor="preview-dashboard-search"
+                        className="text-xs font-medium text-ds-muted"
+                      >
+                        Buscar
+                      </label>
+                      <div className="relative">
+                        <Search
+                          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ds-muted-2"
+                          aria-hidden
+                        />
+                        <input
+                          id="preview-dashboard-search"
+                          type="search"
+                          value={query}
+                          onChange={(e) => setQuery(e.target.value)}
+                          placeholder="Buscar por job, contato, etapa ou tipo…"
+                          className="w-full rounded-full border border-ds-border bg-ds-surface py-2.5 pl-10 pr-3 text-sm text-ds-ink shadow-ds-sm placeholder:text-ds-muted-2 focus:border-ds-accent/50 focus:outline-none focus:ring-2 focus:ring-ds-accent/20"
+                        />
+                      </div>
+                    </div>
+                    <Select
+                      id="preview-dashboard-page-size"
+                      label="Itens"
+                      name="page_size"
+                      value={String(pageSize)}
+                      onChange={(e) => setPageSize(Number(e.target.value))}
+                      options={[
+                        { value: "10", label: "10" },
+                        { value: "20", label: "20" },
+                        { value: "50", label: "50" },
+                      ]}
                     />
                   </div>
                 </div>
 
-                <div className="mb-4 inline-flex w-full rounded-full border border-ds-border bg-ds-cream/50 p-1 sm:w-auto">
-                  <button
-                    type="button"
-                    className={cn(
-                      "flex-1 rounded-full px-4 py-2 text-sm font-semibold transition-colors sm:flex-none",
-                      jobsTab === "active"
-                        ? "bg-ds-ink text-ds-on-dark shadow-sm"
-                        : "text-ds-muted hover:text-ds-ink"
-                    )}
-                    onClick={() => setJobsTab("active")}
-                    aria-pressed={jobsTab === "active"}
-                  >
-                    Ativos
-                  </button>
-                  <button
-                    type="button"
-                    className={cn(
-                      "flex-1 rounded-full px-4 py-2 text-sm font-semibold transition-colors sm:flex-none",
-                      jobsTab === "done"
-                        ? "bg-ds-ink text-ds-on-dark shadow-sm"
-                        : "text-ds-muted hover:text-ds-ink"
-                    )}
-                    onClick={() => setJobsTab("done")}
-                    aria-pressed={jobsTab === "done"}
-                  >
-                    Concluídos
-                  </button>
-                </div>
+                <div className="rounded-[1.25rem] border border-ds-border/70 bg-ds-surface p-4 shadow-ds-md sm:p-5">
+                  <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="inline-flex w-full rounded-full border border-ds-border bg-ds-cream/50 p-1 sm:w-auto">
+                      <button
+                        type="button"
+                        className={cn(
+                          "flex-1 rounded-full px-4 py-2 text-sm font-semibold transition-colors sm:flex-none",
+                          jobsTab === "active"
+                            ? "bg-ds-ink text-ds-on-dark shadow-sm"
+                            : "text-ds-muted hover:text-ds-ink"
+                        )}
+                        onClick={() => setJobsTab("active")}
+                        aria-pressed={jobsTab === "active"}
+                      >
+                        Ativos
+                      </button>
+                      <button
+                        type="button"
+                        className={cn(
+                          "flex-1 rounded-full px-4 py-2 text-sm font-semibold transition-colors sm:flex-none",
+                          jobsTab === "done"
+                            ? "bg-ds-ink text-ds-on-dark shadow-sm"
+                            : "text-ds-muted hover:text-ds-ink"
+                        )}
+                        onClick={() => setJobsTab("done")}
+                        aria-pressed={jobsTab === "done"}
+                      >
+                        Concluídos
+                      </button>
+                    </div>
 
-                {listedJobs.length === 0 ? (
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                      <Select
+                        id="preview-dashboard-date-base"
+                        label="Filtrar por"
+                        name="date_base"
+                        value={dateBase}
+                        onChange={(e) =>
+                          setDateBase(e.target.value as DateBase)
+                        }
+                        options={[
+                          { value: "deadline", label: "Prazo final" },
+                          {
+                            value: "internalDeadline",
+                            label: "Prazo interno",
+                          },
+                        ]}
+                      />
+                      <Input
+                        id="preview-dashboard-date-from"
+                        type="date"
+                        label="De"
+                        value={dateFrom}
+                        onChange={(e) => setDateFrom(e.target.value)}
+                      />
+                      <Input
+                        id="preview-dashboard-date-to"
+                        type="date"
+                        label="Até"
+                        value={dateTo}
+                        onChange={(e) => setDateTo(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                {totalItems === 0 ? (
                   <p className="text-sm text-ds-muted">
-                    {query.trim()
-                      ? `Nenhum job encontrado para “${query.trim()}”.`
+                    {query.trim() || dateFrom || dateTo
+                      ? `Nenhum job encontrado com esses filtros.`
                       : jobsTab === "done"
                         ? "Nenhuma edição concluída ainda."
                         : "Nenhum job ativo na fila."}
@@ -715,8 +811,53 @@ export function VisualPreviewClient() {
                         </li>
                       ))}
                     </ul>
+
+                    <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <p className="text-xs text-ds-muted-2">
+                        Mostrando{" "}
+                        <span className="font-medium text-ds-ink">
+                          {Math.min(totalItems, (safePage - 1) * pageSize + 1)}–
+                          {Math.min(totalItems, safePage * pageSize)}
+                        </span>{" "}
+                        de{" "}
+                        <span className="font-medium text-ds-ink">{totalItems}</span>
+                      </p>
+                      <div className="flex items-center justify-between gap-2 sm:justify-end">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          disabled={safePage <= 1}
+                          onClick={() =>
+                            setPage((p) => clampPage(p - 1, totalPages))
+                          }
+                        >
+                          Anterior
+                        </Button>
+                        <span className="text-xs text-ds-muted tabular-nums">
+                          Página{" "}
+                          <span className="font-medium text-ds-ink">{safePage}</span>{" "}
+                          de{" "}
+                          <span className="font-medium text-ds-ink">
+                            {totalPages}
+                          </span>
+                        </span>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          disabled={safePage >= totalPages}
+                          onClick={() =>
+                            setPage((p) => clampPage(p + 1, totalPages))
+                          }
+                        >
+                          Próxima
+                        </Button>
+                      </div>
+                    </div>
                   </>
                 )}
+                </div>
               </section>
             </div>
           ) : (
