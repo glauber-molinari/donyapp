@@ -32,7 +32,8 @@ function InviteShell({
   );
 }
 
-export default async function InvitePage({ params }: { params: { token: string } }) {
+export default async function InvitePage(props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   const svc = createServiceRoleClient();
   if (!svc) {
     return (
@@ -79,7 +80,7 @@ export default async function InvitePage({ params }: { params: { token: string }
   const loginHref = `/login?next=${encodeURIComponent(`/invite/${token}`)}`;
   const signupHref = `/signup?next=${encodeURIComponent(`/invite/${token}`)}`;
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

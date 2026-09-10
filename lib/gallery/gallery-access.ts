@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 
 /** Fotógrafo logado da mesma conta da galeria (preview em rascunho). */
 export async function isGalleryOwner(accountId: string): Promise<boolean> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

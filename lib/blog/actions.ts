@@ -9,7 +9,7 @@ export type SidebarPost = Pick<
 >;
 
 export async function getPublishedPosts(limit = 20): Promise<BlogPost[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("blog_posts")
     .select("*")
@@ -22,7 +22,7 @@ export async function getPublishedPosts(limit = 20): Promise<BlogPost[]> {
 }
 
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("blog_posts")
     .select("*")
@@ -35,7 +35,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
 }
 
 export async function getRecentPostsForSidebar(limit = 3): Promise<SidebarPost[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -66,7 +66,7 @@ export async function getRecentPostsForSidebar(limit = 3): Promise<SidebarPost[]
 }
 
 export async function markPostAsRead(postId: string): Promise<{ ok: boolean }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -80,7 +80,7 @@ export async function markPostAsRead(postId: string): Promise<{ ok: boolean }> {
 }
 
 export async function getUnreadCount(): Promise<number> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

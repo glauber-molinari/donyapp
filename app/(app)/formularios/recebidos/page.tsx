@@ -8,7 +8,7 @@ import { RecebidosView } from "./recebidos-view";
 export const metadata: Metadata = { title: "Formulários Recebidos" };
 
 export default async function RecebidosPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const [{ data: submissions }, { data: templates }] = await Promise.all([
     supabase

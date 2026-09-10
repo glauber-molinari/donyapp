@@ -13,8 +13,9 @@ export const metadata: Metadata = {
   title: "Ticket de suporte | Dony.app",
 };
 
-export default async function SupportTicketPage({ params }: { params: { id: string } }) {
-  const supabase = createClient();
+export default async function SupportTicketPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

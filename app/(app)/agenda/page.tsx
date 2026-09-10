@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function AgendaPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

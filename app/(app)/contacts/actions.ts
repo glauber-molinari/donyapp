@@ -9,7 +9,7 @@ import { isValidEmail, normalizeOptionalText } from "@/lib/validation/contact";
 type ActionResult = { ok: true } | { ok: false; error: string };
 
 async function getAccountContext(): Promise<{ accountId: string } | { error: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -49,7 +49,7 @@ export async function createContact(formData: FormData): Promise<ActionResult> {
   if (!email) return { ok: false, error: "E-mail é obrigatório." };
   if (!isValidEmail(email)) return { ok: false, error: "E-mail inválido." };
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: sub } = await supabase
     .from("subscriptions")
@@ -103,7 +103,7 @@ export async function updateContact(
   if (!email) return { ok: false, error: "E-mail é obrigatório." };
   if (!isValidEmail(email)) return { ok: false, error: "E-mail inválido." };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase
     .from("contacts")
     .update({ name, email, phone, notes })
@@ -122,7 +122,7 @@ export async function deleteContact(contactId: string): Promise<ActionResult> {
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: jobs, error: jobsErr } = await supabase
     .from("jobs")

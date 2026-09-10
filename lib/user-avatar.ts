@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { rewritePublicStorageUrl } from "@/lib/public-storage-url";
 import type { Database } from "@/types/database";
 
-export const USER_AVATARS_BUCKET = "user-avatars";
+const AVATARS_BUCKET = "user-avatars";
 
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
@@ -36,7 +36,7 @@ export async function removeUserAvatarAtUrl(
   if (!publicUrl?.trim()) return;
   const path = pathFromUserAvatarPublicUrl(publicUrl);
   if (!path) return;
-  await supabase.storage.from(USER_AVATARS_BUCKET).remove([path]);
+  await supabase.storage.from(AVATARS_BUCKET).remove([path]);
 }
 
 export async function uploadUserProfileAvatar(
@@ -61,7 +61,7 @@ export async function uploadUserProfileAvatar(
   const path = `${userId}/${crypto.randomUUID()}.${ext}`;
   const bytes = await file.arrayBuffer();
 
-  const { error } = await supabase.storage.from(USER_AVATARS_BUCKET).upload(path, bytes, {
+  const { error } = await supabase.storage.from(AVATARS_BUCKET).upload(path, bytes, {
     contentType: file.type,
     upsert: false,
   });
@@ -70,6 +70,6 @@ export async function uploadUserProfileAvatar(
     return { ok: false, error: error.message };
   }
 
-  const { data } = supabase.storage.from(USER_AVATARS_BUCKET).getPublicUrl(path);
+  const { data } = supabase.storage.from(AVATARS_BUCKET).getPublicUrl(path);
   return { ok: true, publicUrl: rewritePublicStorageUrl(data.publicUrl) ?? data.publicUrl };
 }

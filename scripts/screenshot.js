@@ -2,8 +2,21 @@ const fs = require("fs");
 const path = require("path");
 const puppeteer = require("puppeteer");
 
+function allowedPageUrl(raw) {
+  try {
+    const parsed = new URL(raw);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 (async () => {
   const url = process.argv[2] || "http://localhost:3000";
+  if (!allowedPageUrl(url)) {
+    console.error("URL inválida. Use apenas http:// ou https://");
+    process.exit(1);
+  }
   const outDir = path.join(process.cwd(), "screenshots");
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
 

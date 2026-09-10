@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ContactsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

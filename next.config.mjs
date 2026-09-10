@@ -1,7 +1,15 @@
 /** @type {import('next').NextConfig} */
 // CSP e CORS: middleware (nonces + origem por host, ex. www).
 
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const projectRoot = path.dirname(fileURLToPath(import.meta.url));
+
 const nextConfig = {
+  turbopack: {
+    root: projectRoot,
+  },
   experimental: {
     // Evita cache do Router em navegação client-side (ex.: voltar à Visão geral do admin).
     staleTimes: {

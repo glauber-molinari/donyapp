@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 const MAX_RANGE_MS = 120 * 24 * 60 * 60 * 1000;
 
 export async function GET(request: Request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

@@ -25,7 +25,7 @@ type AdminContext =
   | { accountId: string; userId: string; isAdmin: boolean };
 
 async function getAdminContext(): Promise<AdminContext> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -59,7 +59,7 @@ function requireAdmin(ctx: AdminContext): { accountId: string; userId: string } 
 }
 
 async function getSubscriptionPlan(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   accountId: string
 ): Promise<Database["public"]["Tables"]["subscriptions"]["Row"]["plan"]> {
   const { data } = await supabase
@@ -80,7 +80,7 @@ export async function reorderKanbanStages(
   if ("error" in admin) return { ok: false, error: admin.error };
 
   const board = normalizeBoardType(boardType);
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: existing, error: fetchErr } = await supabase
     .from("kanban_stages")
@@ -132,7 +132,7 @@ export async function updateKanbanStageDetails(
   const admin = requireAdmin(ctx);
   if ("error" in admin) return { ok: false, error: admin.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase
     .from("kanban_stages")
     .update({ name: trimmed, color: trimmedColor })
@@ -158,7 +158,7 @@ export async function addKanbanStage(
   if ("error" in admin) return { ok: false, error: admin.error };
 
   const board = normalizeBoardType(boardType);
-  const supabase = createClient();
+  const supabase = await createClient();
   const plan = await getSubscriptionPlan(supabase, admin.accountId);
 
   if (board === "album" && !canCreateAlbum(plan)) {
@@ -232,7 +232,7 @@ export async function toggleAlbumBoard(enabled: boolean): Promise<ActionResult> 
   const admin = requireAdmin(ctx);
   if ("error" in admin) return { ok: false, error: admin.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   if (enabled) {
     const plan = await getSubscriptionPlan(supabase, admin.accountId);
@@ -260,7 +260,7 @@ export async function deleteKanbanStage(stageId: string): Promise<ActionResult> 
   const admin = requireAdmin(ctx);
   if ("error" in admin) return { ok: false, error: admin.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: stageRow } = await supabase
     .from("kanban_stages")
@@ -344,7 +344,7 @@ export async function setFinalKanbanStage(stageId: string): Promise<ActionResult
   const admin = requireAdmin(ctx);
   if ("error" in admin) return { ok: false, error: admin.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: target } = await supabase
     .from("kanban_stages")

@@ -19,7 +19,7 @@ function revalidateAvatarSurfaces() {
 }
 
 export async function uploadProfileAvatar(formData: FormData): Promise<ActionResult> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -59,7 +59,7 @@ export async function uploadProfileAvatar(formData: FormData): Promise<ActionRes
 }
 
 export async function clearCustomProfileAvatar(): Promise<ActionResult> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

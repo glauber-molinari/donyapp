@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
 export async function removeTeamMember(memberUserId: string): Promise<{ ok: true } | { ok: false; error: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -79,7 +79,7 @@ export async function removeTeamMember(memberUserId: string): Promise<{ ok: true
 export async function cancelInvitation(
   invitationId: string
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

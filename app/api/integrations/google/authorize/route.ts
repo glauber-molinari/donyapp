@@ -17,7 +17,7 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${settingsAgenda}?calendar_error=server_config`);
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

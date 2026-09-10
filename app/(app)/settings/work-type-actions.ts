@@ -11,7 +11,7 @@ type AdminContext =
   | { accountId: string; userId: string; isAdmin: boolean };
 
 async function getAdminContext(): Promise<AdminContext> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -52,7 +52,7 @@ export async function addJobWorkType(name: string): Promise<ActionResult> {
   const admin = requireAdmin(ctx);
   if ("error" in admin) return { ok: false, error: admin.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: maxRow } = await supabase
     .from("job_work_types")
@@ -83,7 +83,7 @@ export async function deleteJobWorkType(id: string): Promise<ActionResult> {
   const admin = requireAdmin(ctx);
   if ("error" in admin) return { ok: false, error: admin.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { count, error: countErr } = await supabase
     .from("jobs")

@@ -30,7 +30,7 @@ export async function approveOAuthConsent(formData: FormData) {
     fail("access_denied", "The user denied the request");
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

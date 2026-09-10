@@ -17,7 +17,7 @@ type TaskAssigneeRow = Database["public"]["Tables"]["task_assignees"]["Row"];
 type TaskWithAssignees = TaskRow & { task_assignees: TaskAssigneeRow[] };
 
 export default async function TasksPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

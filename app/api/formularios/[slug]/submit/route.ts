@@ -6,7 +6,8 @@ import { buildFormNotificationHtml, buildFormFieldsHtml } from "@/lib/email/form
 import { getResendFrom } from "@/lib/email/resend-from";
 import type { FormField } from "@/lib/formularios/types";
 
-export async function POST(req: Request, { params }: { params: { slug: string } }) {
+export async function POST(req: Request, props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const supabase = createServiceRoleClient();
   if (!supabase) {
     return NextResponse.json({ error: "Configuração do servidor incompleta." }, { status: 503 });

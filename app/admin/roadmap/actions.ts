@@ -20,7 +20,7 @@ export interface RoadmapCard {
 type ActionResult = { ok: true } | { ok: false; error: string };
 
 async function assertAdmin(): Promise<ActionResult> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

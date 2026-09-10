@@ -11,12 +11,13 @@ export const metadata: Metadata = {
   title: "Agenda",
 };
 
-export default async function SettingsAgendaPage({
-  searchParams,
-}: {
-  searchParams: Record<string, string | string[] | undefined>;
-}) {
-  const supabase = createClient();
+export default async function SettingsAgendaPage(
+  props: {
+    searchParams: Promise<Record<string, string | string[] | undefined>>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

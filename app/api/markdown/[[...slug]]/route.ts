@@ -3,7 +3,7 @@ import {
 } from "@/lib/agent/accept";
 import { markdownForPath, notFoundMarkdown } from "@/lib/agent/markdown-content";
 
-type RouteContext = { params: { slug?: string[] } };
+type RouteContext = { params: Promise<{ slug?: string[] }> };
 
 function pathFromSlug(slug?: string[]): string {
   if (!slug || slug.length === 0) return "/";
@@ -11,7 +11,7 @@ function pathFromSlug(slug?: string[]): string {
 }
 
 export async function GET(_request: Request, context: RouteContext) {
-  const pathname = pathFromSlug(context.params.slug);
+  const pathname = pathFromSlug((await context.params).slug);
   const body = markdownForPath(pathname);
 
   if (!body) {

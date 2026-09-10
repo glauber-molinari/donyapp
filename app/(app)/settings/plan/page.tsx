@@ -11,12 +11,13 @@ export const metadata: Metadata = {
   title: "Plano",
 };
 
-export default async function SettingsPlanPage({
-  searchParams,
-}: {
-  searchParams: { status?: string };
-}) {
-  const supabase = createClient();
+export default async function SettingsPlanPage(
+  props: {
+    searchParams: Promise<{ status?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

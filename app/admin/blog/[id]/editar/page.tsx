@@ -9,7 +9,8 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function AdminBlogEditPage({ params }: { params: { id: string } }) {
+export default async function AdminBlogEditPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const post = await getPostByIdAdmin(params.id);
   if (!post) notFound();
   return <BlogPostForm post={post} />;

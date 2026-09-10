@@ -10,11 +10,12 @@ export const metadata: Metadata = {
   title: "Criar conta | Dony.app",
 };
 
-export default function SignupPage({
-  searchParams,
-}: {
-  searchParams: Record<string, string | string[] | undefined>;
-}) {
+export default async function SignupPage(
+  props: {
+    searchParams: Promise<Record<string, string | string[] | undefined>>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const nextRaw = typeof searchParams.next === "string" ? searchParams.next : undefined;
   const next =
     nextRaw && nextRaw.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : "/dashboard";

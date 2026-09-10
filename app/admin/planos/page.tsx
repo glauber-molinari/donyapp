@@ -6,11 +6,12 @@ import { Input } from "@/components/ui/input";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default async function AdminPlanosPage({
-  searchParams,
-}: {
-  searchParams: { q?: string };
-}) {
+export default async function AdminPlanosPage(
+  props: {
+    searchParams: Promise<{ q?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const svc = createServiceRoleClient();
   if (!svc) {
     return (

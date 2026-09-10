@@ -8,7 +8,7 @@ type Result = { ok: true; message: string } | { ok: false; error: string };
 // Esta action existe apenas para troca de email, que pode ficar server-side.
 
 export async function changeEmail(newEmail: string): Promise<Result> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

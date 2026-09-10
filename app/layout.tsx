@@ -101,13 +101,14 @@ export default async function RootLayout({
 }>) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
 
+  const caramelosecToken = process.env.CARAMELOSEC_TOKEN?.trim();
+
   return (
     <html lang="pt-BR">
       <head>
-        <meta
-          name="caramelosec-token"
-          content="2808dcae-6f69-43d7-9e44-e6b6ac706447"
-        />
+        {caramelosecToken ? (
+          <meta name="caramelosec-token" content={caramelosecToken} />
+        ) : null}
       </head>
       <body
         className={`${inter.variable} font-sans antialiased`}

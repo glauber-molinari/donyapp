@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 type ActionResult = { ok: true } | { ok: false; error: string };
 
 async function getUserContext(): Promise<{ userId: string } | { error: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -25,7 +25,7 @@ export async function submitFeedback(formData: FormData): Promise<ActionResult> 
   if (!title) return { ok: false, error: "Título é obrigatório." };
   if (title.length > 120) return { ok: false, error: "Título deve ter no máximo 120 caracteres." };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase.from("feedback_suggestions").insert({
     title,
     description,
@@ -42,7 +42,7 @@ export async function toggleVote(suggestionId: string): Promise<ActionResult> {
   const ctx = await getUserContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Verifica se já votou
   const { data: existing } = await supabase

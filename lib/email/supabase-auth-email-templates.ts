@@ -47,9 +47,9 @@ Para confirmar, acesse:
 Se você não criou esta conta, ignore esta mensagem.`;
 
 /** Assunto: Authentication → Reset password → Subject */
-export const SUPABASE_RESET_PASSWORD_SUBJECT = "Redefinir senha do Dony.app";
+export const SUPABASE_RESET_SUBJECT = "Redefinir senha do Dony.app";
 
-export const SUPABASE_RESET_PASSWORD_BODY_HTML = transactionalEmailLayout(`
+export const SUPABASE_RESET_BODY_HTML = transactionalEmailLayout(`
   <p style="margin:0 0 16px;font-size:20px;font-weight:700;color:#1a1a1a;line-height:1.3;">Redefinir senha</p>
   <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#333333;">
     Recebemos um pedido para alterar a senha da conta <strong>{{ .Email }}</strong> no Dony.app.

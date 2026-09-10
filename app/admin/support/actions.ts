@@ -12,7 +12,7 @@ import { createServiceRoleClient } from "@/lib/supabase/service-role";
 type ActionResult = { ok: true } | { ok: false; error: string };
 
 async function assertAdmin(): Promise<{ ok: true } | { ok: false; error: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

@@ -10,7 +10,7 @@ import type { BlogCategory, BlogPost } from "@/types/blog";
 type ActionResult = { ok: true } | { ok: false; error: string };
 
 async function assertAdmin(): Promise<{ ok: true } | { ok: false; error: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

@@ -25,7 +25,7 @@ async function getAccountContext(): Promise<
   | { accountId: string; userId: string; userName: string; userEmail: string | null }
   | { error: string }
 > {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -48,7 +48,7 @@ async function getAccountContext(): Promise<
 }
 
 async function assertGaleriasEnabled(): Promise<ActionResult> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -88,7 +88,7 @@ export async function listGalleriesForAccount(): Promise<GalleryWithCounts[]> {
   const ctx = await getAccountContext();
   if ("error" in ctx) return [];
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: galleries } = await supabase
     .from("galleries")
     .select("*")
@@ -162,7 +162,7 @@ export async function createGallery(
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Uma galeria por job
   const { data: existing } = await supabase
@@ -213,7 +213,7 @@ export async function getGallery(galleryId: string): Promise<Gallery | null> {
   const ctx = await getAccountContext();
   if ("error" in ctx) return null;
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data } = await supabase
     .from("galleries")
     .select("*")
@@ -241,7 +241,7 @@ export async function updateGallerySettings(
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   if (settings.slug !== undefined) {
     if (!SLUG_REGEX.test(settings.slug)) {
@@ -289,7 +289,7 @@ export async function setGalleryMode(
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase
     .from("galleries")
     .update({ mode })
@@ -310,7 +310,7 @@ export async function publishGallery(galleryId: string): Promise<ActionResult> {
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: gallery } = await supabase
     .from("galleries")
@@ -354,7 +354,7 @@ export async function archiveGallery(galleryId: string): Promise<ActionResult> {
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase
     .from("galleries")
     .update({ status: "draft" })
@@ -375,7 +375,7 @@ export async function deleteGallery(galleryId: string): Promise<ActionResult> {
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Coletar r2_keys para deletar do R2
   const { data: photos } = await supabase
@@ -406,7 +406,7 @@ export async function setCoverPhoto(galleryId: string, photoId: string | null): 
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase
     .from("galleries")
     .update({ cover_photo_id: photoId })
@@ -426,7 +426,7 @@ export async function createFolder(galleryId: string, name: string): Promise<{ o
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: maxOrder } = await supabase
     .from("gallery_folders")
@@ -451,7 +451,7 @@ export async function renameFolder(folderId: string, name: string): Promise<Acti
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase.from("gallery_folders").update({ name }).eq("id", folderId);
   if (error) return { ok: false, error: error.message };
   return { ok: true };
@@ -461,7 +461,7 @@ export async function deleteFolder(folderId: string, galleryId: string): Promise
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   // Fotos da pasta voltam para sem-pasta (ON DELETE SET NULL)
   const { error } = await supabase.from("gallery_folders").delete().eq("id", folderId);
   if (error) return { ok: false, error: error.message };
@@ -473,7 +473,7 @@ export async function reorderFolders(galleryId: string, orderedIds: string[]): P
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   await Promise.all(
     orderedIds.map((id, index) =>
       supabase.from("gallery_folders").update({ display_order: index }).eq("id", id)
@@ -491,7 +491,7 @@ export async function listPhotos(galleryId: string): Promise<GalleryPhoto[]> {
   const ctx = await getAccountContext();
   if ("error" in ctx) return [];
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data } = await supabase
     .from("gallery_photos")
     .select("*")
@@ -521,7 +521,7 @@ export async function requestUploadUrl(
     return { ok: false, error: "Foto deve ter no máximo 50 MB." };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: gallery } = await supabase
     .from("galleries")
     .select("id, job_id")
@@ -558,7 +558,7 @@ export async function confirmUpload(
     return { ok: false, error: "Ticket de upload inválido." };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Reconfirmar que a galeria é da conta e obter job_id para reconstruir a key.
   const { data: gallery } = await supabase
@@ -618,7 +618,7 @@ export async function deletePhoto(photoId: string, galleryId: string): Promise<A
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: photo } = await supabase
     .from("gallery_photos")
     .select("r2_key")
@@ -656,7 +656,7 @@ export async function deletePhotos(photoIds: string[], galleryId: string): Promi
     return { ok: false, error: "Nenhuma foto selecionada." };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: gallery } = await supabase
     .from("galleries")
@@ -709,7 +709,7 @@ export async function reorderPhotos(galleryId: string, orderedIds: string[]): Pr
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   await Promise.all(
     orderedIds.map((id, index) =>
       supabase.from("gallery_photos").update({ display_order: index }).eq("id", id)
@@ -727,7 +727,7 @@ export async function movePhotoToFolder(
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase
     .from("gallery_photos")
     .update({ folder_id: folderId })
@@ -749,7 +749,7 @@ export async function allowNewSelection(galleryId: string): Promise<ActionResult
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase
     .from("galleries")
     .update({ selection_reset_at: new Date().toISOString() })
@@ -766,7 +766,7 @@ export async function getGallerySelection(galleryId: string): Promise<GallerySel
   const ctx = await getAccountContext();
   if ("error" in ctx) return null;
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: gallery } = await supabase
     .from("galleries")
@@ -798,7 +798,7 @@ export async function getSelectedPhotos(galleryId: string): Promise<GalleryPhoto
   const ctx = await getAccountContext();
   if ("error" in ctx) return [];
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data } = await supabase
     .from("gallery_photos")
     .select("*")

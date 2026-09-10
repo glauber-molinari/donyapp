@@ -17,7 +17,7 @@ export type ImportResult =
   | { ok: false; error: string };
 
 export async function importContacts(rows: ImportContactRow[]): Promise<ImportResult> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

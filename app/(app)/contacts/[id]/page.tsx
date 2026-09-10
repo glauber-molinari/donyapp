@@ -30,10 +30,11 @@ type NoteRowForView = {
   job: { id: string; name: string } | null;
 };
 
-type PageProps = { params: { id: string } };
+type PageProps = { params: Promise<{ id: string }> };
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const supabase = createClient();
+export async function generateMetadata(props: PageProps): Promise<Metadata> {
+  const params = await props.params;
+  const supabase = await createClient();
   const { data: contact } = await supabase
     .from("contacts")
     .select("name")
@@ -43,8 +44,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return { title: contact?.name ?? "Contato" };
 }
 
-export default async function ContactDetailPage({ params }: PageProps) {
-  const supabase = createClient();
+export default async function ContactDetailPage(props: PageProps) {
+  const params = await props.params;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

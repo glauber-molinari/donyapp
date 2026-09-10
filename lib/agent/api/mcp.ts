@@ -1,3 +1,5 @@
+import { randomBytes } from "node:crypto";
+
 import {
   loadAccountSummary,
   loadUserSummary,
@@ -216,7 +218,7 @@ export async function handleMcpJsonRpc(
 
   switch (method) {
     case "initialize": {
-      const sessionId = `mcp_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+      const sessionId = `mcp_${Date.now().toString(36)}_${randomBytes(8).toString("hex")}`;
       return {
         sessionId,
         body: {

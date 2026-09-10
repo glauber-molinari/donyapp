@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "Informe um e-mail válido." }, { status: 400 });
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

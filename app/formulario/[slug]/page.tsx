@@ -5,10 +5,11 @@ import type { FormField } from "@/lib/formularios/types";
 import { FormPublicoClient } from "./form-publico-client";
 
 interface Props {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata(props: Props) {
+  const params = await props.params;
   const supabase = createServiceRoleClient();
   if (!supabase) return { title: "Formulário" };
 
@@ -27,7 +28,8 @@ export async function generateMetadata({ params }: Props) {
   };
 }
 
-export default async function FormularioPage({ params }: Props) {
+export default async function FormularioPage(props: Props) {
+  const params = await props.params;
   const supabase = createServiceRoleClient();
   if (!supabase) notFound();
 

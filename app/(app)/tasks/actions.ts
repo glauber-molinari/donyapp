@@ -19,7 +19,7 @@ type ActionResult = { ok: true } | { ok: false; error: string };
 async function getAccountContext(): Promise<
   { accountId: string; userId: string; userName: string; userAvatar: string | null } | { error: string }
 > {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -94,7 +94,7 @@ function parseTaskForm(formData: FormData):
 }
 
 async function nextPositionInStatus(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   accountId: string,
   status: TaskStatus,
   excludeId?: string
@@ -116,7 +116,7 @@ export async function createTask(formData: FormData): Promise<ActionResult & { t
   const parsed = parseTaskForm(formData);
   if ("error" in parsed) return { ok: false, error: parsed.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const position = await nextPositionInStatus(supabase, ctx.accountId, parsed.status);
 
   const baseInsert = {
@@ -161,7 +161,7 @@ export async function updateTask(taskId: string, formData: FormData): Promise<Ac
   const parsed = parseTaskForm(formData);
   if ("error" in parsed) return { ok: false, error: parsed.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: existing } = await supabase
     .from("tasks")
@@ -214,7 +214,7 @@ export async function updateTaskStatus(taskId: string, status: TaskStatus): Prom
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const position = await nextPositionInStatus(supabase, ctx.accountId, status, taskId);
 
   const { error } = await supabase
@@ -236,7 +236,7 @@ export async function updateTaskSubtasks(
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase
     .from("tasks")
     .update({ subtasks })
@@ -254,7 +254,7 @@ export async function deleteTask(taskId: string): Promise<ActionResult> {
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase
     .from("tasks")
     .delete()
@@ -274,7 +274,7 @@ export async function syncTasksKanban(moves: TaskKanbanSync[]): Promise<ActionRe
     const ctx = await getAccountContext();
     if ("error" in ctx) return { ok: false, error: ctx.error };
 
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const allIds = moves.flatMap((m) => m.taskIdsOrdered);
     if (new Set(allIds).size !== allIds.length) {
@@ -326,7 +326,7 @@ export async function getTaskDetails(taskId: string): Promise<
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const [{ data: assignees, error: ae }, { data: comments, error: ce }] = await Promise.all([
     supabase
@@ -366,7 +366,7 @@ export async function addTaskAssignee(
     return { ok: false, error: "E-mail inválido." };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: task } = await supabase
     .from("tasks")
@@ -441,7 +441,7 @@ export async function removeTaskAssignee(
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase
     .from("task_assignees")
     .delete()
@@ -470,7 +470,7 @@ export async function getAvailableAssignees(): Promise<
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const [{ data: members }, { data: manuals }] = await Promise.all([
     supabase
@@ -524,7 +524,7 @@ export async function addTaskComment(
   const trimmed = content.trim();
   if (!trimmed) return { ok: false, error: "Comentário vazio." };
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { error } = await supabase.from("task_comments").insert({
     task_id: taskId,

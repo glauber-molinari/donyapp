@@ -83,7 +83,7 @@ export async function fetchDeliveryMetrics(
   period: Period = "all",
 ): Promise<{ ok: boolean; data?: DeliveryMetrics; error?: string }> {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const {
       data: { user },

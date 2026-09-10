@@ -20,7 +20,7 @@ function ReportsLoadingFallback() {
 }
 
 export default async function ReportsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },

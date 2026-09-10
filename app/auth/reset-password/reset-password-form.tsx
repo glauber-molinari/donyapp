@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { PASSWORD_HINT, validatePassword, validatePasswordMatch } from "@/lib/auth/password-validation";
+import { AUTH_STRENGTH_HINT, validatePassword, validatePasswordMatch } from "@/lib/auth/password-validation";
 import { createClient } from "@/lib/supabase/client";
 
 const inputCls =
@@ -52,7 +52,7 @@ export function ResetPasswordForm() {
           autoComplete="new-password"
           className={inputCls}
         />
-        <p className="px-1 text-xs text-ds-muted-2">{PASSWORD_HINT}</p>
+        <p className="px-1 text-xs text-ds-muted-2">{AUTH_STRENGTH_HINT}</p>
       </div>
       <input
         type="password"

@@ -15,7 +15,7 @@ import { SUPPORT_CATEGORIES } from "./constants";
 type ActionResult = { ok: true } | { ok: false; error: string };
 
 export async function createSupportTicket(formData: FormData): Promise<ActionResult> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -110,7 +110,7 @@ export async function createSupportTicket(formData: FormData): Promise<ActionRes
 }
 
 export async function sendUserMessage(ticketId: string, content: string): Promise<ActionResult> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -163,7 +163,7 @@ export async function sendUserMessage(ticketId: string, content: string): Promis
 }
 
 export async function markTicketRead(ticketId: string): Promise<void> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

@@ -6,10 +6,11 @@ import {
 
 export const dynamic = "force-dynamic";
 
-type Ctx = { params: { path?: string[] } };
+type Ctx = { params: Promise<{ path?: string[] }> };
 
-function missing(ctx: Ctx) {
-  const suffix = (ctx.params.path ?? []).join("/");
+async function missing(ctx: Ctx) {
+  const params = await ctx.params;
+  const suffix = (params.path ?? []).join("/");
   return notFoundApi(`/api/v1/${suffix}`);
 }
 

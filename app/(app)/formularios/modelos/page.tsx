@@ -8,7 +8,7 @@ import { ModelosView } from "./modelos-view";
 export const metadata: Metadata = { title: "Modelos de Formulário" };
 
 export default async function ModelosPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data } = await supabase
     .from("form_templates")

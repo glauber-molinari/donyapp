@@ -18,17 +18,18 @@ type BoardSearchParams = {
   board?: string | string[];
 };
 
-export default async function BoardPage({
-  searchParams,
-}: {
-  searchParams?: BoardSearchParams;
-}) {
+export default async function BoardPage(
+  props: {
+    searchParams?: Promise<BoardSearchParams>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const rawBoard = Array.isArray(searchParams?.board)
     ? searchParams?.board[0]
     : searchParams?.board;
   const boardType: BoardType = rawBoard === "album" ? "album" : "edicao";
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

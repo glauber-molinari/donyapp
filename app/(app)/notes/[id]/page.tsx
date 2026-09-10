@@ -4,10 +4,11 @@ import { notFound, redirect } from "next/navigation";
 import { NoteEditorClient, type ContactOption, type JobOption, type NoteEditorInitial } from "../note-editor-client";
 import { createClient } from "@/lib/supabase/server";
 
-type PageProps = { params: { id: string } };
+type PageProps = { params: Promise<{ id: string }> };
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const supabase = createClient();
+export async function generateMetadata(props: PageProps): Promise<Metadata> {
+  const params = await props.params;
+  const supabase = await createClient();
   const { data: note } = await supabase
     .from("contact_notes")
     .select("title")
@@ -18,8 +19,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return { title };
 }
 
-export default async function EditNotePage({ params }: PageProps) {
-  const supabase = createClient();
+export default async function EditNotePage(props: PageProps) {
+  const params = await props.params;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

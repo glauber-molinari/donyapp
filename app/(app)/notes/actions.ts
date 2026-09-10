@@ -12,7 +12,7 @@ export type CreateNoteResult = { ok: true; id: string } | { ok: false; error: st
 async function getAccountContext(): Promise<
   { accountId: string; userId: string } | { error: string }
 > {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -32,7 +32,7 @@ async function getAccountContext(): Promise<
 }
 
 async function verifyContactBelongs(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   accountId: string,
   contactId: string
 ): Promise<boolean> {
@@ -46,7 +46,7 @@ async function verifyContactBelongs(
 }
 
 async function verifyJobBelongsToContact(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   accountId: string,
   jobId: string | null,
   contactId: string
@@ -110,7 +110,7 @@ export async function createNote(formData: FormData): Promise<CreateNoteResult> 
   if (!contactId) return { ok: false, error: "Selecione um cliente." };
   if (!textFromHtml(content)) return { ok: false, error: "O conteúdo da nota é obrigatório." };
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const contactOk = await verifyContactBelongs(supabase, ctx.accountId, contactId);
   if (!contactOk) return { ok: false, error: "Cliente inválido." };
@@ -155,7 +155,7 @@ export async function updateNote(noteId: string, formData: FormData): Promise<Ac
   if (!contactId) return { ok: false, error: "Selecione um cliente." };
   if (!textFromHtml(content)) return { ok: false, error: "O conteúdo da nota é obrigatório." };
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const contactOk = await verifyContactBelongs(supabase, ctx.accountId, contactId);
   if (!contactOk) return { ok: false, error: "Cliente inválido." };
@@ -188,7 +188,7 @@ export async function deleteNote(noteId: string): Promise<ActionResult> {
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase
     .from("contact_notes")
     .delete()

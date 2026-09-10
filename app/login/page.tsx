@@ -14,11 +14,12 @@ const errorMessages: Record<string, string> = {
   invite_config: "Convites exigem configuração do servidor (service role). Contate o suporte.",
 };
 
-export default function LoginPage({
-  searchParams,
-}: {
-  searchParams: Record<string, string | string[] | undefined>;
-}) {
+export default async function LoginPage(
+  props: {
+    searchParams: Promise<Record<string, string | string[] | undefined>>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const err = typeof searchParams.error === "string" ? searchParams.error : undefined;
   const message = err ? (errorMessages[err] ?? "Algo deu errado.") : null;
   const nextRaw = typeof searchParams.next === "string" ? searchParams.next : undefined;

@@ -5,7 +5,7 @@
  */
 
 const DEFAULT_BASE_SANDBOX = "https://api-sandbox.asaas.com";
-const DEFAULT_USER_AGENT = "DonyApp/1.0 (Next.js)";
+const DEFAULT_HTTP_AGENT = "DonyApp/1.0 (Next.js)";
 
 export function getAsaasApiBaseUrl(): string {
   const raw = process.env.ASAAS_API_URL?.trim();
@@ -71,7 +71,7 @@ export function asaasHeaders(): Record<string, string> {
   return {
     "Content-Type": "application/json",
     Accept: "application/json",
-    "User-Agent": process.env.ASAAS_USER_AGENT?.trim() || DEFAULT_USER_AGENT,
+    "User-Agent": process.env.ASAAS_USER_AGENT?.trim() || DEFAULT_HTTP_AGENT,
     access_token: key,
   };
 }

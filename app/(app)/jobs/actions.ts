@@ -23,7 +23,7 @@ type ActionResult = { ok: true } | { ok: false; error: string };
 async function getAccountContext(): Promise<
   { accountId: string; userId: string } | { error: string }
 > {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -43,7 +43,7 @@ async function getAccountContext(): Promise<
 }
 
 async function verifyContactBelongs(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   accountId: string,
   contactId: string | null
 ): Promise<boolean> {
@@ -58,7 +58,7 @@ async function verifyContactBelongs(
 }
 
 async function countActiveJobsForAccount(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   accountId: string
 ): Promise<number> {
   const { data: stages } = await supabase
@@ -81,7 +81,7 @@ async function countActiveJobsForAccount(
 }
 
 async function verifyStageBelongs(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   accountId: string,
   stageId: string | null
 ): Promise<boolean> {
@@ -96,7 +96,7 @@ async function verifyStageBelongs(
 }
 
 async function verifyStageBoardType(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   accountId: string,
   stageId: string,
   expected: BoardType
@@ -111,7 +111,7 @@ async function verifyStageBoardType(
 }
 
 async function getSubscriptionPlanForAccount(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   accountId: string
 ): Promise<string> {
   const { data } = await supabase
@@ -123,7 +123,7 @@ async function getSubscriptionPlanForAccount(
 }
 
 async function verifyWorkTypeBelongs(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   accountId: string,
   workTypeId: string
 ): Promise<boolean> {
@@ -137,7 +137,7 @@ async function verifyWorkTypeBelongs(
 }
 
 async function verifyManualAssigneeBelongs(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   accountId: string,
   assigneeId: string | null
 ): Promise<boolean> {
@@ -186,7 +186,7 @@ function deriveLegacyFromTokens(photoTokens: string[], videoTokens: string[]) {
 }
 
 async function validateAssigneeTokens(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   accountId: string,
   tokens: string[]
 ): Promise<{ ok: true } | { ok: false; error: string }> {
@@ -205,7 +205,7 @@ async function validateAssigneeTokens(
 }
 
 async function replaceJobAssigneesForJob(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   jobId: string,
   photoTokens: string[],
   videoTokens: string[]
@@ -242,7 +242,7 @@ async function replaceJobAssigneesForJob(
 
 /** Próximo índice no fim da coluna (ex.: novo job ou mover sem lista completa). */
 async function nextPositionAtEndOfStage(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   accountId: string,
   stageId: string,
   excludeJobId?: string
@@ -274,7 +274,7 @@ export async function syncKanbanState(
     const ctx = await getAccountContext();
     if ("error" in ctx) return { ok: false, error: ctx.error };
 
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const allIds: string[] = [];
     for (const m of moves) {
@@ -458,7 +458,7 @@ function parseJobForm(formData: FormData): { error: string } | ParsedJobFields {
 
 /** Card extra de edição de vídeo: só para `foto_video` (um card foto + um card vídeo no quadro). */
 async function insertVideoEditChildJob(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   ctx: { accountId: string; userId: string },
   parentJobId: string,
   parsed: ParsedJobFields,
@@ -505,7 +505,7 @@ async function insertVideoEditChildJob(
 }
 
 async function verifyUserBelongs(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   accountId: string,
   userId: string | null
 ): Promise<boolean> {
@@ -528,7 +528,7 @@ export async function createJob(
   const parsed = parseJobForm(formData);
   if ("error" in parsed) return { ok: false, error: parsed.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const plan = await getSubscriptionPlanForAccount(supabase, ctx.accountId);
 
@@ -718,7 +718,7 @@ export async function updateJob(
     return { ok: false, error: "Selecione a etapa do kanban." };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const contactOk = await verifyContactBelongs(
     supabase,
@@ -920,7 +920,7 @@ export async function moveJobToStage(
     const ctx = await getAccountContext();
     if ("error" in ctx) return { ok: false, error: ctx.error };
 
-    const supabase = createClient();
+    const supabase = await createClient();
     const stageOk = await verifyStageBelongs(supabase, ctx.accountId, stageId);
     if (!stageOk) return { ok: false, error: "Etapa inválida." };
 
@@ -971,7 +971,7 @@ export async function deleteJob(jobId: string): Promise<ActionResult> {
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase
     .from("jobs")
     .delete()
@@ -998,7 +998,7 @@ export async function updateJobClientRevision(
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("jobs")
     .update({ client_revision: revision })
@@ -1033,7 +1033,7 @@ export type JobHistoryEntry = {
 export async function getJobHistory(
   jobId: string
 ): Promise<{ ok: true; entries: JobHistoryEntry[] } | { ok: false; error: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
@@ -1063,7 +1063,7 @@ export async function generateAlbumFromJob(
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const plan = await getSubscriptionPlanForAccount(supabase, ctx.accountId);
   if (!canCreateAlbum(plan)) {
@@ -1166,7 +1166,7 @@ export async function getRelatedAlbumChild(
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("jobs")
     .select("id, kanban_stages ( name )")
@@ -1199,7 +1199,7 @@ export async function getParentJobSummary(
   const ctx = await getAccountContext();
   if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("jobs")
     .select("id, name, board_type")

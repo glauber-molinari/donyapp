@@ -15,7 +15,7 @@ type AdminContext =
   | { accountId: string; userId: string; isAdmin: boolean };
 
 async function getAdminContext(): Promise<AdminContext> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -49,7 +49,7 @@ function requireAdmin(ctx: AdminContext): { accountId: string } | { error: strin
 }
 
 async function assertProSoloAccount(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   accountId: string
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const { data: sub } = await supabase
@@ -90,7 +90,7 @@ export async function addManualJobAssignee(formData: FormData): Promise<ActionRe
   const admin = requireAdmin(ctx);
   if ("error" in admin) return { ok: false, error: admin.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const gate = await assertProSoloAccount(supabase, admin.accountId);
   if (!gate.ok) return { ok: false, error: gate.error };
 
@@ -139,7 +139,7 @@ export async function updateManualJobAssignee(id: string, formData: FormData): P
   const admin = requireAdmin(ctx);
   if ("error" in admin) return { ok: false, error: admin.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const gate = await assertProSoloAccount(supabase, admin.accountId);
   if (!gate.ok) return { ok: false, error: gate.error };
 
@@ -187,7 +187,7 @@ export async function deleteManualJobAssignee(id: string): Promise<ActionResult>
   const admin = requireAdmin(ctx);
   if ("error" in admin) return { ok: false, error: admin.error };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const gate = await assertProSoloAccount(supabase, admin.accountId);
   if (!gate.ok) return { ok: false, error: gate.error };
 

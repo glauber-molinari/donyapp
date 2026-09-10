@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { setSubscriptionCancelAtPeriodEnd } from "@/lib/subscriptions/upgrade-account";
 
 export async function POST() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

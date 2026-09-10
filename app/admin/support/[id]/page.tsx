@@ -11,7 +11,8 @@ export const metadata: Metadata = {
   title: "Ticket | Admin Suporte",
 };
 
-export default async function AdminSupportTicketPage({ params }: { params: { id: string } }) {
+export default async function AdminSupportTicketPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const svc = createServiceRoleClient();
   if (!svc) notFound();
 

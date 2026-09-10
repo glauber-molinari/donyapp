@@ -8,7 +8,7 @@ export async function saveDeliveryEmailTemplates(
   subject: string,
   body: string
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

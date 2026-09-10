@@ -29,7 +29,7 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${settingsAgenda}?calendar_error=invalid_state`);
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

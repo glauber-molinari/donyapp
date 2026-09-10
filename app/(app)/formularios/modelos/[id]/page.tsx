@@ -8,15 +8,16 @@ import { EditorView } from "./editor-view";
 export const metadata: Metadata = { title: "Editor de Formulário" };
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default async function EditorPage({ params }: Props) {
+export default async function EditorPage(props: Props) {
+  const params = await props.params;
   if (params.id === "novo") {
     return <EditorView template={null} />;
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data } = await supabase
     .from("form_templates")
     .select("*")

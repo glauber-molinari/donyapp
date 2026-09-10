@@ -21,7 +21,7 @@ export async function isFeatureEnabled(key: FeatureFlagKey): Promise<boolean> {
   if (key === "galerias") return false;
 
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data } = await supabase
       .from("feature_flags")
       .select("enabled")

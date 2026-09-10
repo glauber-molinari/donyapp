@@ -17,11 +17,12 @@ function first(v: string | string[] | undefined): string {
   return v ?? "";
 }
 
-export default async function OAuthAuthorizePage({
-  searchParams,
-}: {
-  searchParams: SearchParams;
-}) {
+export default async function OAuthAuthorizePage(
+  props: {
+    searchParams: Promise<SearchParams>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const responseType = first(searchParams.response_type);
   const clientId = first(searchParams.client_id);
   const redirectUri = first(searchParams.redirect_uri);
@@ -101,7 +102,7 @@ export default async function OAuthAuthorizePage({
     );
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

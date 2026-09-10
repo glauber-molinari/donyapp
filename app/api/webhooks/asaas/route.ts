@@ -1,3 +1,4 @@
+import { createHash, timingSafeEqual } from "crypto";
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
@@ -34,8 +35,10 @@ export async function POST(req: Request) {
         { status: 500 }
       );
     }
-    const h = req.headers.get("asaas-access-token");
-    if (h !== token) {
+    const h = req.headers.get("asaas-access-token") ?? "";
+    const expected = createHash("sha256").update(token).digest();
+    const received = createHash("sha256").update(h).digest();
+    if (!timingSafeEqual(expected, received)) {
       return NextResponse.json({ ok: false }, { status: 401 });
     }
   }

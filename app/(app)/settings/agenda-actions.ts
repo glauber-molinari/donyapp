@@ -9,7 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 export async function disconnectGoogleCalendar(): Promise<
   { ok: true } | { ok: false; error: string }
 > {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

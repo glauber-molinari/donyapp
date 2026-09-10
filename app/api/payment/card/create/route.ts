@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     // body opcional
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

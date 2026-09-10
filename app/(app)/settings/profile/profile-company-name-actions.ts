@@ -9,7 +9,7 @@ type ActionResult = { ok: true } | { ok: false; error: string };
 const MAX_LENGTH = 120;
 
 export async function saveCompanyName(rawName: string): Promise<ActionResult> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
