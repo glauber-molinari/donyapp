@@ -9,6 +9,7 @@ import {
   MarketingSiteHeader,
   marketingHomeAnchoredNavItems,
 } from "@/components/marketing/marketing-site-header";
+import { serializeJsonLd } from "@/lib/agent/site";
 import { getPostBySlug } from "@/lib/blog/actions";
 import type { BlogCategory } from "@/types/blog";
 
@@ -94,15 +95,9 @@ export default async function BlogPostPage(props: { params: Promise<{ slug: stri
     },
   };
 
-  // Escapa `<` para evitar quebra antecipada da tag <script> via </script> no conteúdo.
-  const jsonLdString = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
-
   return (
     <div className="min-h-screen bg-ds-cream text-ds-ink antialiased">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLdString }}
-      />
+      <script type="application/ld+json">{serializeJsonLd(jsonLd)}</script>
 
       <MarketingSiteHeader navItems={marketingHomeAnchoredNavItems} />
 

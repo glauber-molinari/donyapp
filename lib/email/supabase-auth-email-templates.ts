@@ -17,8 +17,8 @@ import {
 export const SUPABASE_CONFIRM_SIGNUP_SUBJECT = "Confirme seu cadastro no Dony.app";
 
 /**
- * Corpo HTML para o Supabase — use o arquivo pronto para colar:
- * docs/supabase-confirm-signup-body.html (HTML puro, sem TypeScript).
+ * Corpo HTML para o Supabase — use o bloco HTML em
+ * docs/supabase-email-templates.md (HTML puro, sem TypeScript).
  *
  * A constante abaixo é só referência no código; NÃO cole isto no painel do Supabase.
  */

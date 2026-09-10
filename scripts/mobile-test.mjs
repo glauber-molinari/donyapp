@@ -5,6 +5,30 @@ import { join } from "node:path";
 const BASE_URL = process.env.BASE_URL ?? "http://localhost:3004";
 const OUT_DIR = join(process.cwd(), "scripts", "mobile-screens");
 
+if (BASE_URL !== "http://localhost:3004" && BASE_URL !== "http://localhost:3000") {
+  throw new Error("BASE_URL precisa ser http://localhost:3004 ou http://localhost:3000");
+}
+
+async function gotoAllowedPath(page, path, options) {
+  const url = `${BASE_URL}${path}`;
+  switch (url) {
+    case "http://localhost:3004/":
+      return page.goto("http://localhost:3004/", options);
+    case "http://localhost:3004/login":
+      return page.goto("http://localhost:3004/login", options);
+    case "http://localhost:3004/dev-mobile-preview":
+      return page.goto("http://localhost:3004/dev-mobile-preview", options);
+    case "http://localhost:3000/":
+      return page.goto("http://localhost:3000/", options);
+    case "http://localhost:3000/login":
+      return page.goto("http://localhost:3000/login", options);
+    case "http://localhost:3000/dev-mobile-preview":
+      return page.goto("http://localhost:3000/dev-mobile-preview", options);
+    default:
+      throw new Error(`rota não permitida: ${path}`);
+  }
+}
+
 async function main() {
   await mkdir(OUT_DIR, { recursive: true });
 
@@ -30,7 +54,7 @@ async function main() {
 
   for (const route of routes) {
     try {
-      const resp = await page.goto(`${BASE_URL}${route.path}`, {
+      const resp = await gotoAllowedPath(page, route.path, {
         waitUntil: "networkidle2",
         timeout: 30000,
       });
@@ -106,7 +130,7 @@ async function main() {
     }
   }
 
-  await page.goto(`${BASE_URL}/`, { waitUntil: "domcontentloaded" });
+  await gotoAllowedPath(page, "/", { waitUntil: "domcontentloaded" });
   const metaData = await page.evaluate(() => {
     const get = (sel) => document.querySelector(sel)?.getAttribute("content") ?? null;
     const getHref = (sel) => document.querySelector(sel)?.getAttribute("href") ?? null;

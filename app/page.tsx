@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import Script from "next/script";
 import { headers } from "next/headers";
 
-import { homeJsonLdGraph, OG_IMAGE_PATH, SITE_DESCRIPTION, SITE_NAME, siteUrl } from "@/lib/agent/site";
+import { homeJsonLdGraph, OG_IMAGE_PATH, serializeJsonLd, SITE_DESCRIPTION, SITE_NAME, siteUrl } from "@/lib/agent/site";
 import { LandingPage } from "@/components/marketing/landing-page";
 import { WebMcpSurface } from "@/components/agent/webmcp-surface";
 
@@ -57,10 +57,7 @@ export default async function Home() {
       <link rel="service-desc" href={`${base}/openapi.json`} type="application/openapi+json" />
       <link rel="api-catalog" href={`${base}/api`} type="application/json" />
       <link rel="describedby" href={`${base}/llms.txt`} type="text/plain" />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <script type="application/ld+json">{serializeJsonLd(jsonLd)}</script>
       <Script src="/webmcp-register.js" strategy="afterInteractive" nonce={nonce} />
       <WebMcpSurface />
       <LandingPage displayClassName={inter.className} bodyClassName={inter.className} />

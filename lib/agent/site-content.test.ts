@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import { llmsTxtBody, markdownForPath, notFoundMarkdown } from "./markdown-content";
-import { homeJsonLdGraph, organizationJsonLd } from "./site";
+import { homeJsonLdGraph, organizationJsonLd, serializeJsonLd } from "./site";
 
 describe("agent markdown content", () => {
   it("includes when-to-use guidance in llms.txt", () => {
@@ -59,5 +59,11 @@ describe("JSON-LD identity", () => {
       assert.ok("name" in node && typeof node.name === "string");
       assert.ok("description" in node && typeof node.description === "string");
     }
+  });
+
+  it("serializeJsonLd escapes < so script tags cannot break out", () => {
+    const encoded = serializeJsonLd({ x: "</script><img src=x onerror=alert(1)>" });
+    assert.equal(encoded.includes("</script>"), false);
+    assert.match(encoded, /\\u003c\/script>/);
   });
 });
