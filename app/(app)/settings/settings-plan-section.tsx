@@ -69,6 +69,7 @@ export function SettingsPlanSection({
   extraUsers,
   cancelAtPeriodEnd,
   canCancelSubscription,
+  isLifetime = false,
   isAdmin,
   paymentSuccess,
 }: {
@@ -78,6 +79,7 @@ export function SettingsPlanSection({
   extraUsers: number;
   cancelAtPeriodEnd: boolean;
   canCancelSubscription: boolean;
+  isLifetime?: boolean;
   isAdmin: boolean;
   paymentSuccess: boolean;
 }) {
@@ -208,14 +210,14 @@ export function SettingsPlanSection({
           <div>
             <p className="text-sm font-medium text-ds-muted">Plano atual</p>
             <p className="mt-1 text-xl font-semibold text-ds-ink">
-              {isPro ? "Pro" : "Free"}
+              {isLifetime ? "Pro vitalício" : isPro ? "Pro" : "Free"}
             </p>
             <p className="mt-2 text-sm text-ds-muted">
               Status:{" "}
               <span className="text-ds-ink">
-                {customerPlanStatusLabel(plan, status, cancelAtPeriodEnd)}
+                {isLifetime ? "Ativo, sem data de término" : customerPlanStatusLabel(plan, status, cancelAtPeriodEnd)}
               </span>
-              {isPro && currentPeriodEndsAt && !cancelAtPeriodEnd ? (
+              {isPro && !isLifetime && currentPeriodEndsAt && !cancelAtPeriodEnd ? (
                 <>
                   {" "}
                   · Renova em {formatDatePt(currentPeriodEndsAt)}
@@ -279,7 +281,9 @@ export function SettingsPlanSection({
         </Card>
         <Card className="border-ds-ink/10 bg-ds-cream/40 p-5">
           <h3 className="font-medium text-ds-ink">Pro</h3>
-          <p className="mt-1 text-sm text-ds-muted">{priceLabel} por mês</p>
+          <p className="mt-1 text-sm text-ds-muted">
+            {isLifetime ? "Seu acesso é vitalício." : `${priceLabel} por mês`}
+          </p>
           <ul className="mt-3 list-inside list-disc space-y-1.5 text-sm text-ds-muted">
             <li>Jobs ativos ilimitados e contatos ilimitados</li>
             <li>Vários usuários na mesma conta, com convites por e-mail</li>
@@ -291,7 +295,11 @@ export function SettingsPlanSection({
               Responsáveis: cadastro de nomes, e-mails e fotos para equipe externa quando só você
               usa a conta
             </li>
-            <li>Assinatura mensal ou anual com pagamento por cartão de crédito</li>
+            {isLifetime ? (
+              <li>Acesso vitalício nesta conta, sem renovação</li>
+            ) : (
+              <li>Assinatura mensal ou anual com pagamento por cartão de crédito</li>
+            )}
           </ul>
         </Card>
       </div>

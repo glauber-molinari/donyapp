@@ -617,6 +617,7 @@ export interface Database {
           avatar_is_custom: boolean;
           role: UserRole;
           tour_completed: boolean;
+          lifetime_welcome_seen_at: string | null;
           created_at: string;
         };
         Insert: {
@@ -628,6 +629,7 @@ export interface Database {
           avatar_is_custom?: boolean;
           role?: UserRole;
           tour_completed?: boolean;
+          lifetime_welcome_seen_at?: string | null;
           created_at?: string;
         };
         Update: {
@@ -639,6 +641,7 @@ export interface Database {
           avatar_is_custom?: boolean;
           role?: UserRole;
           tour_completed?: boolean;
+          lifetime_welcome_seen_at?: string | null;
           created_at?: string;
         };
         Relationships: [
@@ -1326,6 +1329,7 @@ export interface Database {
           extra_users: number;
           asaas_subscription_id: string | null;
           cancel_at_period_end: boolean;
+          is_lifetime: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -1339,6 +1343,7 @@ export interface Database {
           extra_users?: number;
           asaas_subscription_id?: string | null;
           cancel_at_period_end?: boolean;
+          is_lifetime?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -1352,6 +1357,7 @@ export interface Database {
           extra_users?: number;
           asaas_subscription_id?: string | null;
           cancel_at_period_end?: boolean;
+          is_lifetime?: boolean;
           created_at?: string;
           updated_at?: string;
         };

@@ -5,7 +5,11 @@ import { revalidatePath } from "next/cache";
 import { isPlatformAdminEmail } from "@/lib/admin/platform-admin";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
-import { setSubscriptionFreePlan, setSubscriptionProCourtesy } from "@/lib/subscriptions/upgrade-account";
+import {
+  setSubscriptionFreePlan,
+  setSubscriptionProCourtesy,
+  setSubscriptionProLifetime,
+} from "@/lib/subscriptions/upgrade-account";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -40,9 +44,25 @@ export async function adminGrantProCourtesyAction(formData: FormData): Promise<A
     return { ok: false, error: "Conta inválida." };
   }
 
-  const mode = formData.get("mode")?.toString() ?? "1";
+  const mode = formData.get("mode")?.toString() ?? "lifetime";
   const months = Number(mode);
   const customDate = formData.get("periodEnd")?.toString() ?? "";
+
+  const svc = createServiceRoleClient();
+  if (!svc) {
+    return { ok: false, error: "Service role do Supabase não configurada." };
+  }
+
+  if (mode === "lifetime") {
+    const r = await setSubscriptionProLifetime(svc, accountId);
+    if (!r.ok) {
+      return { ok: false, error: r.error };
+    }
+    revalidatePath("/admin");
+    revalidatePath("/admin/planos");
+    revalidatePath("/dashboard");
+    return { ok: true };
+  }
 
   let endsAt: string | null = null;
   if (mode === "custom") {
@@ -59,11 +79,6 @@ export async function adminGrantProCourtesyAction(formData: FormData): Promise<A
   }
 
   const clearAsaas = formData.get("clearAsaas") === "on" || formData.get("clearAsaas") === "true";
-
-  const svc = createServiceRoleClient();
-  if (!svc) {
-    return { ok: false, error: "Service role do Supabase não configurada." };
-  }
 
   const r = await setSubscriptionProCourtesy(svc, accountId, endsAt, clearAsaas);
   if (!r.ok) {

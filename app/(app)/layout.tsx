@@ -23,7 +23,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const { data: profile } = await supabase
     .from("users")
-    .select("name, email, avatar_url, avatar_is_custom, tour_completed, account_id")
+    .select("name, email, avatar_url, avatar_is_custom, tour_completed, lifetime_welcome_seen_at, account_id")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -34,11 +34,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const { data: subscription } = await supabase
     .from("subscriptions")
-    .select("plan")
+    .select("plan, is_lifetime")
     .eq("account_id", profile?.account_id ?? "")
     .maybeSingle();
 
   const isPro = subscription?.plan === "pro";
+  const showLifetimeWelcome =
+    subscription?.plan === "pro" &&
+    subscription.is_lifetime === true &&
+    profile?.lifetime_welcome_seen_at == null;
 
   const { count: unreadSupportCount } = await supabase
     .from("support_tickets")
@@ -53,6 +57,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       avatarUrl={avatarUrl}
       tourCompleted={tourCompleted}
       isPro={isPro}
+      showLifetimeWelcome={showLifetimeWelcome}
       unreadSupportCount={unreadSupportCount ?? 0}
       sidebarWidget={<BlogSidebarWidget />}
     >

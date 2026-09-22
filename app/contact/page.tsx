@@ -30,7 +30,7 @@ export default function ContactPage() {
               Recursos
             </Link>
             <Link href="/pricing" className="text-ds-muted hover:text-ds-ink">
-              Preços
+              Planos
             </Link>
             <Link href="/about" className="text-ds-muted hover:text-ds-ink">
               Sobre

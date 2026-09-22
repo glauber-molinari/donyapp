@@ -83,11 +83,11 @@ function buildSteps(router: ReturnType<typeof useRouter>): DriveStep[] {
         align: "start",
       },
     },
-    // 4 — Edições (menu)
+    // 4 — Pós-Produção (menu)
     {
       element: "#menu-edicoes",
       popover: {
-        title: "Edições",
+        title: "Pós-Produção",
         description: "É aqui que fica o kanban: arraste os cards conforme o trabalho avança.",
         side: "right",
         align: "start",
@@ -281,14 +281,17 @@ export function useOnboardingTour(): OnboardingTourContextValue | null {
 
 export interface OnboardingTourProviderProps {
   tourCompleted: boolean;
+  /** Segura o tour automático enquanto outro aviso (ex.: Pro vitalício) está aberto. */
+  hold?: boolean;
   children: ReactNode;
 }
 
-export function OnboardingTourProvider({ tourCompleted, children }: OnboardingTourProviderProps) {
+export function OnboardingTourProvider({ tourCompleted, hold = false, children }: OnboardingTourProviderProps) {
   const router = useRouter();
   const routerRef = useRef(router);
   routerRef.current = router;
   const driverRef = useRef<ReturnType<typeof driver> | null>(null);
+  const skipAutoStart = useRef(hold);
   const mountDriver = useCallback((persistCompletion: boolean) => {
     driverRef.current?.destroy();
     const steps = buildSteps(routerRef.current);
@@ -297,14 +300,12 @@ export function OnboardingTourProvider({ tourCompleted, children }: OnboardingTo
     d.drive();
   }, []);
 
-  // Auto-start para novos usuários que ainda não viram o tour.
+  // Auto-start só quando o aviso de Pro vitalício não estava na frente.
+  // Fechar esse aviso não dispara o tour; o botão "Fazer Tour" chama startTour.
   useEffect(() => {
-    if (!tourCompleted) {
-      mountDriver(true);
-    }
-    // Só deve rodar na montagem do shell — dependências intencionalmente vazias.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (skipAutoStart.current || hold || tourCompleted) return;
+    mountDriver(true);
+  }, [hold, tourCompleted, mountDriver]);
 
   const startTour = useCallback(() => {
     mountDriver(true);

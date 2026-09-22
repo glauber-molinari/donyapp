@@ -83,11 +83,11 @@ export function MarketingMobileNav({
                 ),
               )}
               <Link
-                href="/login"
+                href="/signup"
                 className="mt-1 rounded-full bg-ds-accent px-4 py-3 text-center text-base font-semibold text-white transition duration-ds ease-out hover:brightness-95"
                 onClick={() => setOpen(false)}
               >
-                Começar grátis
+                Criar conta
               </Link>
             </nav>
           </div>

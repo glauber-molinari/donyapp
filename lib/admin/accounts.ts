@@ -44,6 +44,7 @@ export async function fetchAdminAccountsWithSubscriptions(
         trial_ends_at,
         extra_users,
         asaas_subscription_id,
+        is_lifetime,
         created_at,
         updated_at
       )

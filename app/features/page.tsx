@@ -34,7 +34,7 @@ export default async function FeaturesPage() {
           </Link>
           <nav className="flex flex-wrap items-center gap-3 text-sm">
             <Link href="/pricing" className="text-ds-muted hover:text-ds-ink">
-              Preços
+              Planos
             </Link>
             <Link href="/about" className="text-ds-muted hover:text-ds-ink">
               Sobre

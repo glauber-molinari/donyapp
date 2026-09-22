@@ -30,7 +30,7 @@ export default async function AdminPlanosPage(
       <div>
         <h2 className="text-xl font-semibold text-ds-ink">Planos e contas</h2>
         <p className="mt-1 text-sm text-ds-muted">
-          Conceda Pro cortesia (sem Asaas) ou reverta para Free. Lista até 400 contas mais recentes.
+          Libere Pro vitalício (sem prazo) para quem você convidou, ou conceda um período e volte para Free. Lista até 400 contas mais recentes.
         </p>
       </div>
 

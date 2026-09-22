@@ -36,6 +36,7 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccountRow[] }
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [openGrant, setOpenGrant] = useState<string | null>(null);
+  const [grantMode, setGrantMode] = useState("lifetime");
 
   function runAction(
     fn: (fd: FormData) => Promise<{ ok: boolean; error?: string }>,
@@ -97,7 +98,7 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccountRow[] }
                 <td className="px-3 py-2 align-top">{planLabel(sub?.plan)}</td>
                 <td className="px-3 py-2 align-top">{statusLabel(sub?.status)}</td>
                 <td className="px-3 py-2 align-top text-ds-muted">
-                  {formatDatePtBr(sub?.current_period_ends_at ?? null)}
+                  {sub?.is_lifetime ? "Vitalício" : formatDatePtBr(sub?.current_period_ends_at ?? null)}
                 </td>
                 <td className="px-3 py-2 align-top">
                   {asaas ? (
@@ -122,12 +123,14 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccountRow[] }
                             }}
                           >
                             <label className="text-xs text-ds-muted">
-                              Meses de Pro (cortesia)
+                              Tipo de Pro
                               <select
                                 name="mode"
+                                value={grantMode}
+                                onChange={(e) => setGrantMode(e.target.value)}
                                 className="mt-1 w-full rounded-ds-lg border border-ds-border bg-ds-surface px-2 py-1.5 text-sm text-ds-ink"
-                                defaultValue="1"
                               >
+                                <option value="lifetime">Vitalício (sem prazo)</option>
                                 {[1, 3, 6, 12].map((m) => (
                                   <option key={m} value={String(m)}>
                                     {m} {m === 1 ? "mês" : "meses"}
@@ -136,21 +139,24 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccountRow[] }
                                 <option value="custom">Data fixa…</option>
                               </select>
                             </label>
-                            <label className="text-xs text-ds-muted">
-                              Se “data fixa”: término
-                              <input
-                                type="date"
-                                name="periodEnd"
-                                className="mt-1 w-full rounded-ds-lg border border-ds-border bg-ds-surface px-2 py-1.5 text-sm text-ds-ink"
-                              />
-                            </label>
+                            {grantMode === "custom" ? (
+                              <label className="text-xs text-ds-muted">
+                                Término
+                                <input
+                                  type="date"
+                                  name="periodEnd"
+                                  className="mt-1 w-full rounded-ds-lg border border-ds-border bg-ds-surface px-2 py-1.5 text-sm text-ds-ink"
+                                />
+                              </label>
+                            ) : null}
                             <p className="text-[11px] leading-snug text-ds-muted">
-                              Remove o vínculo Asaas nesta conta para evitar conflito com webhooks. Se
-                              houver cobrança ativa no Asaas, cancele lá também.
+                              {grantMode === "lifetime"
+                                ? "Sem data de término. Na próxima entrada ou ao atualizar a página, a pessoa vê o aviso de Pro vitalício."
+                                : "Remove o vínculo Asaas nesta conta para evitar conflito com webhooks. Se houver cobrança ativa no Asaas, cancele lá também."}
                             </p>
                             <div className="flex flex-wrap gap-1.5">
                               <Button type="submit" size="sm" disabled={pending}>
-                                Aplicar Pro
+                                {grantMode === "lifetime" ? "Liberar Pro vitalício" : "Aplicar Pro"}
                               </Button>
                               <Button
                                 type="button"
@@ -168,23 +174,42 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccountRow[] }
                             size="sm"
                             variant="secondary"
                             disabled={pending}
-                            onClick={() => setOpenGrant(a.id)}
+                            onClick={() => {
+                              setGrantMode("lifetime");
+                              setOpenGrant(a.id);
+                            }}
                           >
                             Conceder Pro
                           </Button>
                         )}
                       </>
                     ) : (
-                      <form
-                        action={(fd) => {
-                          fd.set("accountId", a.id);
-                          runAction(adminRevokeProAction, fd);
-                        }}
-                      >
-                        <Button type="submit" variant="danger" size="sm" disabled={pending}>
-                          Voltar para Free
-                        </Button>
-                      </form>
+                      <div className="flex flex-col gap-1.5">
+                        {!sub?.is_lifetime ? (
+                          <form
+                            action={(fd) => {
+                              fd.set("accountId", a.id);
+                              fd.set("mode", "lifetime");
+                              fd.set("clearAsaas", "true");
+                              runAction(adminGrantProCourtesyAction, fd);
+                            }}
+                          >
+                            <Button type="submit" size="sm" variant="secondary" disabled={pending}>
+                              Tornar vitalício
+                            </Button>
+                          </form>
+                        ) : null}
+                        <form
+                          action={(fd) => {
+                            fd.set("accountId", a.id);
+                            runAction(adminRevokeProAction, fd);
+                          }}
+                        >
+                          <Button type="submit" variant="danger" size="sm" disabled={pending}>
+                            Voltar para Free
+                          </Button>
+                        </form>
+                      </div>
                     )}
                   </div>
                 </td>

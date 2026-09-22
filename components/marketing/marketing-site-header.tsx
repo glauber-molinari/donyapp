@@ -10,7 +10,6 @@ export type MarketingNavItem = { readonly href: string; readonly label: string }
 export const marketingLandingNavItems: readonly MarketingNavItem[] = [
   { href: "#sobre", label: "Sobre" },
   { href: "#prova", label: "Resultados" },
-  { href: "#planos", label: "Planos" },
   { href: "#faq", label: "FAQ" },
   { href: "/blog", label: "Blog" },
 ] as const;
@@ -19,7 +18,6 @@ export const marketingLandingNavItems: readonly MarketingNavItem[] = [
 export const marketingHomeAnchoredNavItems: readonly MarketingNavItem[] = [
   { href: "/#sobre", label: "Sobre" },
   { href: "/#prova", label: "Resultados" },
-  { href: "/#planos", label: "Planos" },
   { href: "/#faq", label: "FAQ" },
   { href: "/blog", label: "Blog" },
 ] as const;
@@ -95,10 +93,10 @@ export function MarketingSiteHeader({ navItems }: { navItems: readonly Marketing
               Entrar
             </Link>
             <Link
-              href="/login"
+              href="/signup"
               className="hidden rounded-full bg-ds-accent px-4 py-2 text-[0.85rem] font-semibold text-white transition duration-ds ease-out hover:brightness-95 sm:inline-flex sm:px-5 sm:text-[0.9rem]"
             >
-              Começar grátis
+              Criar conta
             </Link>
             <MarketingMobileNav items={navItems} />
           </div>

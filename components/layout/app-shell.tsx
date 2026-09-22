@@ -23,6 +23,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useLayoutEffect, useState, type ReactNode } from "react";
 
+import { LifetimeProWelcome } from "@/components/app/lifetime-pro-welcome";
 import { OnboardingTourProvider } from "@/components/app/onboarding-tour";
 import { SidebarCollapsedContext } from "@/components/layout/sidebar-collapsed-context";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
@@ -93,15 +94,21 @@ export interface AppShellProps {
   avatarUrl: string | null;
   tourCompleted: boolean;
   isPro: boolean;
+  showLifetimeWelcome?: boolean;
   unreadSupportCount?: number;
   sidebarWidget?: ReactNode;
 }
 
-export function AppShell({ children, userName, userEmail, avatarUrl, tourCompleted, isPro, unreadSupportCount = 0, sidebarWidget }: AppShellProps) {
+export function AppShell({ children, userName, userEmail, avatarUrl, tourCompleted, isPro, showLifetimeWelcome = false, unreadSupportCount = 0, sidebarWidget }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [lifetimeWelcomeOpen, setLifetimeWelcomeOpen] = useState(showLifetimeWelcome);
+
+  useEffect(() => {
+    if (showLifetimeWelcome) setLifetimeWelcomeOpen(true);
+  }, [showLifetimeWelcome]);
 
   const persistSidebarCollapsed = useCallback((collapsed: boolean) => {
     try {
@@ -164,7 +171,7 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
   };
 
   return (
-    <OnboardingTourProvider tourCompleted={tourCompleted}>
+    <OnboardingTourProvider tourCompleted={tourCompleted} hold={lifetimeWelcomeOpen}>
     <div className="flex min-h-screen bg-ds-cream">
       {mobileOpen ? (
         <button
@@ -476,6 +483,10 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
       </SidebarCollapsedContext.Provider>
 
       <MobileBottomNav onOpenMore={() => setMobileOpen(true)} />
+      <LifetimeProWelcome
+        initialOpen={showLifetimeWelcome}
+        onDismissed={() => setLifetimeWelcomeOpen(false)}
+      />
     </div>
     </OnboardingTourProvider>
   );

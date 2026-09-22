@@ -20,6 +20,7 @@ export async function setSubscriptionPro(
     status: "active",
     current_period_ends_at: periodEnd.toISOString(),
     cancel_at_period_end: false,
+    is_lifetime: false,
   };
 
   if (opts?.asaasSubscriptionId) {
@@ -48,6 +49,7 @@ export async function setSubscriptionProCourtesy(
     status: "active",
     current_period_ends_at: currentPeriodEndsAtIso,
     cancel_at_period_end: false,
+    is_lifetime: false,
   };
   if (clearAsaasSubscriptionId) {
     row.asaas_subscription_id = null;
@@ -68,6 +70,46 @@ export async function setSubscriptionProCourtesy(
   return { ok: true };
 }
 
+/**
+ * Pro vitalício: sem data de término e sem vínculo Asaas.
+ * Zera o aviso de boas-vindas de quem está na conta, para o popup aparecer de novo.
+ */
+export async function setSubscriptionProLifetime(
+  db: SupabaseClient<Database>,
+  accountId: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { data, error } = await db
+    .from("subscriptions")
+    .update({
+      plan: "pro",
+      status: "active",
+      current_period_ends_at: null,
+      cancel_at_period_end: false,
+      asaas_subscription_id: null,
+      is_lifetime: true,
+    })
+    .eq("account_id", accountId)
+    .select("id");
+
+  if (error) {
+    return { ok: false, error: error.message };
+  }
+  if (!data?.length) {
+    return { ok: false, error: "Nenhuma assinatura encontrada para esta conta." };
+  }
+
+  const { error: welcomeErr } = await db
+    .from("users")
+    .update({ lifetime_welcome_seen_at: null })
+    .eq("account_id", accountId);
+
+  if (welcomeErr) {
+    return { ok: false, error: welcomeErr.message };
+  }
+
+  return { ok: true };
+}
+
 /** Volta ao plano Free ativo (como no provisionamento de nova conta). */
 export async function setSubscriptionFreePlan(
   db: SupabaseClient<Database>,
@@ -82,6 +124,7 @@ export async function setSubscriptionFreePlan(
       trial_ends_at: null,
       asaas_subscription_id: null,
       cancel_at_period_end: false,
+      is_lifetime: false,
     })
     .eq("account_id", accountId)
     .select("id");

@@ -46,7 +46,7 @@ export const metadata: Metadata = {
 
 /**
  * Landing pública em /. Acessível a todos — visitantes e usuários logados.
- * Links de âncora (/#sobre, /#planos, etc.) funcionam sem redirecionamentos.
+ * Links de âncora (/#sobre, /#faq, etc.) funcionam sem redirecionamentos.
  */
 export default async function Home() {
   const jsonLd = homeJsonLdGraph();

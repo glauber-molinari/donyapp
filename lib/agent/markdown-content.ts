@@ -1,21 +1,9 @@
-import {
-  FREE_MAX_ACTIVE_JOBS,
-  FREE_MAX_CONTACTS,
-  PRO_PRICE_MONTHLY_CENTS,
-  PRO_PRICE_YEARLY_CENTS,
-} from "@/lib/plan-limits";
+import { FREE_MAX_ACTIVE_JOBS, FREE_MAX_CONTACTS } from "@/lib/plan-limits";
 
 import { INSTAGRAM_URL, SITE_DESCRIPTION, SITE_NAME, SUPPORT_EMAIL, siteUrl } from "./site";
 
 function base(): string {
   return siteUrl();
-}
-
-function formatBrl(cents: number): string {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(cents / 100);
 }
 
 export function notFoundMarkdown(requestedPath?: string): string {
@@ -182,18 +170,11 @@ Up to ${FREE_MAX_ACTIVE_JOBS} active jobs, ${FREE_MAX_CONTACTS} contacts, 1 user
 - Home: [${url}/](${url}/)
 `;
     case "/pricing": {
-      const proMonthly = formatBrl(PRO_PRICE_MONTHLY_CENTS);
-      const proYearly = formatBrl(PRO_PRICE_YEARLY_CENTS);
-      const proYearlyMonthly = formatBrl(Math.round(PRO_PRICE_YEARLY_CENTS / 12));
-      const yearlySavingsPercent = Math.max(
-        0,
-        Math.round((1 - PRO_PRICE_YEARLY_CENTS / (PRO_PRICE_MONTHLY_CENTS * 12)) * 100),
-      );
-      return `# Pricing — ${SITE_NAME}
+      return `# Plans — ${SITE_NAME}
 
-All prices in BRL. No card required for Free.
+No card required. The first 20 invited accounts get lifetime Pro, with no charge and no renewal date.
 
-## Free — R$ 0 / month
+## Free
 
 - Up to ${FREE_MAX_ACTIVE_JOBS} active kanban jobs
 - Up to ${FREE_MAX_CONTACTS} contacts
@@ -201,7 +182,9 @@ All prices in BRL. No card required for Free.
 - Notes, Google Calendar agenda, client forms, basic reports
 - 1 user per account
 
-## Pro — ${proMonthly} / month
+## Lifetime Pro
+
+For the first 20 invited accounts. Sign up, then Pro is enabled with no end date.
 
 Everything in Free, plus:
 
@@ -211,16 +194,10 @@ Everything in Free, plus:
 - Auto email and WhatsApp on delivery; editable email templates
 - Job change history, team task kanban, advanced reports
 - Physical album board
-- Card payment inside the logged-in app
-
-## Pro yearly — ${proYearly} / year
-
-Same Pro features, about ${yearlySavingsPercent}% off vs 12× monthly (~${proYearlyMonthly}/month equivalent). Single annual card charge.
 
 ## Links
 
 - Features: [${url}/features](${url}/features)
-- Home plans section: [${url}/#planos](${url}/#planos)
 - Sign up: [${url}/signup](${url}/signup)
 - Contact: [${url}/contact](${url}/contact)
 `;

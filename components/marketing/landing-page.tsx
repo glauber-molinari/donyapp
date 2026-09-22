@@ -1,19 +1,15 @@
-import { ArrowRight, BarChart2, Calendar, Camera, Check, ChevronRight, ClipboardList, Columns3, UsersRound } from "lucide-react";
+import { ArrowRight, BarChart2, Calendar, Camera, ChevronRight, ClipboardList, Columns3, UsersRound } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 import { cn } from "@/lib/utils";
 import { BlogLandingSection } from "@/components/marketing/blog-landing-section";
 import { LegalLinks } from "@/components/legal/legal-links";
-import { MarketingSiteHeader, marketingLandingNavItems } from "@/components/marketing/marketing-site-header";
 import {
-  FREE_MAX_ACTIVE_JOBS,
-  FREE_MAX_CONTACTS,
-  PRO_PRICE_MONTHLY_CENTS,
-  PRO_PRICE_YEARLY_CENTS,
-  PRO_PRICE_ORIGINAL_MONTHLY_CENTS,
-  PRO_PRICE_ORIGINAL_YEARLY_CENTS,
-} from "@/lib/plan-limits";
+  LandingPricingSection,
+  SHOW_LANDING_PRICING,
+} from "@/components/marketing/landing-pricing-section";
+import { MarketingSiteHeader, marketingLandingNavItems } from "@/components/marketing/marketing-site-header";
 
 function ProductPreviewMock() {
   return (
@@ -41,19 +37,7 @@ interface LandingPageProps {
   bodyClassName: string;
 }
 
-function formatBrl(value: number) {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
-}
-
 export function LandingPage({ displayClassName, bodyClassName }: LandingPageProps) {
-  const proMonthly = PRO_PRICE_MONTHLY_CENTS / 100;
-  const proYearly = PRO_PRICE_YEARLY_CENTS / 100;
-  const proOriginalMonthly = PRO_PRICE_ORIGINAL_MONTHLY_CENTS / 100;
-  const proOriginalYearly = PRO_PRICE_ORIGINAL_YEARLY_CENTS / 100;
-  const yearlySavingsPercent = Math.max(
-    0,
-    Math.round((1 - proYearly / (proMonthly * 12)) * 100),
-  );
   return (
     <div className={cn(bodyClassName, "min-h-screen bg-ds-cream text-ds-ink antialiased")}>
       <MarketingSiteHeader navItems={marketingLandingNavItems} />
@@ -83,10 +67,10 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
 
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
               <Link
-                href="/login"
+                href="/signup"
                 className="inline-flex w-full items-center justify-center gap-2 rounded-ds-2xl bg-ds-accent px-7 py-3.5 text-sm font-semibold text-white shadow-sm transition duration-ds ease-out hover:brightness-95 hover:shadow-md sm:w-auto"
               >
-                Começar grátis
+                Criar conta
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
@@ -96,7 +80,9 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                 Por que usar?
               </Link>
             </div>
-            <p className="mt-5 text-sm text-ds-muted-2">Plano gratuito para começar. Sem cartão.</p>
+            <p className="mt-5 text-sm text-ds-muted-2">
+              Os 20 primeiros convidados ganham o Pro vitalício. Sem cartão.
+            </p>
           </div>
 
           <div className="relative mx-auto mt-14 max-w-[1200px] sm:mt-20">
@@ -304,202 +290,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
           </div>
         </section>
 
-        <section
-          id="planos"
-          className="mx-auto max-w-[1200px] scroll-mt-28 bg-ds-cream px-4 py-20 sm:px-6 lg:scroll-mt-32 lg:px-8 lg:py-24"
-        >
-          <div className="mx-auto max-w-4xl text-center">
-            <h2 className={cn(displayClassName, "text-balance text-3xl font-extrabold tracking-tight sm:text-4xl")}>
-              Planos para o seu ritmo de entrega
-            </h2>
-            <p className="mx-auto mt-5 max-w-[70ch] text-pretty text-base leading-relaxed text-ds-muted sm:text-lg">
-              O Free cobre o essencial. No Pro entram equipe, e-mail automático, tarefas, relatórios avançados e muito mais.
-            </p>
-
-            <p className="mt-8 text-sm text-ds-muted-2">
-              Mensal para flexibilidade. Anual para economizar {yearlySavingsPercent}%.
-            </p>
-          </div>
-
-          <div className="mt-12 mx-auto grid max-w-6xl justify-items-stretch gap-6 md:justify-items-center lg:grid-cols-3 lg:gap-6">
-            <div className="flex w-full max-w-[420px] flex-col rounded-[28px] border border-ds-border bg-ds-surface p-7 shadow-ds-card min-h-[640px]">
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-ds-muted-2">Free</p>
-                <p className="mt-1 text-sm text-ds-muted">Para começar sem compromisso</p>
-              </div>
-
-              <div className="mt-6 flex items-end gap-2">
-                <span className="text-5xl font-black tracking-tight text-ds-ink">R$ 0</span>
-                <span className="pb-2 text-sm font-medium text-ds-muted-2">/ mês</span>
-              </div>
-
-              <Link
-                href="/login"
-                className="mt-7 inline-flex w-full items-center justify-center rounded-ds-2xl border-[1.5px] border-ds-border bg-ds-surface px-6 py-3 text-sm font-semibold text-ds-ink transition duration-ds ease-out hover:border-stone-300"
-              >
-                Começar
-              </Link>
-
-              <div className="mt-7 border-t border-ds-border pt-6">
-                <p className="text-xs font-semibold uppercase tracking-wide text-ds-muted-2">Inclui</p>
-                <ul className="mt-4 space-y-3 text-sm text-ds-muted">
-                  {[
-                    `Até ${FREE_MAX_ACTIVE_JOBS} jobs ativos no Kanban`,
-                    `Até ${FREE_MAX_CONTACTS} contatos`,
-                    "Kanban com até 4 etapas (Backup → Em Edição → Em Aprovação → Entregue)",
-                    "Anotações e Agenda (Google Calendar)",
-                    "Formulários para clientes",
-                    "Relatórios básicos",
-                    "1 usuário por conta",
-                  ].map((item) => (
-                    <li key={item} className="flex gap-3">
-                      <span
-                        className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-ds-border bg-ds-cream text-ds-ink"
-                        aria-hidden
-                      >
-                        <Check className="h-3.5 w-3.5" />
-                      </span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            <div className="relative flex w-full max-w-[420px] flex-col overflow-hidden rounded-[28px] border border-ds-border bg-ds-ink p-7 text-ds-on-dark shadow-ds-card min-h-[640px]">
-              <div className="pointer-events-none absolute -right-28 -top-28 h-60 w-60 rounded-full bg-ds-accent/40 blur-3xl" />
-              <div className="pointer-events-none absolute -bottom-24 -left-24 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
-
-              <div className="relative flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-white/75">Pro</p>
-                  <p className="mt-1 text-sm text-white/70">Para estúdios em crescimento</p>
-                </div>
-                <span className="rounded-full bg-ds-accent px-3 py-1 text-[0.75rem] font-semibold text-white">
-                  Recomendado
-                </span>
-              </div>
-
-              <div className="relative mt-6">
-                <p className="text-sm text-white/50">
-                  de:{" "}
-                  <span className="line-through">{formatBrl(proOriginalMonthly)}</span>{" "}
-                  por
-                </p>
-                <div className="flex items-end gap-2">
-                  <span className="text-5xl font-black tracking-tight text-white">
-                    {formatBrl(proMonthly)}
-                  </span>
-                  <span className="pb-2 text-sm font-medium text-white/70">/ mês</span>
-                </div>
-              </div>
-
-              <Link
-                href="/login"
-                className="relative mt-7 inline-flex w-full items-center justify-center gap-2 rounded-ds-2xl bg-ds-accent px-6 py-3 text-sm font-semibold text-white transition duration-ds ease-out hover:brightness-110"
-              >
-                Assinar o Pro
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-
-              <p className="relative mt-3 text-center text-xs text-white/60">
-                Pagamento do Pro com cartão de crédito.
-              </p>
-
-              <div className="relative mt-7 border-t border-white/10 pt-6">
-                <p className="text-xs font-semibold uppercase tracking-wide text-white/60">Tudo do Free, mais</p>
-                <ul className="mt-4 space-y-3 text-sm text-white/75">
-                  {[
-                    "Jobs e contatos ilimitados",
-                    "Etapas ilimitadas no kanban (reordenar, renomear e definir etapa final)",
-                    "Equipe: convites por e-mail (multi-usuário)",
-                    "E-mail automático ao enviar material para o cliente",
-                    "Envio de material por WhatsApp Web direto do app",
-                    "Modelos de e-mail de entrega personalizáveis",
-                    "Histórico de alterações dos jobs",
-                    "Tarefas: kanban de atividades da equipe",
-                    "Relatórios avançados de desempenho e entregas",
-                    "Board de álbum (workflow de entrega física)",
-                  ].map((item) => (
-                    <li key={item} className="flex gap-3">
-                      <span
-                        className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white"
-                        aria-hidden
-                      >
-                        <Check className="h-3.5 w-3.5" />
-                      </span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            <div className="flex w-full max-w-[420px] flex-col justify-between rounded-[28px] border border-ds-border bg-ds-surface p-7 shadow-ds-card min-h-[640px] lg:max-w-none">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-ds-muted-2">Pro Anual</p>
-                  <p className="mt-1 text-sm text-ds-muted">Economize no plano anual</p>
-                </div>
-                {yearlySavingsPercent > 0 ? (
-                  <span className="rounded-full bg-ds-cream px-3 py-1 text-[0.75rem] font-semibold text-ds-ink">
-                    -{yearlySavingsPercent}%
-                  </span>
-                ) : null}
-              </div>
-
-              <div className="mt-6">
-                <p className="text-sm text-ds-muted">
-                  de:{" "}
-                  <span className="line-through">{formatBrl(proOriginalYearly)}</span>{" "}
-                  por
-                </p>
-                <div className="flex items-end gap-2">
-                  <span className="text-5xl font-black tracking-tight text-ds-ink">{formatBrl(proYearly)}</span>
-                  <span className="pb-2 text-sm font-medium text-ds-muted-2">/ ano</span>
-                </div>
-              </div>
-
-              <Link
-                href="/login"
-                className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-ds-2xl border-[1.5px] border-ds-border bg-ds-surface px-6 py-3 text-sm font-semibold text-ds-ink transition duration-ds ease-out hover:border-stone-300"
-              >
-                Assinar Pro anual
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-
-              <p className="mt-3 text-center text-xs text-ds-muted-2">
-                {yearlySavingsPercent > 0
-                  ? `Equivale a ${formatBrl(proYearly / 12)}/mês no anual.`
-                  : "Pagamento anual."}
-              </p>
-
-              <div className="mt-7 border-t border-ds-border pt-6">
-                <p className="text-xs font-semibold uppercase tracking-wide text-ds-muted-2">
-                  Tudo do Pro, mais economia
-                </p>
-                <ul className="mt-4 space-y-3 text-sm text-ds-muted">
-                  {[
-                    "Todos os recursos do plano Pro",
-                    `Equivale a ${formatBrl(proYearly / 12)}/mês`,
-                    `Economia de ${formatBrl(proMonthly * 12 - proYearly)} por ano`,
-                    "Pagamento único anual",
-                  ].map((item) => (
-                    <li key={item} className="flex gap-3">
-                      <span
-                        className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-ds-border bg-ds-cream text-ds-ink"
-                        aria-hidden
-                      >
-                        <Check className="h-3.5 w-3.5" />
-                      </span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
+        {SHOW_LANDING_PRICING ? <LandingPricingSection displayClassName={displayClassName} /> : null}
 
         <section
           id="faq"
@@ -518,7 +309,11 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
               {[
                 {
                   q: "O Dony.app é gratuito?",
-                  a: "Sim. Você pode começar no plano gratuito e mudar quando o estúdio crescer. Não pedimos cartão para testar.",
+                  a: "Dá para usar o Free sem cartão. Os 20 primeiros convidados recebem o Pro vitalício: a conta é criada normalmente e o acesso sai sem data para acabar.",
+                },
+                {
+                  q: "Como funciona o Pro vitalício?",
+                  a: "Se você foi convidado e está entre os 20, crie a conta. O Pro é liberado na conta, sem cobrança e sem renovação. Tarefas, relatórios, equipe, e-mail, WhatsApp e o board de álbum entram juntos.",
                 },
                 {
                   q: "Serve para vídeo e foto?",
@@ -591,16 +386,16 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
             Organize seu estúdio hoje
           </h2>
           <p className="text-sm text-white/60">
-            Comece gratuitamente e sinta a diferença desde o primeiro job.
+            Crie a conta. Os 20 primeiros convidados ficam no Pro vitalício.
           </p>
           <a
-            href="/login"
+            href="/signup"
             className="inline-flex items-center gap-2 rounded-ds-2xl bg-white px-7 py-3.5 text-sm font-semibold text-ds-ink shadow-ds-sm transition duration-ds ease-out hover:bg-ds-cream"
           >
-            Começar grátis
+            Criar conta
             <ArrowRight className="h-4 w-4" />
           </a>
-          <p className="text-xs text-white/40">Sem cartão. Sem compromisso.</p>
+          <p className="text-xs text-white/40">Sem cartão.</p>
         </div>
       </section>
 

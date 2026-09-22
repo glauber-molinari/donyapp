@@ -5,39 +5,19 @@ import { headers } from "next/headers";
 
 import { WebMcpSurface } from "@/components/agent/webmcp-surface";
 import { SITE_NAME, siteUrl } from "@/lib/agent/site";
-import {
-  FREE_MAX_ACTIVE_JOBS,
-  FREE_MAX_CONTACTS,
-  PRO_PRICE_MONTHLY_CENTS,
-  PRO_PRICE_YEARLY_CENTS,
-} from "@/lib/plan-limits";
+import { FREE_MAX_ACTIVE_JOBS, FREE_MAX_CONTACTS } from "@/lib/plan-limits";
 
 const canonical = `${siteUrl()}/pricing`;
 
-function formatBrl(cents: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(cents / 100);
-}
-
-const proMonthly = formatBrl(PRO_PRICE_MONTHLY_CENTS);
-const proYearly = formatBrl(PRO_PRICE_YEARLY_CENTS);
-const proYearlyMonthly = formatBrl(Math.round(PRO_PRICE_YEARLY_CENTS / 12));
-const yearlySavingsPercent = Math.max(
-  0,
-  Math.round((1 - PRO_PRICE_YEARLY_CENTS / (PRO_PRICE_MONTHLY_CENTS * 12)) * 100),
-);
-
 export const metadata: Metadata = {
-  title: "Preços",
-  description: `Planos Free e Pro do ${SITE_NAME}: limites, preços em reais e o que muda ao assinar.`,
+  title: "Planos",
+  description: `Free para começar. Os 20 primeiros convidados do ${SITE_NAME} ganham o Pro vitalício, sem cobrança.`,
   alternates: { canonical },
   openGraph: {
     type: "website",
     url: canonical,
-    title: `Preços — ${SITE_NAME}`,
-    description: `Free grátis. Pro a partir de ${proMonthly}/mês. Anual com ${yearlySavingsPercent}% de desconto.`,
+    title: `Planos — ${SITE_NAME}`,
+    description: "Free para começar. Os 20 primeiros convidados ganham o Pro vitalício, sem cobrança.",
   },
 };
 
@@ -68,15 +48,15 @@ export default async function PricingPage() {
 
       <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-14">
         <h1 className="text-balance text-3xl font-extrabold tracking-tight sm:text-4xl">
-          Preços
+          Planos
         </h1>
         <p className="mt-3 text-sm text-ds-muted-2">
-          Free para começar. Pro quando o estúdio precisa de equipe e volume.
+          Free para começar. Os 20 primeiros convidados ganham o Pro vitalício.
         </p>
 
         <div className="mt-10 space-y-8 text-sm leading-relaxed text-ds-muted">
           <section className="space-y-3">
-            <h2 className="text-lg font-bold text-ds-ink">Free — R$ 0 / mês</h2>
+            <h2 className="text-lg font-bold text-ds-ink">Free</h2>
             <p>
               Conta individual, sem cartão. Serve para validar o fluxo com limites claros: até{" "}
               {FREE_MAX_ACTIVE_JOBS} jobs ativos no kanban, até {FREE_MAX_CONTACTS} contatos, até 4
@@ -86,7 +66,11 @@ export default async function PricingPage() {
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-bold text-ds-ink">Pro — {proMonthly} / mês</h2>
+            <h2 className="text-lg font-bold text-ds-ink">Pro vitalício</h2>
+            <p>
+              Para os 20 primeiros convidados. Crie a conta e o Pro é liberado sem data para acabar,
+              sem cobrança e sem renovação.
+            </p>
             <p>
               Tudo do Free, sem teto de jobs e contatos. Etapas ilimitadas no kanban (criar,
               reordenar, renomear e marcar a etapa final). Convites de equipe por e-mail. Na
@@ -94,27 +78,10 @@ export default async function PricingPage() {
               editáveis. Também entram histórico de alterações dos jobs, kanban de tarefas da
               equipe, relatórios avançados e board de álbum (entrega física).
             </p>
-            <p>
-              Pagamento do Pro com cartão de crédito, dentro do app após o login.
-            </p>
-          </section>
-
-          <section className="space-y-3">
-            <h2 className="text-lg font-bold text-ds-ink">
-              Pro anual — {proYearly} / ano
-            </h2>
-            <p>
-              Mesmos recursos do Pro mensal, com cerca de {yearlySavingsPercent}% de desconto no
-              ano. Equivale a cerca de {proYearlyMonthly}/mês. Cobrança anual única no cartão.
-            </p>
           </section>
 
           <p>
-            Comparativo rápido na home em{" "}
-            <Link href="/#planos" className="font-semibold text-ds-ink hover:underline">
-              /#planos
-            </Link>
-            . Lista de recursos em{" "}
+            Lista de recursos em{" "}
             <Link href="/features" className="font-semibold text-ds-ink hover:underline">
               /features
             </Link>
