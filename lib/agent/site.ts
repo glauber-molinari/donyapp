@@ -29,7 +29,7 @@ export function organizationSameAs(): string[] {
 }
 
 /** OG / social share image (absolute path under public/). */
-export const OG_IMAGE_PATH = "/marketing/kanban-oficial.png";
+export const OG_IMAGE_PATH = "/marketing/img-dony.png";
 
 export function organizationJsonLd(baseUrl: string = siteUrl()) {
   return {
