@@ -90,7 +90,7 @@ export function SettingsPlanSection({
   const waitingToastShown = useRef(false);
   const activationToastShown = useRef(false);
 
-  /** Volta do checkout Asaas: webhook ativa o Pro; atualizamos a página até refletir no banco. */
+  /** Volta do checkout AbacatePay: webhook ativa o Pro; atualizamos a página até refletir no banco. */
   useEffect(() => {
     if (!paymentSuccess || isPro) return;
     const interval = setInterval(() => {

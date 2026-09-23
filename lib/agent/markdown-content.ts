@@ -222,7 +222,7 @@ We read support mail on business days. Include your account email and a short de
     case "/privacy":
       return `# Privacy — ${SITE_NAME}
 
-${SITE_NAME} processes account data (name, email, profile photo; Google and/or email-password login), workspace content (contacts, jobs, notes, form answers, support tickets), transactional email, WhatsApp Web links for delivery, usage logs, site analytics, and subscription status. Card numbers are handled by Asaas, not stored in full on our servers.
+${SITE_NAME} processes account data (name, email, profile photo; Google and/or email-password login), workspace content (contacts, jobs, notes, form answers, support tickets), transactional email, WhatsApp Web links for delivery, usage logs, site analytics, and subscription status. Card numbers are handled by AbacatePay, not stored in full on our servers.
 
 Optional Google Calendar (admin only): we read the connected account email and, read-only, events that account created on the primary calendar (title, times, location, description, link, color). Event bodies are shown to the studio team and are not stored. OAuth tokens stay on the server until disconnect. We do not sell Google user data, use it for ads, or train generalized AI/ML models with it. The use of raw or derived user data received from Workspace APIs will adhere to the Google User Data Policy, including the Limited Use requirements.
 

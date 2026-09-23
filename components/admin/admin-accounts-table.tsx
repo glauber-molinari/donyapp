@@ -72,7 +72,7 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccountRow[] }
             <th className="px-3 py-2.5 font-medium text-ds-muted">Plano</th>
             <th className="px-3 py-2.5 font-medium text-ds-muted">Status</th>
             <th className="px-3 py-2.5 font-medium text-ds-muted">Renova / período</th>
-            <th className="px-3 py-2.5 font-medium text-ds-muted">Asaas</th>
+            <th className="px-3 py-2.5 font-medium text-ds-muted">AbacatePay</th>
             <th className="px-3 py-2.5 font-medium text-ds-muted">Ações</th>
           </tr>
         </thead>
@@ -80,7 +80,7 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccountRow[] }
           {accounts.map((a) => {
             const sub = a.subscription;
             const isPro = sub?.plan === "pro" && sub.status === "active";
-            const asaas = sub?.asaas_subscription_id;
+            const abacate = sub?.abacatepay_subscription_id;
 
             return (
               <tr key={a.id} className="border-b border-ds-border/80 hover:bg-ds-cream/40">
@@ -101,8 +101,8 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccountRow[] }
                   {sub?.is_lifetime ? "Vitalício" : formatDatePtBr(sub?.current_period_ends_at ?? null)}
                 </td>
                 <td className="px-3 py-2 align-top">
-                  {asaas ? (
-                    <span className="text-xs text-ds-ink" title={asaas}>
+                  {abacate ? (
+                    <span className="text-xs text-ds-ink" title={abacate}>
                       Vinculado
                     </span>
                   ) : (
@@ -118,7 +118,7 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccountRow[] }
                             className="flex flex-col gap-2 rounded-lg border border-ds-border bg-ds-cream p-2"
                             action={(fd) => {
                               fd.set("accountId", a.id);
-                              fd.set("clearAsaas", "true");
+                              fd.set("clearAbacatePay", "true");
                               runAction(adminGrantProCourtesyAction, fd);
                             }}
                           >
@@ -152,7 +152,7 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccountRow[] }
                             <p className="text-[11px] leading-snug text-ds-muted">
                               {grantMode === "lifetime"
                                 ? "Sem data de término. Na próxima entrada ou ao atualizar a página, a pessoa vê o aviso de Pro vitalício."
-                                : "Remove o vínculo Asaas nesta conta para evitar conflito com webhooks. Se houver cobrança ativa no Asaas, cancele lá também."}
+                                : "Remove o vínculo AbacatePay nesta conta para evitar conflito com webhooks. Se houver cobrança ativa na AbacatePay, cancele lá também."}
                             </p>
                             <div className="flex flex-wrap gap-1.5">
                               <Button type="submit" size="sm" disabled={pending}>
@@ -190,7 +190,7 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccountRow[] }
                             action={(fd) => {
                               fd.set("accountId", a.id);
                               fd.set("mode", "lifetime");
-                              fd.set("clearAsaas", "true");
+                              fd.set("clearAbacatePay", "true");
                               runAction(adminGrantProCourtesyAction, fd);
                             }}
                           >

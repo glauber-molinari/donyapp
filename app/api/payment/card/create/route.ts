@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { createAsaasProPaymentLinkWithCycle } from "@/lib/payments/asaas";
+import { createAbacatePayProCheckout } from "@/lib/payments/abacatepay";
 import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: Request) {
@@ -42,11 +42,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "Esta conta já está no plano Pro." }, { status: 400 });
   }
 
-  const result = await createAsaasProPaymentLinkWithCycle(profile.account_id, cycle);
+  const result = await createAbacatePayProCheckout(profile.account_id, cycle);
   if (!result.ok) {
     const isConfig =
-      result.error.startsWith("Configuração Asaas:") ||
-      result.error.includes("ASAAS_API_KEY não") ||
+      result.error.startsWith("Configuração AbacatePay:") ||
+      result.error.includes("ABACATEPAY_API_KEY não") ||
       result.error.includes("NEXT_PUBLIC_APP_URL");
     return NextResponse.json({ ok: false, error: result.error }, { status: isConfig ? 400 : 502 });
   }

@@ -1,7 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
-import { inactivateAsaasSubscription } from "@/lib/payments/asaas-subscription";
+import { cancelAbacatePaySubscription } from "@/lib/payments/abacatepay-subscription";
 import { createClient } from "@/lib/supabase/server";
 import { setSubscriptionCancelAtPeriodEnd } from "@/lib/subscriptions/upgrade-account";
 
@@ -27,7 +27,7 @@ export async function POST() {
 
   const { data: sub, error: subErr } = await supabase
     .from("subscriptions")
-    .select("plan, asaas_subscription_id, cancel_at_period_end")
+    .select("plan, abacatepay_subscription_id, cancel_at_period_end")
     .eq("account_id", profile.account_id)
     .maybeSingle();
 
@@ -43,20 +43,21 @@ export async function POST() {
     return NextResponse.json({ ok: false, error: "O cancelamento já está agendado." }, { status: 400 });
   }
 
-  const asaasId = sub.asaas_subscription_id?.trim();
-  if (!asaasId) {
+  const abacateId = sub.abacatepay_subscription_id?.trim();
+  if (!abacateId) {
     return NextResponse.json(
       {
         ok: false,
-        error: "Esta conta não possui assinatura recorrente no Asaas para cancelar aqui. Fale com o suporte.",
+        error:
+          "Esta conta não possui assinatura recorrente na AbacatePay para cancelar aqui. Fale com o suporte.",
       },
       { status: 400 }
     );
   }
 
-  const asaasResult = await inactivateAsaasSubscription(asaasId);
-  if (!asaasResult.ok) {
-    return NextResponse.json({ ok: false, error: asaasResult.error }, { status: 502 });
+  const payResult = await cancelAbacatePaySubscription(abacateId);
+  if (!payResult.ok) {
+    return NextResponse.json({ ok: false, error: payResult.error }, { status: 502 });
   }
 
   const dbResult = await setSubscriptionCancelAtPeriodEnd(supabase, profile.account_id, { strict: true });

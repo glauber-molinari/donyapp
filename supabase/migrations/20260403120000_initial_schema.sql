@@ -124,7 +124,7 @@ create table public.subscriptions (
   trial_ends_at timestamptz,
   current_period_ends_at timestamptz,
   extra_users integer default 0 not null,
-  asaas_subscription_id text,
+  abacatepay_subscription_id text,
   created_at timestamptz default now() not null,
   updated_at timestamptz default now() not null
 );

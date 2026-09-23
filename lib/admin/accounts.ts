@@ -43,7 +43,7 @@ export async function fetchAdminAccountsWithSubscriptions(
         current_period_ends_at,
         trial_ends_at,
         extra_users,
-        asaas_subscription_id,
+        abacatepay_subscription_id,
         is_lifetime,
         created_at,
         updated_at

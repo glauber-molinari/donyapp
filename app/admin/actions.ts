@@ -78,9 +78,10 @@ export async function adminGrantProCourtesyAction(formData: FormData): Promise<A
     return { ok: false, error: "Período inválido." };
   }
 
-  const clearAsaas = formData.get("clearAsaas") === "on" || formData.get("clearAsaas") === "true";
+  const clearAbacatePay =
+    formData.get("clearAbacatePay") === "on" || formData.get("clearAbacatePay") === "true";
 
-  const r = await setSubscriptionProCourtesy(svc, accountId, endsAt, clearAsaas);
+  const r = await setSubscriptionProCourtesy(svc, accountId, endsAt, clearAbacatePay);
   if (!r.ok) {
     return { ok: false, error: r.error };
   }

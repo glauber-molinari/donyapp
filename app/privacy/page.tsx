@@ -56,7 +56,7 @@ export default function PrivacyPage() {
             login com Google ou e-mail/senha), conteúdo do workspace (contatos, jobs, prazos, notas,
             tarefas, respostas de formulário, tickets), e-mails transacionais (convite, entrega,
             tarefa, suporte), abertura do WhatsApp Web na entrega, logs técnicos, Analytics do site e
-            status de assinatura. Dados do cartão ficam com o Asaas; nós não guardamos o número
+            status de assinatura. Dados do cartão ficam com a AbacatePay; nós não guardamos o número
             completo.
           </p>
           <p>

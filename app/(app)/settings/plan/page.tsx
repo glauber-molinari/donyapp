@@ -49,7 +49,7 @@ export default async function SettingsPlanPage(
 
   const { data: sub, error: subErr } = await supabase
     .from("subscriptions")
-    .select("plan, status, current_period_ends_at, extra_users, cancel_at_period_end, asaas_subscription_id, is_lifetime")
+    .select("plan, status, current_period_ends_at, extra_users, cancel_at_period_end, abacatepay_subscription_id, is_lifetime")
     .eq("account_id", profile.account_id)
     .maybeSingle();
 
@@ -78,7 +78,7 @@ export default async function SettingsPlanPage(
           sub?.plan === "pro" &&
           !sub?.is_lifetime &&
           !sub?.cancel_at_period_end &&
-          Boolean(sub?.asaas_subscription_id?.trim())
+          Boolean(sub?.abacatepay_subscription_id?.trim())
         }
         isLifetime={sub?.is_lifetime === true}
         isAdmin={profile.role === "admin"}

@@ -73,9 +73,9 @@ Gating **por conta** (liberar só p/ alguns clientes): use coluna dedicada em
 
 ## Serviços externos nos previews
 
-- **Asaas:** chave sandbox (`$aact_hmlg_…`) + `ASAAS_API_URL=https://api-sandbox.asaas.com` no escopo Preview.
+- **AbacatePay:** `ABACATEPAY_API_KEY` + IDs dos produtos mensal/anual no escopo Preview (devMode).
 - **Resend:** `RESEND_FROM`/`TEAM_NOTIFY_EMAIL` de teste no Preview p/ não mandar e-mail real a clientes.
-- **Webhooks (Asaas):** apontar para o Preview URL só quando for testar pagamento.
+- **Webhooks (AbacatePay):** apontar para o Preview URL só quando for testar pagamento.
 
 ## Rodar duas features ao mesmo tempo no PC (opcional)
 

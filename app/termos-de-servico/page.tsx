@@ -122,7 +122,7 @@ export default function TermsOfServicePage() {
             <p className="text-sm leading-relaxed text-ds-muted">
               Há plano gratuito e planos pagos (Pro mensal e Pro anual). Preço, limites, renovação e
               cancelamento aparecem na landing e dentro do app, e podem mudar. Cobrança do Pro é feita
-              por processador de pagamento (hoje, Asaas), com cartão de crédito. O processador aplica
+              por processador de pagamento (hoje, AbacatePay), com cartão de crédito. O processador aplica
               os termos dele ao pagamento. Nós não guardamos o número completo do cartão.
             </p>
           </section>

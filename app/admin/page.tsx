@@ -105,8 +105,8 @@ export default async function AdminDashboardPage() {
             value={intPt(m.proActiveTotal)}
             hint="Inclui pagantes e cortesia"
           />
-          <AdminMetricCard label="Pro pagantes (Asaas)" value={intPt(m.proPayingCount)} />
-          <AdminMetricCard label="Pro cortesia (sem Asaas)" value={intPt(m.proCompedCount)} />
+          <AdminMetricCard label="Pro pagantes (AbacatePay)" value={intPt(m.proPayingCount)} />
+          <AdminMetricCard label="Pro cortesia (sem AbacatePay)" value={intPt(m.proCompedCount)} />
           <AdminMetricCard
             label="Contas Free"
             value={intPt(m.freeAccounts)}
@@ -237,8 +237,8 @@ export default async function AdminDashboardPage() {
       <p className="text-xs leading-relaxed text-ds-muted">
         O ranking usa o nome do estúdio da conta, não a pessoa da equipe. Jobs pertencem à
         conta. Para evoluir: eventos de produto (MAU/WAU real), NRR, CAC e cohort de receita
-        exigem instrumentação ou exportação (ex.: Stripe/Asaas + armazenamento de eventos). O
-        MRR aqui assume preço mensal para cada assinatura vinculada ao Asaas.
+        exigem instrumentação ou exportação (ex.: Stripe/AbacatePay + armazenamento de eventos). O
+        MRR aqui assume preço mensal para cada assinatura vinculada à AbacatePay.
       </p>
     </div>
   );

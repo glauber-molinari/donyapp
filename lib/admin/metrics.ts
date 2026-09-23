@@ -73,13 +73,13 @@ export async function fetchAdminDashboardMetrics(
       .select("*", { count: "exact", head: true })
       .eq("plan", "pro")
       .eq("status", "active")
-      .not("asaas_subscription_id", "is", null),
+      .not("abacatepay_subscription_id", "is", null),
     db
       .from("subscriptions")
       .select("*", { count: "exact", head: true })
       .eq("plan", "pro")
       .eq("status", "active")
-      .is("asaas_subscription_id", null),
+      .is("abacatepay_subscription_id", null),
     db.from("subscriptions").select("*", { count: "exact", head: true }).eq("plan", "pro").eq("status", "active"),
     db.from("subscriptions").select("*", { count: "exact", head: true }).eq("plan", "free"),
     db.from("subscriptions").select("*", { count: "exact", head: true }).eq("status", "canceled").gte("updated_at", t30),
@@ -124,8 +124,8 @@ export async function fetchAdminDashboardMetrics(
 
   const mrrBrl = proPayingCount * monthlyPrice;
   const mrrNote =
-    "MRR estimado = Pro pagantes (Asaas) × preço mensal listado. Quem assinou o plano anual paga em cobrança anual no cartão; o equivalente mensal aproximado seria " +
-    `${formatBrlNumber(yearlyMonthlyEquivalent)} por conta anual. Para MRR exato por ciclo, seria necessário persistir mensal/anual no banco ou consultar o Asaas.`;
+    "MRR estimado = Pro pagantes (AbacatePay) × preço mensal listado. Quem assinou o plano anual paga em cobrança anual no cartão; o equivalente mensal aproximado seria " +
+    `${formatBrlNumber(yearlyMonthlyEquivalent)} por conta anual. Para MRR exato por ciclo, seria necessário persistir mensal/anual no banco ou consultar a AbacatePay.`;
 
   const denom = proPayingCount + churnCanceled30d;
   const churnRateApprox = denom > 0 ? churnCanceled30d / denom : null;

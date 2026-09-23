@@ -92,8 +92,8 @@ export default function PrivacyPolicyPage() {
                 </li>
                 <li>
                   <span className="font-semibold text-ds-ink">Cobrança e plano</span>: status do plano,
-                  período e identificador da assinatura no processador de pagamento (hoje, Asaas).
-                  Dados do cartão ficam com o Asaas; nós não guardamos o número completo.
+                  período e identificador da assinatura no processador de pagamento (hoje, AbacatePay).
+                  Dados do cartão ficam com a AbacatePay; nós não guardamos o número completo.
                 </li>
               </ul>
             </div>
@@ -164,7 +164,7 @@ export default function PrivacyPolicyPage() {
                 equipe abre a página. Quem vê os compromissos na tela são os usuários dessa conta.
                 Os tokens OAuth (acesso e atualização) e o e-mail da conta conectada ficam só no
                 servidor, no banco (Supabase), ligados ao estúdio. A equipe não recebe esses tokens.
-                Não mandamos dados do Google Calendar para pagamento (Asaas), e-mail transacional
+                Não mandamos dados do Google Calendar para pagamento (AbacatePay), e-mail transacional
                 (Resend) nem medição de audiência.
               </p>
               <p>
@@ -214,9 +214,9 @@ export default function PrivacyPolicyPage() {
               <p>
                 Podemos compartilhar dados com provedores que operam partes do Serviço, na medida
                 necessária para prestá-lo. Hoje isso inclui hospedagem (Vercel), autenticação e banco
-                (Supabase), e-mail transacional (Resend) e pagamentos (Asaas). Também usamos Vercel
+                (Supabase), e-mail transacional (Resend) e pagamentos (AbacatePay). Também usamos Vercel
                 Analytics no site. Título, horário e o restante do evento do Google Calendar não vão
-                para Asaas, Resend nem Analytics. No Supabase ficam só os tokens e o e-mail da conta
+                para AbacatePay, Resend nem Analytics. No Supabase ficam só os tokens e o e-mail da conta
                 conectada, como na seção 5.
               </p>
               <p>

@@ -9,22 +9,28 @@ export async function setSubscriptionPro(
   db: SupabaseClient<Database>,
   accountId: string,
   opts?: {
-    asaasSubscriptionId?: string | null;
+    abacatePaySubscriptionId?: string | null;
+    currentPeriodEndsAt?: string | null;
   }
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  const periodEnd = new Date();
-  periodEnd.setMonth(periodEnd.getMonth() + 1);
+  const periodEnd =
+    opts?.currentPeriodEndsAt ??
+    (() => {
+      const d = new Date();
+      d.setMonth(d.getMonth() + 1);
+      return d.toISOString();
+    })();
 
   const row: Database["public"]["Tables"]["subscriptions"]["Update"] = {
     plan: "pro",
     status: "active",
-    current_period_ends_at: periodEnd.toISOString(),
+    current_period_ends_at: periodEnd,
     cancel_at_period_end: false,
     is_lifetime: false,
   };
 
-  if (opts?.asaasSubscriptionId) {
-    row.asaas_subscription_id = opts.asaasSubscriptionId;
+  if (opts?.abacatePaySubscriptionId) {
+    row.abacatepay_subscription_id = opts.abacatePaySubscriptionId;
   }
 
   const { error } = await db.from("subscriptions").update(row).eq("account_id", accountId);
@@ -36,13 +42,13 @@ export async function setSubscriptionPro(
 }
 
 /**
- * Pro cortesia ou ajuste manual: define fim do período e remove vínculo Asaas quando solicitado.
+ * Pro cortesia ou ajuste manual: define fim do período e remove vínculo AbacatePay quando solicitado.
  */
 export async function setSubscriptionProCourtesy(
   db: SupabaseClient<Database>,
   accountId: string,
   currentPeriodEndsAtIso: string,
-  clearAsaasSubscriptionId: boolean
+  clearAbacatePaySubscriptionId: boolean
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const row: Database["public"]["Tables"]["subscriptions"]["Update"] = {
     plan: "pro",
@@ -51,8 +57,8 @@ export async function setSubscriptionProCourtesy(
     cancel_at_period_end: false,
     is_lifetime: false,
   };
-  if (clearAsaasSubscriptionId) {
-    row.asaas_subscription_id = null;
+  if (clearAbacatePaySubscriptionId) {
+    row.abacatepay_subscription_id = null;
   }
 
   const { data, error } = await db
@@ -71,7 +77,7 @@ export async function setSubscriptionProCourtesy(
 }
 
 /**
- * Pro vitalício: sem data de término e sem vínculo Asaas.
+ * Pro vitalício: sem data de término e sem vínculo AbacatePay.
  * Zera o aviso de boas-vindas de quem está na conta, para o popup aparecer de novo.
  */
 export async function setSubscriptionProLifetime(
@@ -85,7 +91,7 @@ export async function setSubscriptionProLifetime(
       status: "active",
       current_period_ends_at: null,
       cancel_at_period_end: false,
-      asaas_subscription_id: null,
+      abacatepay_subscription_id: null,
       is_lifetime: true,
     })
     .eq("account_id", accountId)
@@ -122,7 +128,7 @@ export async function setSubscriptionFreePlan(
       status: "active",
       current_period_ends_at: null,
       trial_ends_at: null,
-      asaas_subscription_id: null,
+      abacatepay_subscription_id: null,
       cancel_at_period_end: false,
       is_lifetime: false,
     })

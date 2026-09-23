@@ -126,7 +126,7 @@ export async function middleware(request: NextRequest) {
   );
   response.headers.set(
     "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, asaas-access-token, MCP-Session-Id, Mcp-Session-Id",
+    "Content-Type, Authorization, X-Webhook-Signature, MCP-Session-Id, Mcp-Session-Id",
   );
 
   // Public HTML pages that also offer Markdown must vary on Accept.

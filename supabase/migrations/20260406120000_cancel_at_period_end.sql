@@ -1,4 +1,4 @@
--- Cancelamento de assinatura: mantém Pro até current_period_ends_at; não renova após inativar no Asaas.
+-- Cancelamento de assinatura: mantém Pro até current_period_ends_at; não renova após cancelar no processador.
 alter table public.subscriptions
   add column if not exists cancel_at_period_end boolean not null default false;
 
