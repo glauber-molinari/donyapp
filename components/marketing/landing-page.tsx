@@ -171,7 +171,7 @@ export function LandingPage({ displayClassName, bodyClassName }: LandingPageProp
                   icon: ClipboardList,
                   title: "Formulários para clientes",
                   text: "Crie modelos de formulário e receba respostas dos clientes diretamente no app, sem ferramentas externas.",
-                  pro: false,
+                  pro: true,
                 },
                 {
                   icon: Calendar,

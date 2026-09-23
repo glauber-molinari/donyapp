@@ -59,7 +59,7 @@ export function publicFeatures() {
       },
       {
         id: "forms",
-        name: "Formulários",
+        name: "Formulários (Pro)",
         description: "Links públicos de briefing; respostas caem no workspace.",
       },
       {
@@ -105,7 +105,7 @@ export function publicPricing() {
         },
         highlights: [
           "Kanban com até 4 estágios",
-          "Notas, agenda e formulários",
+          "Notas e agenda",
           "1 usuário por conta",
         ],
       },
@@ -122,8 +122,8 @@ export function publicPricing() {
         },
         highlights: [
           "Jobs e contatos ilimitados",
-          "Estágios ilimitados e convites de equipe",
-          "Entrega por e-mail/WhatsApp e board de álbum",
+          "Formulários, tarefas e relatórios avançados",
+          "Estágios ilimitados, equipe e entrega por e-mail/WhatsApp",
         ],
       },
     ],

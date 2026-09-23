@@ -92,8 +92,8 @@ export default async function FeaturesPage() {
                 jobs, com busca e histórico de entregas.
               </li>
               <li>
-                <span className="font-semibold text-ds-ink">Formulários</span> — links públicos de
-                briefing; respostas caem no workspace.
+                <span className="font-semibold text-ds-ink">Formulários (Pro)</span> — links públicos
+                de briefing; respostas caem no workspace.
               </li>
               <li>
                 <span className="font-semibold text-ds-ink">Agenda</span> — Google Calendar em modo

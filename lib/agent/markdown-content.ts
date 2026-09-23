@@ -179,7 +179,7 @@ No card required. The first 20 invited accounts get lifetime Pro, with no charge
 - Up to ${FREE_MAX_ACTIVE_JOBS} active kanban jobs
 - Up to ${FREE_MAX_CONTACTS} contacts
 - Up to 4 kanban stages (Backup → Editing → Approval → Delivered)
-- Notes, Google Calendar agenda, client forms, basic reports
+- Notes, Google Calendar agenda, basic reports
 - 1 user per account
 
 ## Lifetime Pro
@@ -191,6 +191,7 @@ Everything in Free, plus:
 - Unlimited jobs and contacts
 - Unlimited kanban stages (create, reorder, rename, set final stage)
 - Team invites by email
+- Client forms (public briefing links)
 - Auto email and WhatsApp on delivery; editable email templates
 - Job change history, team task kanban, advanced reports
 - Physical album board

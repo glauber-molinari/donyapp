@@ -84,7 +84,7 @@ const navItems = [
     label: "Formulários",
     id: "menu-formularios",
     icon: ClipboardList,
-    isPro: false,
+    isPro: true,
   },
 ] as const;
 

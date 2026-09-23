@@ -49,7 +49,6 @@ export function LandingPricingSection({ displayClassName }: { displayClassName: 
                 `Até ${FREE_MAX_CONTACTS} contatos`,
                 "Kanban com até 4 etapas (Backup → Em Edição → Em Aprovação → Entregue)",
                 "Anotações e Agenda (Google Calendar)",
-                "Formulários para clientes",
                 "Relatórios básicos",
                 "1 usuário por conta",
               ].map((item) => (
@@ -106,6 +105,7 @@ export function LandingPricingSection({ displayClassName }: { displayClassName: 
                 "Envio de material por WhatsApp Web direto do app",
                 "Modelos de e-mail de entrega personalizáveis",
                 "Histórico de alterações dos jobs",
+                "Formulários para clientes",
                 "Tarefas: kanban de atividades da equipe",
                 "Relatórios avançados de desempenho e entregas",
                 "Board de álbum (workflow de entrega física)",

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
+import { requireProAccount } from "@/lib/subscriptions/require-pro";
 
 export async function GET(req: Request) {
   const supabase = await createClient();
@@ -11,6 +12,9 @@ export async function GET(req: Request) {
   if (!user) {
     return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
   }
+
+  const gate = await requireProAccount(supabase, user.id, "Formulários");
+  if ("error" in gate) return gate.error;
 
   const url = new URL(req.url);
   const activeParam = url.searchParams.get("active");
@@ -42,15 +46,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
   }
 
-  const { data: profile } = await supabase
-    .from("users")
-    .select("account_id")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  if (!profile?.account_id) {
-    return NextResponse.json({ error: "Conta não encontrada." }, { status: 403 });
-  }
+  const gate = await requireProAccount(supabase, user.id, "Formulários");
+  if ("error" in gate) return gate.error;
 
   let body: Record<string, unknown>;
   try {
@@ -84,7 +81,7 @@ export async function POST(req: Request) {
   const { data, error } = await supabase
     .from("form_templates")
     .insert({
-      account_id: profile.account_id,
+      account_id: gate.accountId,
       title,
       slug,
       description: typeof body.description === "string" ? body.description.trim() || null : null,

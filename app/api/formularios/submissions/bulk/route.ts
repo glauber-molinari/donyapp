@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
+import { requireProAccount } from "@/lib/subscriptions/require-pro";
 
 export async function DELETE(req: Request) {
   const supabase = await createClient();
@@ -11,6 +12,9 @@ export async function DELETE(req: Request) {
   if (!user) {
     return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
   }
+
+  const gate = await requireProAccount(supabase, user.id, "Formulários");
+  if ("error" in gate) return gate.error;
 
   let body: { ids?: unknown };
   try {

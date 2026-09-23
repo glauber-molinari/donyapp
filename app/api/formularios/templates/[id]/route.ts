@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
+import { requireProAccount } from "@/lib/subscriptions/require-pro";
 
 export async function GET(_req: Request, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -12,6 +13,9 @@ export async function GET(_req: Request, props: { params: Promise<{ id: string }
   if (!user) {
     return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
   }
+
+  const gate = await requireProAccount(supabase, user.id, "Formulários");
+  if ("error" in gate) return gate.error;
 
   const { data, error } = await supabase
     .from("form_templates")
@@ -35,6 +39,9 @@ export async function PUT(req: Request, props: { params: Promise<{ id: string }>
   if (!user) {
     return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
   }
+
+  const gate = await requireProAccount(supabase, user.id, "Formulários");
+  if ("error" in gate) return gate.error;
 
   let body: Record<string, unknown>;
   try {
@@ -94,6 +101,9 @@ export async function DELETE(_req: Request, props: { params: Promise<{ id: strin
   if (!user) {
     return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
   }
+
+  const gate = await requireProAccount(supabase, user.id, "Formulários");
+  if ("error" in gate) return gate.error;
 
   const { error } = await supabase
     .from("form_templates")
