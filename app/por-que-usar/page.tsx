@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
 import { PorQueUsarMarketingPage } from "@/components/marketing/por-que-usar-marketing-page";
+import { canonicalSiteUrl } from "@/lib/agent/site";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -9,10 +10,13 @@ const inter = Inter({
   weight: ["400", "500", "600", "700", "800", "900"],
 });
 
+const canonical = `${canonicalSiteUrl()}/por-que-usar`;
+
 export const metadata: Metadata = {
   title: "Por que usar o Dony.app?",
   description:
     "Entenda em poucos minutos por que o Dony.app foi feito para o fluxo real de pós-produção: kanban, prazos, contatos e equipe no mesmo lugar.",
+  alternates: { canonical },
 };
 
 export default function PorQueUsarPage() {

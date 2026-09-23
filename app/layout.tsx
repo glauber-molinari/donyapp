@@ -6,10 +6,10 @@ import "./globals.css";
 
 import { AppToaster } from "@/components/ui/app-toaster";
 import {
+  canonicalSiteUrl,
   OG_IMAGE_PATH,
   SITE_DESCRIPTION,
   SITE_NAME,
-  siteUrl,
 } from "@/lib/agent/site";
 
 export const dynamic = "force-dynamic";
@@ -20,7 +20,7 @@ const inter = Inter({
   display: "swap",
 });
 
-const appUrl = siteUrl() || "http://localhost:3000";
+const appUrl = canonicalSiteUrl() || "http://localhost:3000";
 
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
@@ -40,9 +40,6 @@ export const metadata: Metadata = {
     "clientes",
   ],
   applicationName: SITE_NAME,
-  alternates: {
-    canonical: "/",
-  },
   openGraph: {
     type: "website",
     locale: "pt_BR",

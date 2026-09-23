@@ -6,6 +6,16 @@ export function siteUrl(): string {
   ).replace(/\/$/, "");
 }
 
+/**
+ * URL pública que responde 200. O apex (https://donyapp.com) redireciona para www;
+ * tag canônica no apex faz o Google tratar a página como cópia de outra URL.
+ */
+export function canonicalSiteUrl(): string {
+  const raw = siteUrl();
+  if (raw === "https://donyapp.com") return "https://www.donyapp.com";
+  return raw;
+}
+
 export const SITE_NAME = "Dony.app";
 
 export const SITE_DESCRIPTION =

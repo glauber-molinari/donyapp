@@ -9,7 +9,7 @@ import {
   MarketingSiteHeader,
   marketingHomeAnchoredNavItems,
 } from "@/components/marketing/marketing-site-header";
-import { serializeJsonLd } from "@/lib/agent/site";
+import { canonicalSiteUrl, serializeJsonLd } from "@/lib/agent/site";
 import { getPostBySlug } from "@/lib/blog/actions";
 import type { BlogCategory } from "@/types/blog";
 
@@ -36,7 +36,7 @@ function formatDate(iso: string | null): string {
 
 export const dynamic = "force-dynamic";
 
-const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://donyapp.com").replace(/\/$/, "");
+const appUrl = canonicalSiteUrl();
 
 export async function generateMetadata(
   props: {

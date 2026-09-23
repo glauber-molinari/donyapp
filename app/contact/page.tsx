@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { INSTAGRAM_URL, SITE_NAME, SUPPORT_EMAIL, siteUrl } from "@/lib/agent/site";
+import { canonicalSiteUrl, INSTAGRAM_URL, SITE_NAME, SUPPORT_EMAIL } from "@/lib/agent/site";
 
-const canonical = `${siteUrl()}/contact`;
+const canonical = `${canonicalSiteUrl()}/contact`;
 
 export const metadata: Metadata = {
   title: "Contato",

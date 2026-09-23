@@ -14,6 +14,7 @@ import {
   LogOut,
   MessageCircle,
   Settings,
+  Shield,
   Users,
   X,
   BarChart3,
@@ -398,6 +399,17 @@ export function AppShell({ children, userName, userEmail, avatarUrl, tourComplet
             >
               <Lightbulb className="h-5 w-5 shrink-0 opacity-80" aria-hidden />
               <span className={cn(sidebarCollapsed && "md:sr-only")}>Feedback</span>
+            </Link>
+            <Link
+              href="/politica-de-privacidade"
+              title={sidebarCollapsed ? "Privacidade" : undefined}
+              className={cn(
+                "flex items-center gap-3 rounded-ds-xl px-3 py-2.5 text-sm font-medium text-ds-muted transition-colors duration-ds ease-out hover:bg-ds-cream/80 hover:text-ds-ink",
+                sidebarCollapsed && "md:justify-center md:px-2 md:py-3"
+              )}
+            >
+              <Shield className="h-5 w-5 shrink-0 opacity-80" aria-hidden />
+              <span className={cn(sidebarCollapsed && "md:sr-only")}>Privacidade</span>
             </Link>
           </div>
         </div>

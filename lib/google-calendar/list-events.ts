@@ -62,6 +62,8 @@ export async function listCalendarEventsForAccount(
         singleEvents: true,
         orderBy: "startTime",
         maxResults: 2500,
+        // Só os campos que a Agenda mostra. O restante do evento (convidados, anexos) não vem na resposta.
+        fields: "items(id,summary,description,location,htmlLink,colorId,start,end)",
       }),
     ]);
 

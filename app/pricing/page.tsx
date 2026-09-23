@@ -4,10 +4,10 @@ import Script from "next/script";
 import { headers } from "next/headers";
 
 import { WebMcpSurface } from "@/components/agent/webmcp-surface";
-import { SITE_NAME, siteUrl } from "@/lib/agent/site";
+import { canonicalSiteUrl, SITE_NAME } from "@/lib/agent/site";
 import { FREE_MAX_ACTIVE_JOBS, FREE_MAX_CONTACTS } from "@/lib/plan-limits";
 
-const canonical = `${siteUrl()}/pricing`;
+const canonical = `${canonicalSiteUrl()}/pricing`;
 
 export const metadata: Metadata = {
   title: "Planos",

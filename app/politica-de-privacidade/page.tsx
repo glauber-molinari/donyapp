@@ -1,12 +1,23 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { canonicalSiteUrl } from "@/lib/agent/site";
+
+const canonical = `${canonicalSiteUrl()}/politica-de-privacidade`;
+
 export const metadata: Metadata = {
   title: "Política de Privacidade",
   description: "Como o Dony.app trata dados pessoais e informações do uso do produto.",
+  alternates: { canonical },
+  openGraph: {
+    type: "website",
+    url: canonical,
+    title: "Política de Privacidade — Dony.app",
+    description: "Como o Dony.app trata dados pessoais, inclusive dados da Conta Google e do Google Calendar.",
+  },
 };
 
-const UPDATED_AT = "09/09/2026";
+const UPDATED_AT = "23/09/2026";
 
 export default function PrivacyPolicyPage() {
   return (
@@ -118,29 +129,81 @@ export default function PrivacyPolicyPage() {
           <section className="space-y-3">
             <h2 className="text-xl font-bold">5. Dados da Conta Google e Google Calendar</h2>
             <div className="space-y-3 text-sm leading-relaxed text-ds-muted">
+              <p>O Dony.app usa a Conta Google de duas formas. As duas são separadas.</p>
               <p>
-                O Dony.app usa serviços Google de duas formas distintas:
+                <span className="font-semibold text-ds-ink">Login com Google.</span> O acesso ao
+                produto pede e-mail, nome e foto de perfil para criar a conta, manter a sessão e
+                mostrar seu perfil à equipe (board, tarefas, relatórios).
+              </p>
+              <p>
+                <span className="font-semibold text-ds-ink">Google Calendar, opcional.</span> Um
+                administrador do estúdio pode conectar o calendário principal (
+                <span className="font-semibold text-ds-ink">primary</span>) da Conta Google. O app
+                pede só isto:
               </p>
               <ul className="list-disc space-y-2 pl-5">
+                <li>o e-mail da conta conectada, para mostrar qual Conta Google está ligada;</li>
                 <li>
-                  <span className="font-semibold text-ds-ink">Login com Google (autenticação)</span>:
-                  pedimos dados básicos da Conta Google (e-mail, nome e foto de perfil) para criar e
-                  autenticar sua conta e para exibir seu perfil à equipe no app (board, tarefas,
-                  relatórios). Não vendemos esses dados e não os usamos para publicidade.
-                </li>
-                <li>
-                  <span className="font-semibold text-ds-ink">Google Calendar (integração opcional)</span>:
-                  um administrador do estúdio pode conectar o calendário principal da Conta Google em modo{" "}
-                  <span className="font-semibold text-ds-ink">somente leitura</span>. Usamos isso para
-                  exibir compromissos (título, horários, local, descrição e link do evento, quando
-                  existir) na agenda interna do Dony.app, para a equipe do estúdio. Não criamos, alteramos
-                  nem excluímos eventos pela API. Tokens OAuth ficam no servidor, vinculados à conta do
-                  estúdio; colaboradores não recebem as credenciais Google.
+                  leitura dos eventos que essa conta criou nesse calendário. De cada evento usamos
+                  identificador, título, início, fim, dia inteiro, descrição, local, link do evento
+                  no Google Calendar e cor.
                 </li>
               </ul>
               <p>
-                O uso de dados obtidos das APIs Google limita-se às práticas descritas nesta Política e
-                às finalidades do produto. Não vendemos esses dados e não os usamos para publicidade.
+                Não criamos, alteramos nem apagamos eventos. Não pedimos a lista de outros
+                calendários, Gmail, Drive nem Contatos.
+              </p>
+              <p>
+                <span className="font-semibold text-ds-ink">Para que serve.</span> Mostrar esses
+                compromissos na página Agenda, junto dos jobs, para as pessoas da mesma conta do
+                estúdio. Sem a conexão, o restante do produto segue funcionando.
+              </p>
+              <p>
+                <span className="font-semibold text-ds-ink">Com quem esses dados ficam.</span> O
+                texto dos eventos não entra no nosso banco: a Agenda busca na hora em que alguém da
+                equipe abre a página. Quem vê os compromissos na tela são os usuários dessa conta.
+                Os tokens OAuth (acesso e atualização) e o e-mail da conta conectada ficam só no
+                servidor, no banco (Supabase), ligados ao estúdio. A equipe não recebe esses tokens.
+                Não mandamos dados do Google Calendar para pagamento (Asaas), e-mail transacional
+                (Resend) nem medição de audiência.
+              </p>
+              <p>
+                Não vendemos dados obtidos do Google. Não os passamos a corretores de dados,
+                anunciantes ou revendedores de informação. Não os usamos para publicidade, análise de
+                crédito ou empréstimo.
+              </p>
+              <p>
+                <span className="font-semibold text-ds-ink">Proteção.</span> O tráfego vai por HTTPS.
+                Os tokens só são lidos no servidor, com chave que não vai para o navegador. Só um
+                administrador conecta ou desconecta a agenda.
+              </p>
+              <p>
+                <span className="font-semibold text-ds-ink">Quanto tempo guardamos.</span> Enquanto a
+                agenda estiver conectada, guardamos os tokens e o e-mail da conta Google. Ao
+                desconectar em Configurações → Agenda, apagamos esses registros. A pessoa também
+                pode tirar o acesso em{" "}
+                <a
+                  href="https://myaccount.google.com/permissions"
+                  className="font-semibold text-ds-ink hover:underline"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  myaccount.google.com/permissions
+                </a>
+                . O conteúdo dos eventos não fica armazenado por nós. Para apagar a conta do
+                Dony.app, escreva para{" "}
+                <span className="font-semibold text-ds-ink">suporte@donyapp.com</span>.
+              </p>
+              <p>
+                <span className="font-semibold text-ds-ink">Uso limitado.</span> O uso de dados brutos
+                ou derivados recebidos das APIs do Google Workspace segue a Política de Dados do
+                Usuário do Google, inclusive o Limited Use. Não usamos esses dados para desenvolver,
+                melhorar ou treinar modelos de inteligência artificial ou de aprendizado de máquina
+                generalizados.
+              </p>
+              <p className="text-ds-ink">
+                The use of raw or derived user data received from Workspace APIs will adhere to the
+                Google User Data Policy, including the Limited Use requirements.
               </p>
             </div>
           </section>
@@ -152,7 +215,9 @@ export default function PrivacyPolicyPage() {
                 Podemos compartilhar dados com provedores que operam partes do Serviço, na medida
                 necessária para prestá-lo. Hoje isso inclui hospedagem (Vercel), autenticação e banco
                 (Supabase), e-mail transacional (Resend) e pagamentos (Asaas). Também usamos Vercel
-                Analytics no site.
+                Analytics no site. Título, horário e o restante do evento do Google Calendar não vão
+                para Asaas, Resend nem Analytics. No Supabase ficam só os tokens e o e-mail da conta
+                conectada, como na seção 5.
               </p>
               <p>
                 Existe uma API pública e um fluxo OAuth para aplicativos ou agentes que você autorizar.
@@ -179,7 +244,9 @@ export default function PrivacyPolicyPage() {
             <h2 className="text-xl font-bold">8. Retenção e exclusão</h2>
             <p className="text-sm leading-relaxed text-ds-muted">
               Mantemos dados pelo tempo em que a conta existir e pelo prazo necessário para obrigações
-              legais. Não há botão de autoexclusão no app: para apagar conta ou dados, escreva para{" "}
+              legais. Tokens da agenda Google são apagados quando um administrador desconecta a
+              integração. O conteúdo dos eventos do Calendar não fica no nosso banco. Não há botão de
+              autoexclusão no app: para apagar conta ou dados, escreva para{" "}
               <span className="font-semibold text-ds-ink">suporte@donyapp.com</span>. Em alguns casos
               pode haver retenção mínima por lei, prevenção de fraude ou auditoria.
             </p>

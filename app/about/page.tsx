@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { SITE_DESCRIPTION, SITE_NAME, siteUrl } from "@/lib/agent/site";
+import { canonicalSiteUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/agent/site";
 
-const canonical = `${siteUrl()}/about`;
+const canonical = `${canonicalSiteUrl()}/about`;
 
 export const metadata: Metadata = {
   title: "Sobre",

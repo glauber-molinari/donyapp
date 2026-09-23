@@ -224,6 +224,8 @@ We read support mail on business days. Include your account email and a short de
 
 ${SITE_NAME} processes account data (name, email, profile photo; Google and/or email-password login), workspace content (contacts, jobs, notes, form answers, support tickets), transactional email, WhatsApp Web links for delivery, usage logs, site analytics, and subscription status. Card numbers are handled by Asaas, not stored in full on our servers.
 
+Optional Google Calendar (admin only): we read the connected account email and, read-only, events that account created on the primary calendar (title, times, location, description, link, color). Event bodies are shown to the studio team and are not stored. OAuth tokens stay on the server until disconnect. We do not sell Google user data, use it for ads, or train generalized AI/ML models with it. The use of raw or derived user data received from Workspace APIs will adhere to the Google User Data Policy, including the Limited Use requirements.
+
 We use data to operate the product, authenticate you, bill plans, fix bugs, and meet legal obligations under Brazil's LGPD. You can request access, correction, deletion, and related rights by emailing [${SUPPORT_EMAIL}](mailto:${SUPPORT_EMAIL}).
 
 The full Portuguese policy is the legal source of truth:
@@ -241,7 +243,7 @@ The full Portuguese policy is the legal source of truth:
 
 Documento completo em HTML: [${url}/politica-de-privacidade](${url}/politica-de-privacidade)
 
-Resumo: tratamos dados de conta (Google ou e-mail/senha), conteúdo do workspace, formulários, e-mails transacionais, WhatsApp Web na entrega, logs, Analytics e status de assinatura. Contato do titular: [${SUPPORT_EMAIL}](mailto:${SUPPORT_EMAIL}).
+Resumo: tratamos dados de conta (Google ou e-mail/senha), conteúdo do workspace, formulários, e-mails transacionais, WhatsApp Web na entrega, logs, Analytics e status de assinatura. Google Calendar, se um admin conectar: e-mail da conta e leitura dos eventos criados no calendário principal, só para a Agenda da equipe. Não vendemos esses dados, não usamos para anúncio e não treinamos modelo de IA com eles. Limited Use: the use of raw or derived user data received from Workspace APIs will adhere to the Google User Data Policy, including the Limited Use requirements. Contato do titular: [${SUPPORT_EMAIL}](mailto:${SUPPORT_EMAIL}).
 
 Versão amigável em inglês/curta: [${url}/privacy](${url}/privacy)
 `;

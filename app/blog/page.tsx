@@ -6,17 +6,22 @@ import {
   MarketingSiteHeader,
   marketingHomeAnchoredNavItems,
 } from "@/components/marketing/marketing-site-header";
+import { canonicalSiteUrl } from "@/lib/agent/site";
 import { getPublishedPosts } from "@/lib/blog/actions";
+
+const canonical = `${canonicalSiteUrl()}/blog`;
 
 export const metadata: Metadata = {
   title: "Novidades & Aprendizados | Dony.app",
   description:
     "Pós-produção, gestão de estúdio e tudo que acontece por aqui. Artigos para fotógrafos e videomakers que querem organizar melhor seu fluxo de trabalho.",
+  alternates: { canonical },
   openGraph: {
     title: "Novidades & Aprendizados | Dony.app",
     description:
       "Pós-produção, gestão de estúdio e tudo que acontece por aqui. Artigos para fotógrafos e videomakers.",
     type: "website",
+    url: canonical,
   },
 };
 

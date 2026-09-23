@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { SITE_NAME, SUPPORT_EMAIL, siteUrl } from "@/lib/agent/site";
+import { canonicalSiteUrl, SITE_NAME, SUPPORT_EMAIL } from "@/lib/agent/site";
 
-const canonical = `${siteUrl()}/privacy`;
+const canonical = `${canonicalSiteUrl()}/privacy`;
 
 export const metadata: Metadata = {
   title: "Privacidade",
@@ -58,6 +58,19 @@ export default function PrivacyPage() {
             tarefa, suporte), abertura do WhatsApp Web na entrega, logs técnicos, Analytics do site e
             status de assinatura. Dados do cartão ficam com o Asaas; nós não guardamos o número
             completo.
+          </p>
+          <p>
+            Se um administrador conectar o Google Calendar, lemos o e-mail dessa conta e, em somente
+            leitura, os eventos que ela criou no calendário principal (título, horários, local,
+            descrição, link e cor). Mostramos isso na Agenda da equipe. Não gravamos o conteúdo dos
+            eventos, não criamos nem apagamos compromissos, e não vendemos esses dados nem os usamos
+            para anúncio ou para treinar modelos de IA. Os tokens ficam no servidor até alguém
+            desconectar a agenda. O uso de dados das APIs do Google Workspace segue a Política de
+            Dados do Usuário do Google, inclusive o Limited Use.
+          </p>
+          <p className="text-ds-ink">
+            The use of raw or derived user data received from Workspace APIs will adhere to the
+            Google User Data Policy, including the Limited Use requirements.
           </p>
           <p>
             Usamos esses dados para autenticar, rodar o produto, cobrar planos, diagnosticar falhas e

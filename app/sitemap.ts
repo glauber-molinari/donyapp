@@ -1,9 +1,9 @@
 import type { MetadataRoute } from "next";
 
-import { siteUrl } from "@/lib/agent/site";
+import { canonicalSiteUrl } from "@/lib/agent/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = new URL(siteUrl() || "https://www.donyapp.com");
+  const base = new URL(canonicalSiteUrl() || "https://www.donyapp.com");
   const now = new Date();
 
   return [

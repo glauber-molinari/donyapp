@@ -52,8 +52,18 @@ export default async function SettingsAgendaPage(
       <div>
         <h2 className="text-lg font-semibold text-ds-ink">Google Calendar</h2>
         <p className="mt-1 text-sm text-ds-muted">
-          Somente administradores conectam ou trocam a conta Google. Todos os usuários da conta podem ver
-          os eventos na página Agenda.
+          Somente administradores conectam ou trocam a conta Google. Ao conectar, o Google pede o
+          e-mail da conta e leitura dos eventos que você criou no calendário principal. Usamos isso
+          para mostrar título, horário, local, descrição e link na página Agenda. A equipe da mesma
+          conta vê esses compromissos. Não criamos, editamos nem apagamos eventos, e não gravamos o
+          conteúdo deles no nosso banco. O detalhe está na{" "}
+          <a
+            href="/politica-de-privacidade"
+            className="font-medium text-ds-ink underline decoration-ds-border underline-offset-4 hover:decoration-ds-ink"
+          >
+            Política de Privacidade
+          </a>
+          .
         </p>
       </div>
       <SettingsAgendaSection

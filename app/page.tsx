@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import Script from "next/script";
 import { headers } from "next/headers";
 
-import { homeJsonLdGraph, OG_IMAGE_PATH, serializeJsonLd, SITE_DESCRIPTION, SITE_NAME, siteUrl } from "@/lib/agent/site";
+import { canonicalSiteUrl, homeJsonLdGraph, OG_IMAGE_PATH, serializeJsonLd, SITE_DESCRIPTION, SITE_NAME, siteUrl } from "@/lib/agent/site";
 import { LandingPage } from "@/components/marketing/landing-page";
 import { WebMcpSurface } from "@/components/agent/webmcp-surface";
 
@@ -13,7 +13,7 @@ const inter = Inter({
   weight: ["400", "500", "600", "700", "800", "900"],
 });
 
-const canonical = `${siteUrl()}/`;
+const canonical = `${canonicalSiteUrl()}/`;
 
 export const metadata: Metadata = {
   title: `${SITE_NAME} | Gestão de pós-produção para fotógrafos e videomakers`,

@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { canonicalSiteUrl } from "@/lib/agent/site";
+
+const canonical = `${canonicalSiteUrl()}/termos-de-servico`;
+
 export const metadata: Metadata = {
   title: "Termos de Serviço",
   description: "Regras de uso do Dony.app e condições para acesso ao produto.",
+  alternates: { canonical },
 };
 
 const UPDATED_AT = "09/09/2026";
