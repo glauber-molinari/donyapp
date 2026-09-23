@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
@@ -55,43 +56,21 @@ export default async function ContactDetailPage(props: PageProps) {
     redirect("/login");
   }
 
-  const [
-    { data: contact, error: contactErr },
-    { data: jobs, error: jobsErr },
-    { data: notes, error: notesErr },
-  ] = await Promise.all([
-    supabase.from("contacts").select("*").eq("id", params.id).maybeSingle(),
-    supabase
-      .from("jobs")
-      .select(
-        `
-        id, name, type, job_kind, board_type, deadline, internal_deadline, job_date,
-        delivery_link, created_at, updated_at,
-        stage:kanban_stages(id, name, color, is_final),
-        work_type:job_work_types(id, name)
-      `
-      )
-      .eq("contact_id", params.id)
-      .eq("job_kind", "standard")
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("contact_notes")
-      .select(
-        `
-        id, title, content, categories, priority, created_at,
-        job:jobs(id, name)
-      `
-      )
-      .eq("contact_id", params.id)
-      .order("created_at", { ascending: false }),
-  ]);
+  const { data: contact, error: contactErr } = await supabase
+    .from("contacts")
+    .select("*")
+    .eq("id", params.id)
+    .maybeSingle();
 
-  if (contactErr || jobsErr || notesErr) {
+  if (contactErr) {
     return (
-      <div>
-        <p className="text-sm text-red-600" role="alert">
-          Não foi possível carregar os dados. Tente novamente.
+      <div className="flex flex-col gap-3">
+        <p className="text-sm text-ds-danger" role="alert">
+          Não foi possível carregar este contato. Tente novamente.
         </p>
+        <Link href="/contacts" className="text-sm font-medium text-ds-accent hover:brightness-90">
+          Voltar aos contatos
+        </Link>
       </div>
     );
   }
@@ -100,11 +79,44 @@ export default async function ContactDetailPage(props: PageProps) {
     notFound();
   }
 
-  const { data: account } = await supabase
-    .from("accounts")
-    .select("album_board_enabled")
-    .eq("id", contact.account_id)
-    .maybeSingle();
+  const [{ data: jobs, error: jobsErr }, { data: notes, error: notesErr }, { data: account }] =
+    await Promise.all([
+      supabase
+        .from("jobs")
+        .select(
+          `
+        id, name, type, job_kind, board_type, deadline, internal_deadline, job_date,
+        delivery_link, created_at, updated_at,
+        stage:kanban_stages(id, name, color, is_final),
+        work_type:job_work_types(id, name)
+      `
+        )
+        .eq("contact_id", params.id)
+        .eq("job_kind", "standard")
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("contact_notes")
+        .select(
+          `
+        id, title, content, categories, priority, created_at,
+        job:jobs(id, name)
+      `
+        )
+        .eq("contact_id", params.id)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("accounts")
+        .select("album_board_enabled")
+        .eq("id", contact.account_id)
+        .maybeSingle(),
+    ]);
+
+  if (jobsErr) {
+    console.error("contact detail jobs:", jobsErr.message);
+  }
+  if (notesErr) {
+    console.error("contact detail notes:", notesErr.message);
+  }
 
   return (
     <ContactDetailView
